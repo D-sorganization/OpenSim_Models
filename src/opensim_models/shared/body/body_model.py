@@ -1,0 +1,302 @@
+"""Simplified full-body musculoskeletal model for barbell exercises.
+
+Segments (bilateral where noted):
+  pelvis, torso, head,
+  upper_arm_{l,r}, forearm_{l,r}, hand_{l,r},
+  thigh_{l,r}, shank_{l,r}, foot_{l,r}
+
+Joints:
+  ground_pelvis (FreeJoint — 6 DOF),
+  lumbar (PinJoint — flexion/extension),
+  neck (PinJoint),
+  shoulder_{l,r} (PinJoint — simplified, flexion only for v0.1),
+  elbow_{l,r} (PinJoint),
+  wrist_{l,r} (PinJoint),
+  hip_{l,r} (PinJoint — flexion/extension),
+  knee_{l,r} (PinJoint),
+  ankle_{l,r} (PinJoint)
+
+Anthropometric defaults are for a 50th-percentile male (height=1.75 m,
+mass=80 kg) following Winter (2009) segment proportions.
+
+Law of Demeter: exercise modules call create_full_body() and receive
+body/joint elements — they never manipulate segment internals.
+"""
+
+from __future__ import annotations
+
+import xml.etree.ElementTree as ET
+from dataclasses import dataclass
+
+from opensim_models.shared.contracts.preconditions import (
+    require_positive,
+)
+from opensim_models.shared.utils.geometry import (
+    cylinder_inertia,
+    rectangular_prism_inertia,
+)
+from opensim_models.shared.utils.xml_helpers import (
+    add_body,
+    add_free_joint,
+    add_pin_joint,
+)
+
+
+@dataclass(frozen=True)
+class BodyModelSpec:
+    """Anthropometric specification for the full-body model.
+
+    All lengths in meters, mass in kg.
+    """
+
+    total_mass: float = 80.0
+    height: float = 1.75
+
+    def __post_init__(self) -> None:
+        require_positive(self.total_mass, "total_mass")
+        require_positive(self.height, "height")
+
+
+# Winter (2009) segment mass fractions and length fractions of total height.
+_SEGMENT_TABLE: dict[str, dict[str, float]] = {
+    "pelvis": {"mass_frac": 0.142, "length_frac": 0.100, "radius_frac": 0.085},
+    "torso": {"mass_frac": 0.355, "length_frac": 0.288, "radius_frac": 0.080},
+    "head": {"mass_frac": 0.081, "length_frac": 0.130, "radius_frac": 0.060},
+    "upper_arm": {"mass_frac": 0.028, "length_frac": 0.186, "radius_frac": 0.023},
+    "forearm": {"mass_frac": 0.016, "length_frac": 0.146, "radius_frac": 0.018},
+    "hand": {"mass_frac": 0.006, "length_frac": 0.050, "radius_frac": 0.020},
+    "thigh": {"mass_frac": 0.100, "length_frac": 0.245, "radius_frac": 0.037},
+    "shank": {"mass_frac": 0.047, "length_frac": 0.246, "radius_frac": 0.025},
+    "foot": {"mass_frac": 0.014, "length_frac": 0.040, "radius_frac": 0.025},
+}
+
+
+def _seg(spec: BodyModelSpec, name: str) -> tuple[float, float, float]:
+    """Return (mass, length, radius) for a named segment."""
+    s = _SEGMENT_TABLE[name]
+    mass = spec.total_mass * s["mass_frac"]
+    length = spec.height * s["length_frac"]
+    radius = spec.height * s["radius_frac"]
+    return mass, length, radius
+
+
+def _add_bilateral_limb(
+    bodyset: ET.Element,
+    jointset: ET.Element,
+    spec: BodyModelSpec,
+    *,
+    seg_name: str,
+    parent_name: str,
+    joint_type: str,
+    parent_offset_y: float,
+    parent_lateral_x: float,
+    coord_prefix: str,
+    range_min: float,
+    range_max: float,
+) -> None:
+    """Add left and right limb segments with pin joints."""
+    mass, length, radius = _seg(spec, seg_name)
+    inertia = cylinder_inertia(mass, radius, length)
+
+    for side, sign in [("l", -1.0), ("r", 1.0)]:
+        body_name = f"{seg_name}_{side}"
+        add_body(
+            bodyset,
+            name=body_name,
+            mass=mass,
+            mass_center=(0, -length / 2.0, 0),
+            inertia_xx=inertia[0],
+            inertia_yy=inertia[1],
+            inertia_zz=inertia[2],
+        )
+        add_pin_joint(
+            jointset,
+            name=f"{coord_prefix}_{side}",
+            parent_body=f"{parent_name}_{side}" if "_" in parent_name else parent_name,
+            child_body=body_name,
+            location_in_parent=(sign * parent_lateral_x, parent_offset_y, 0),
+            location_in_child=(0, 0, 0),
+            coord_name=f"{coord_prefix}_{side}_flex",
+            range_min=range_min,
+            range_max=range_max,
+        )
+
+
+def create_full_body(
+    bodyset: ET.Element,
+    jointset: ET.Element,
+    spec: BodyModelSpec | None = None,
+) -> dict[str, ET.Element]:
+    """Build the full-body model and append bodies/joints to the given sets.
+
+    Returns dict of body name -> ET.Element for all created bodies.
+    """
+    if spec is None:
+        spec = BodyModelSpec()
+
+    bodies: dict[str, ET.Element] = {}
+
+    # --- Pelvis (connected to ground via FreeJoint) ---
+    p_mass, p_len, p_rad = _seg(spec, "pelvis")
+    p_inertia = rectangular_prism_inertia(p_mass, p_rad * 2, p_len, p_rad * 2)
+    bodies["pelvis"] = add_body(
+        bodyset,
+        name="pelvis",
+        mass=p_mass,
+        mass_center=(0, 0, 0),
+        inertia_xx=p_inertia[0],
+        inertia_yy=p_inertia[1],
+        inertia_zz=p_inertia[2],
+    )
+    add_free_joint(
+        jointset,
+        name="ground_pelvis",
+        parent_body="ground",
+        child_body="pelvis",
+        location_in_parent=(0, 0.93, 0),
+    )
+
+    # --- Torso ---
+    t_mass, t_len, t_rad = _seg(spec, "torso")
+    t_inertia = rectangular_prism_inertia(t_mass, t_rad * 2, t_len, t_rad * 2)
+    bodies["torso"] = add_body(
+        bodyset,
+        name="torso",
+        mass=t_mass,
+        mass_center=(0, t_len / 2.0, 0),
+        inertia_xx=t_inertia[0],
+        inertia_yy=t_inertia[1],
+        inertia_zz=t_inertia[2],
+    )
+    add_pin_joint(
+        jointset,
+        name="lumbar",
+        parent_body="pelvis",
+        child_body="torso",
+        location_in_parent=(0, p_len / 2.0, 0),
+        location_in_child=(0, 0, 0),
+        coord_name="lumbar_flex",
+        range_min=-0.5236,
+        range_max=0.7854,
+    )
+
+    # --- Head ---
+    h_mass, h_len, h_rad = _seg(spec, "head")
+    h_inertia = cylinder_inertia(h_mass, h_rad, h_len)
+    bodies["head"] = add_body(
+        bodyset,
+        name="head",
+        mass=h_mass,
+        mass_center=(0, h_len / 2.0, 0),
+        inertia_xx=h_inertia[0],
+        inertia_yy=h_inertia[1],
+        inertia_zz=h_inertia[2],
+    )
+    add_pin_joint(
+        jointset,
+        name="neck",
+        parent_body="torso",
+        child_body="head",
+        location_in_parent=(0, t_len, 0),
+        location_in_child=(0, 0, 0),
+        coord_name="neck_flex",
+        range_min=-0.5236,
+        range_max=0.5236,
+    )
+
+    # --- Arms ---
+    shoulder_y = t_len * 0.95
+    shoulder_x = t_rad * 1.2
+
+    _add_bilateral_limb(
+        bodyset,
+        jointset,
+        spec,
+        seg_name="upper_arm",
+        parent_name="torso",
+        joint_type="pin",
+        parent_offset_y=shoulder_y,
+        parent_lateral_x=shoulder_x,
+        coord_prefix="shoulder",
+        range_min=-3.1416,
+        range_max=3.1416,
+    )
+
+    ua_mass, ua_len, ua_rad = _seg(spec, "upper_arm")
+    _add_bilateral_limb(
+        bodyset,
+        jointset,
+        spec,
+        seg_name="forearm",
+        parent_name="upper_arm",
+        joint_type="pin",
+        parent_offset_y=-ua_len,
+        parent_lateral_x=0,
+        coord_prefix="elbow",
+        range_min=0,
+        range_max=2.618,
+    )
+
+    fa_mass, fa_len, fa_rad = _seg(spec, "forearm")
+    _add_bilateral_limb(
+        bodyset,
+        jointset,
+        spec,
+        seg_name="hand",
+        parent_name="forearm",
+        joint_type="pin",
+        parent_offset_y=-fa_len,
+        parent_lateral_x=0,
+        coord_prefix="wrist",
+        range_min=-1.2217,
+        range_max=1.2217,
+    )
+
+    # --- Legs ---
+    hip_x = p_rad * 0.6
+
+    _add_bilateral_limb(
+        bodyset,
+        jointset,
+        spec,
+        seg_name="thigh",
+        parent_name="pelvis",
+        joint_type="pin",
+        parent_offset_y=-p_len / 2.0,
+        parent_lateral_x=hip_x,
+        coord_prefix="hip",
+        range_min=-0.5236,
+        range_max=2.0944,
+    )
+
+    th_mass, th_len, th_rad = _seg(spec, "thigh")
+    _add_bilateral_limb(
+        bodyset,
+        jointset,
+        spec,
+        seg_name="shank",
+        parent_name="thigh",
+        joint_type="pin",
+        parent_offset_y=-th_len,
+        parent_lateral_x=0,
+        coord_prefix="knee",
+        range_min=-2.618,
+        range_max=0,
+    )
+
+    sh_mass, sh_len, sh_rad = _seg(spec, "shank")
+    _add_bilateral_limb(
+        bodyset,
+        jointset,
+        spec,
+        seg_name="foot",
+        parent_name="shank",
+        joint_type="pin",
+        parent_offset_y=-sh_len,
+        parent_lateral_x=0,
+        coord_prefix="ankle",
+        range_min=-0.7854,
+        range_max=0.7854,
+    )
+
+    return bodies
