@@ -25,6 +25,7 @@ body/joint elements — they never manipulate segment internals.
 
 from __future__ import annotations
 
+import logging
 import xml.etree.ElementTree as ET
 from dataclasses import dataclass
 
@@ -40,6 +41,8 @@ from opensim_models.shared.utils.xml_helpers import (
     add_free_joint,
     add_pin_joint,
 )
+
+logger = logging.getLogger(__name__)
 
 
 @dataclass(frozen=True)
@@ -87,7 +90,6 @@ def _add_bilateral_limb(
     *,
     seg_name: str,
     parent_name: str,
-    joint_type: str,
     parent_offset_y: float,
     parent_lateral_x: float,
     coord_prefix: str,
@@ -134,6 +136,12 @@ def create_full_body(
     if spec is None:
         spec = BodyModelSpec()
 
+    logger.info(
+        "Building full-body model (mass=%.1f kg, height=%.2f m)",
+        spec.total_mass,
+        spec.height,
+    )
+
     bodies: dict[str, ET.Element] = {}
 
     # --- Pelvis (connected to ground via FreeJoint) ---
@@ -148,12 +156,18 @@ def create_full_body(
         inertia_yy=p_inertia[1],
         inertia_zz=p_inertia[2],
     )
+    # Pelvis height = sum of leg segment lengths (thigh + shank + foot)
+    _, thigh_len, _ = _seg(spec, "thigh")
+    _, shank_len, _ = _seg(spec, "shank")
+    _, foot_len, _ = _seg(spec, "foot")
+    pelvis_height = thigh_len + shank_len + foot_len + p_len / 2.0
+    logger.debug("Derived pelvis height: %.4f m", pelvis_height)
     add_free_joint(
         jointset,
         name="ground_pelvis",
         parent_body="ground",
         child_body="pelvis",
-        location_in_parent=(0, 0.93, 0),
+        location_in_parent=(0, pelvis_height, 0),
     )
 
     # --- Torso ---
@@ -214,7 +228,6 @@ def create_full_body(
         spec,
         seg_name="upper_arm",
         parent_name="torso",
-        joint_type="pin",
         parent_offset_y=shoulder_y,
         parent_lateral_x=shoulder_x,
         coord_prefix="shoulder",
@@ -222,14 +235,13 @@ def create_full_body(
         range_max=3.1416,
     )
 
-    ua_mass, ua_len, ua_rad = _seg(spec, "upper_arm")
+    _, ua_len, _ = _seg(spec, "upper_arm")
     _add_bilateral_limb(
         bodyset,
         jointset,
         spec,
         seg_name="forearm",
         parent_name="upper_arm",
-        joint_type="pin",
         parent_offset_y=-ua_len,
         parent_lateral_x=0,
         coord_prefix="elbow",
@@ -237,14 +249,13 @@ def create_full_body(
         range_max=2.618,
     )
 
-    fa_mass, fa_len, fa_rad = _seg(spec, "forearm")
+    _, fa_len, _ = _seg(spec, "forearm")
     _add_bilateral_limb(
         bodyset,
         jointset,
         spec,
         seg_name="hand",
         parent_name="forearm",
-        joint_type="pin",
         parent_offset_y=-fa_len,
         parent_lateral_x=0,
         coord_prefix="wrist",
@@ -261,7 +272,6 @@ def create_full_body(
         spec,
         seg_name="thigh",
         parent_name="pelvis",
-        joint_type="pin",
         parent_offset_y=-p_len / 2.0,
         parent_lateral_x=hip_x,
         coord_prefix="hip",
@@ -269,14 +279,13 @@ def create_full_body(
         range_max=2.0944,
     )
 
-    th_mass, th_len, th_rad = _seg(spec, "thigh")
+    _, th_len, _ = _seg(spec, "thigh")
     _add_bilateral_limb(
         bodyset,
         jointset,
         spec,
         seg_name="shank",
         parent_name="thigh",
-        joint_type="pin",
         parent_offset_y=-th_len,
         parent_lateral_x=0,
         coord_prefix="knee",
@@ -284,14 +293,13 @@ def create_full_body(
         range_max=0,
     )
 
-    sh_mass, sh_len, sh_rad = _seg(spec, "shank")
+    _, sh_len, _ = _seg(spec, "shank")
     _add_bilateral_limb(
         bodyset,
         jointset,
         spec,
         seg_name="foot",
         parent_name="shank",
-        joint_type="pin",
         parent_offset_y=-sh_len,
         parent_lateral_x=0,
         coord_prefix="ankle",
@@ -299,4 +307,5 @@ def create_full_body(
         range_max=0.7854,
     )
 
+    logger.info("Full-body model complete: %d bodies created", len(bodies))
     return bodies

@@ -11,6 +11,7 @@ through their public APIs, never reaching into internal segment tables.
 
 from __future__ import annotations
 
+import logging
 import xml.etree.ElementTree as ET
 from abc import ABC, abstractmethod
 from dataclasses import dataclass, field
@@ -19,6 +20,8 @@ from opensim_models.shared.barbell import BarbellSpec, create_barbell_bodies
 from opensim_models.shared.body import BodyModelSpec, create_full_body
 from opensim_models.shared.contracts.postconditions import ensure_valid_xml
 from opensim_models.shared.utils.xml_helpers import serialize_model
+
+logger = logging.getLogger(__name__)
 
 
 @dataclass
@@ -65,6 +68,7 @@ class ExerciseModelBuilder(ABC):
 
         Postcondition: returned string is well-formed XML.
         """
+        logger.info("Building %s model", self.exercise_name)
         root = ET.Element("OpenSimDocument", Version="40500")
         model = ET.SubElement(root, "Model", name=self.exercise_name)
 
@@ -101,4 +105,5 @@ class ExerciseModelBuilder(ABC):
         # Postcondition: well-formed XML
         ensure_valid_xml(xml_str)
 
+        logger.info("%s model built successfully", self.exercise_name)
         return xml_str

@@ -24,11 +24,11 @@ class TestEnsurePositiveMass:
         ensure_positive_mass(1.0, "body")
 
     def test_rejects_zero(self):
-        with pytest.raises(AssertionError, match="not positive"):
+        with pytest.raises(ValueError, match="not positive"):
             ensure_positive_mass(0.0, "body")
 
     def test_rejects_negative(self):
-        with pytest.raises(AssertionError, match="not positive"):
+        with pytest.raises(ValueError, match="not positive"):
             ensure_positive_mass(-5.0, "body")
 
 
@@ -37,9 +37,9 @@ class TestEnsurePositiveDefiniteInertia:
         ensure_positive_definite_inertia(1.0, 1.0, 1.0, "body")
 
     def test_rejects_zero_component(self):
-        with pytest.raises(AssertionError, match="not positive"):
+        with pytest.raises(ValueError, match="not positive"):
             ensure_positive_definite_inertia(0.0, 1.0, 1.0, "body")
 
     def test_rejects_triangle_inequality_violation(self):
-        with pytest.raises(AssertionError, match="triangle inequality"):
+        with pytest.raises(ValueError, match="triangle inequality"):
             ensure_positive_definite_inertia(0.1, 0.1, 100.0, "body")

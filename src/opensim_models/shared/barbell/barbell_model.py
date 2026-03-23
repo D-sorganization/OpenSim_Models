@@ -15,6 +15,7 @@ internal geometry details remain encapsulated.
 
 from __future__ import annotations
 
+import logging
 import xml.etree.ElementTree as ET
 from dataclasses import dataclass
 
@@ -27,6 +28,8 @@ from opensim_models.shared.utils.xml_helpers import (
     add_body,
     add_weld_joint,
 )
+
+logger = logging.getLogger(__name__)
 
 
 @dataclass(frozen=True)
@@ -118,6 +121,7 @@ def create_barbell_bodies(
     The barbell shaft center is at the local origin. Sleeves extend
     symmetrically along the X-axis (left = -X, right = +X).
     """
+    logger.info("Creating barbell: %.1f kg total", spec.total_mass)
     shaft_inertia = cylinder_inertia(
         spec.shaft_mass, spec.shaft_radius, spec.shaft_length
     )

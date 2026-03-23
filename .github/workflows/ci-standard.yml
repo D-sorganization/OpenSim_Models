@@ -34,7 +34,9 @@ jobs:
         with:
           fetch-depth: 0
       - uses: actions/setup-python@v6
-        with: { python-version: "3.11" }
+        with:
+          python-version: "3.11"
+          cache: 'pip'
       - run: pip install ruff==0.14.10 mypy>=1.15.0 bandit==1.7.7
 
       - name: Lint
@@ -43,7 +45,7 @@ jobs:
       - name: Check Formatting (ruff)
         run: ruff format --check src scripts tests
 
-      - run: pip install mypy types-PyYAML types-requests types-lxml
+      - run: pip install mypy types-PyYAML types-requests
       - run: pip install -e .[dev]
       - run: mypy src --config-file pyproject.toml
 
@@ -62,11 +64,11 @@ jobs:
       - name: Security Audit
         run: |
           pip install pip-audit
-          pip-audit || echo "::warning::Security audit found issues"
+          pip-audit
 
       - name: Bandit Security Scan
         run: |
-          bandit -r src/ -ll -ii --format txt 2>&1 || echo "::warning::Bandit found issues"
+          bandit -r src/ -ll -ii --format txt
 
   tests:
     needs: quality-gate
@@ -74,12 +76,13 @@ jobs:
     timeout-minutes: 15
     strategy:
       matrix:
-        python: ["3.11"]
+        python: ["3.10", "3.11", "3.12"]
     steps:
       - uses: actions/checkout@v6
       - uses: actions/setup-python@v6
         with:
           python-version: ${{ matrix.python }}
+          cache: 'pip'
 
       - name: Install Dependencies
         run: pip install -e ".[dev]"
@@ -98,3 +101,10 @@ jobs:
             --cov-fail-under=80 \
             --tb=short \
             -v
+
+      - name: Upload Coverage Artifact
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: coverage-${{ matrix.python }}
+          path: coverage.xml
