@@ -16,7 +16,10 @@ from __future__ import annotations
 import xml.etree.ElementTree as ET
 
 from opensim_models.exercises.base import ExerciseConfig, ExerciseModelBuilder
-from opensim_models.shared.utils.xml_helpers import add_weld_joint
+from opensim_models.shared.utils.xml_helpers import (
+    add_weld_joint,
+    set_coordinate_default,
+)
 
 
 class SquatModelBuilder(ExerciseModelBuilder):
@@ -60,11 +63,13 @@ class SquatModelBuilder(ExerciseModelBuilder):
         )
 
     def set_initial_pose(self, jointset: ET.Element) -> None:
-        """Set standing unrack position: slight hip/knee flexion."""
-        # Initial pose is controlled by coordinate default_values which
-        # were set during joint creation. The defaults (0.0) represent
-        # anatomical neutral — appropriate for the unrack position.
-        # No overrides needed for the standing start.
+        """Set standing unrack position: slight hip/knee flexion (~5 deg)."""
+        # Slight hip flexion (positive) and knee flexion (negative in this model)
+        hip_flex = 0.0873  # ~5 degrees
+        knee_flex = -0.0873  # ~5 degrees
+        for side in ("l", "r"):
+            set_coordinate_default(jointset, f"hip_{side}_flex", hip_flex)
+            set_coordinate_default(jointset, f"knee_{side}_flex", knee_flex)
 
 
 def build_squat_model(

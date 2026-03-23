@@ -141,6 +141,20 @@ def add_weld_joint(
     return joint
 
 
+def set_coordinate_default(jointset: ET.Element, coord_name: str, value: float) -> None:
+    """Set the default_value for a named Coordinate in the JointSet.
+
+    Searches all joints for a Coordinate element whose 'name' attribute matches
+    *coord_name* and updates its default_value text.
+    """
+    for coord in jointset.iter("Coordinate"):
+        if coord.get("name") == coord_name:
+            dv = coord.find("default_value")
+            if dv is not None:
+                dv.text = f"{value:.6f}"
+            return
+
+
 def indent_xml(elem: ET.Element, level: int = 0) -> None:
     """Add whitespace indentation to an ElementTree in-place."""
     indent = "\n" + "  " * level

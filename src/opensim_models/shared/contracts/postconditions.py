@@ -15,7 +15,7 @@ def ensure_valid_xml(xml_string: str) -> ET.Element:
     Raises ValueError if the string is not well-formed XML.
     """
     try:
-        return ET.fromstring(xml_string)
+        return ET.fromstring(xml_string)  # nosec B314 — parsing self-generated XML
     except ET.ParseError as exc:
         raise ValueError(f"Generated XML is not well-formed: {exc}") from exc
 
@@ -23,7 +23,7 @@ def ensure_valid_xml(xml_string: str) -> ET.Element:
 def ensure_positive_mass(mass: float, body_name: str) -> None:
     """Assert that a body's mass is positive after computation."""
     if mass <= 0:
-        raise AssertionError(
+        raise ValueError(
             f"Postcondition violated: {body_name} mass={mass} is not positive"
         )
 
@@ -34,12 +34,12 @@ def ensure_positive_definite_inertia(
     """Assert that principal inertias are positive (necessary for PD)."""
     for label, val in [("Ixx", ixx), ("Iyy", iyy), ("Izz", izz)]:
         if val <= 0:
-            raise AssertionError(
+            raise ValueError(
                 f"Postcondition violated: {body_name} {label}={val} not positive"
             )
     # Triangle inequality for principal inertias
     if ixx + iyy < izz or ixx + izz < iyy or iyy + izz < ixx:
-        raise AssertionError(
+        raise ValueError(
             f"Postcondition violated: {body_name} inertias "
             f"({ixx}, {iyy}, {izz}) violate triangle inequality"
         )

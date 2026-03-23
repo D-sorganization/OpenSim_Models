@@ -30,7 +30,10 @@ from __future__ import annotations
 import xml.etree.ElementTree as ET
 
 from opensim_models.exercises.base import ExerciseConfig, ExerciseModelBuilder
-from opensim_models.shared.utils.xml_helpers import add_weld_joint
+from opensim_models.shared.utils.xml_helpers import (
+    add_weld_joint,
+    set_coordinate_default,
+)
 
 
 class CleanAndJerkModelBuilder(ExerciseModelBuilder):
@@ -68,10 +71,24 @@ class CleanAndJerkModelBuilder(ExerciseModelBuilder):
             location_in_child=(-grip_offset, 0, 0),
         )
 
+        add_weld_joint(
+            jointset,
+            name="barbell_to_right_hand",
+            parent_body="hand_r",
+            child_body="barbell_shaft",
+            location_in_parent=(0, 0, 0),
+            location_in_child=(grip_offset, 0, 0),
+        )
+
     def set_initial_pose(self, jointset: ET.Element) -> None:
         """Set starting position: bar on floor, clean grip, hip hinge."""
-        # Starting position identical to deadlift first pull
-        # Actual motion phases would be driven by a controller or motion file
+        hip_flex = 1.3963  # ~80 degrees (same as deadlift start)
+        knee_flex = -1.0472  # ~60 degrees
+        lumbar_flex = 0.5236  # ~30 degrees forward lean
+        for side in ("l", "r"):
+            set_coordinate_default(jointset, f"hip_{side}_flex", hip_flex)
+            set_coordinate_default(jointset, f"knee_{side}_flex", knee_flex)
+        set_coordinate_default(jointset, "lumbar_flex", lumbar_flex)
 
 
 def build_clean_and_jerk_model(

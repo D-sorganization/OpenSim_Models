@@ -20,7 +20,10 @@ from __future__ import annotations
 import xml.etree.ElementTree as ET
 
 from opensim_models.exercises.base import ExerciseConfig, ExerciseModelBuilder
-from opensim_models.shared.utils.xml_helpers import add_weld_joint
+from opensim_models.shared.utils.xml_helpers import (
+    add_weld_joint,
+    set_coordinate_default,
+)
 
 BENCH_HEIGHT = 0.43  # IPF standard bench height (meters)
 
@@ -61,20 +64,25 @@ class BenchPressModelBuilder(ExerciseModelBuilder):
             location_in_child=(-grip_offset, 0, 0),
         )
 
-        # Right hand connects to the same shaft body — in OpenSim this
-        # means the shaft is driven by the left-hand weld and the right
-        # hand is effectively constrained. For a draft model this is
-        # acceptable; a production model would use a constraint instead.
+        add_weld_joint(
+            jointset,
+            name="barbell_to_right_hand",
+            parent_body="hand_r",
+            child_body="barbell_shaft",
+            location_in_parent=(0, 0, 0),
+            location_in_child=(grip_offset, 0, 0),
+        )
 
     def set_initial_pose(self, jointset: ET.Element) -> None:
         """Set supine lockout position.
 
-        The ground_pelvis FreeJoint places the body supine on the bench
-        with arms extended overhead (lockout).
+        Shoulders flexed ~90 deg (arms pointing up), elbows near-extended.
+        The supine orientation is a hint for visualization; actual supine
+        constraint would come from the bench weld in a full model.
         """
-        # Supine = pelvis rotated -pi/2 about Z so Y-up becomes lying down
-        # This is handled by the ground_pelvis joint default — for the
-        # draft model the default neutral position serves as starting point.
+        shoulder_flex = 1.5708  # ~90 degrees (arms vertical)
+        for side in ("l", "r"):
+            set_coordinate_default(jointset, f"shoulder_{side}_flex", shoulder_flex)
 
 
 def build_bench_press_model(
