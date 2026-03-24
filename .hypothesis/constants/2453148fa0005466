@@ -1,0 +1,4 @@
+# file: C:\Users\diete\Repositories\OpenSim_Models\src\opensim_models\exercises\bench_press\bench_press_model.py
+# hypothesis_version: 6.151.9
+
+[0.2, 0.43, 1.5708, 1.75, 50.0, 80.0, 'barbell_shaft', 'barbell_to_left_hand', 'bench_press', 'hand_l', 'hand_r', 'l', 'r']

@@ -1,0 +1,4 @@
+# file: C:\Users\diete\Repositories\OpenSim_Models\src\opensim_models\exercises\clean_and_jerk\clean_and_jerk_model.py
+# hypothesis_version: 6.151.9
+
+[0.25, 1.75, 50.0, 80.0, 'barbell_shaft', 'barbell_to_left_hand', 'clean_and_jerk', 'hand_l', 'hand_r', 'l', 'lumbar_flex', 'r']

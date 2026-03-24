@@ -1,0 +1,4 @@
+# file: C:\Users\diete\Repositories\OpenSim_Models\src\opensim_models\shared\body\body_model.py
+# hypothesis_version: 6.151.9
+
+[-3.1416, -2.618, -1.2217, -1.0, -0.7854, -0.5236, 0.006, 0.014, 0.016, 0.018, 0.02, 0.023, 0.025, 0.028, 0.037, 0.04, 0.047, 0.05, 0.06, 0.08, 0.081, 0.085, 0.1, 0.13, 0.142, 0.146, 0.186, 0.245, 0.246, 0.288, 0.355, 0.5236, 0.6, 0.7854, 0.95, 1.0, 1.2, 1.2217, 1.75, 2.0, 2.0944, 2.618, 3.1416, 80.0, '_', 'ankle', 'elbow', 'foot', 'forearm', 'ground', 'ground_pelvis', 'hand', 'head', 'height', 'hip', 'knee', 'l', 'length_frac', 'lumbar', 'lumbar_flex', 'mass_frac', 'neck', 'neck_flex', 'pelvis', 'r', 'radius_frac', 'shank', 'shoulder', 'thigh', 'torso', 'total_mass', 'upper_arm', 'wrist']

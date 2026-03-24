@@ -82,13 +82,16 @@ class CleanAndJerkModelBuilder(ExerciseModelBuilder):
 
     def set_initial_pose(self, jointset: ET.Element) -> None:
         """Set starting position: bar on floor, clean grip, hip hinge."""
-        hip_flex = 1.3963  # ~80 degrees (same as deadlift start)
-        knee_flex = -1.0472  # ~60 degrees
-        lumbar_flex = 0.5236  # ~30 degrees forward lean
+        from opensim_models.exercises.deadlift.deadlift_model import (
+            DEADLIFT_INITIAL_HIP_ANGLE,
+            DEADLIFT_INITIAL_KNEE_ANGLE,
+            DEADLIFT_INITIAL_LUMBAR_ANGLE,
+        )
+
         for side in ("l", "r"):
-            set_coordinate_default(jointset, f"hip_{side}_flex", hip_flex)
-            set_coordinate_default(jointset, f"knee_{side}_flex", knee_flex)
-        set_coordinate_default(jointset, "lumbar_flex", lumbar_flex)
+            set_coordinate_default(jointset, f"hip_{side}_flex", DEADLIFT_INITIAL_HIP_ANGLE)
+            set_coordinate_default(jointset, f"knee_{side}_flex", DEADLIFT_INITIAL_KNEE_ANGLE)
+        set_coordinate_default(jointset, "lumbar_flex", DEADLIFT_INITIAL_LUMBAR_ANGLE)
 
 
 def build_clean_and_jerk_model(

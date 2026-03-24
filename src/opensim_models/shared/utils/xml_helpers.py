@@ -154,6 +154,8 @@ def set_coordinate_default(jointset: ET.Element, coord_name: str, value: float) 
                 dv.text = f"{value:.6f}"
             return
 
+    raise KeyError(f"Coordinate '{coord_name}' not found in model")
+
 
 def indent_xml(elem: ET.Element, level: int = 0) -> None:
     """Add whitespace indentation to an ElementTree in-place."""
