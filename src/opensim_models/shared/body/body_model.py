@@ -26,6 +26,7 @@ body/joint elements — they never manipulate segment internals.
 from __future__ import annotations
 
 import logging
+import math
 import xml.etree.ElementTree as ET
 from dataclasses import dataclass
 
@@ -43,6 +44,21 @@ from opensim_models.shared.utils.xml_helpers import (
 )
 
 logger = logging.getLogger(__name__)
+
+_TISSUE_DENSITY_KG_M3: float = 1000.0  # Average human tissue ~1000 kg/m³
+
+
+def _segment_radius_from_mass(mass: float, length: float) -> float:
+    """Compute cylinder radius from mass and length assuming uniform tissue density.
+
+    Uses: volume = mass/density = π·r²·L → r = sqrt(mass/(density·π·L))
+    """
+    if length <= 0:
+        raise ValueError(f"Segment length must be positive, got {length}")
+    if mass <= 0:
+        raise ValueError(f"Segment mass must be positive, got {mass}")
+    volume = mass / _TISSUE_DENSITY_KG_M3
+    return math.sqrt(volume / (math.pi * length))
 
 
 @dataclass(frozen=True)
@@ -62,25 +78,25 @@ class BodyModelSpec:
 
 # Winter (2009) segment mass fractions and length fractions of total height.
 _SEGMENT_TABLE: dict[str, dict[str, float]] = {
-    "pelvis": {"mass_frac": 0.142, "length_frac": 0.100, "radius_frac": 0.085},
-    "torso": {"mass_frac": 0.355, "length_frac": 0.288, "radius_frac": 0.080},
-    "head": {"mass_frac": 0.081, "length_frac": 0.130, "radius_frac": 0.060},
-    "upper_arm": {"mass_frac": 0.028, "length_frac": 0.186, "radius_frac": 0.023},
-    "forearm": {"mass_frac": 0.016, "length_frac": 0.146, "radius_frac": 0.018},
-    "hand": {"mass_frac": 0.006, "length_frac": 0.050, "radius_frac": 0.020},
-    "thigh": {"mass_frac": 0.100, "length_frac": 0.245, "radius_frac": 0.037},
-    "shank": {"mass_frac": 0.047, "length_frac": 0.246, "radius_frac": 0.025},
-    "foot": {"mass_frac": 0.014, "length_frac": 0.040, "radius_frac": 0.025},
+    "pelvis": {"mass_frac": 0.142, "length_frac": 0.100},
+    "torso": {"mass_frac": 0.355, "length_frac": 0.288},
+    "head": {"mass_frac": 0.081, "length_frac": 0.130},
+    "upper_arm": {"mass_frac": 0.028, "length_frac": 0.186},
+    "forearm": {"mass_frac": 0.016, "length_frac": 0.146},
+    "hand": {"mass_frac": 0.006, "length_frac": 0.050},
+    "thigh": {"mass_frac": 0.100, "length_frac": 0.245},
+    "shank": {"mass_frac": 0.047, "length_frac": 0.246},
+    "foot": {"mass_frac": 0.014, "length_frac": 0.040},
 }
 
 
 def _seg(spec: BodyModelSpec, name: str) -> tuple[float, float, float]:
     """Return (mass, length, radius) for a named segment."""
     s = _SEGMENT_TABLE[name]
-    mass = spec.total_mass * s["mass_frac"]
-    length = spec.height * s["length_frac"]
-    radius = spec.height * s["radius_frac"]
-    return mass, length, radius
+    seg_mass = spec.total_mass * s["mass_frac"]
+    seg_length = spec.height * s["length_frac"]
+    radius = _segment_radius_from_mass(seg_mass, seg_length)
+    return seg_mass, seg_length, radius
 
 
 def _add_bilateral_limb(
