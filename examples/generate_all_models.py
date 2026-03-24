@@ -14,25 +14,11 @@ import argparse
 import logging
 from pathlib import Path
 
-from opensim_models.exercises.bench_press.bench_press_model import (
-    build_bench_press_model,
-)
-from opensim_models.exercises.clean_and_jerk.clean_and_jerk_model import (
-    build_clean_and_jerk_model,
-)
-from opensim_models.exercises.deadlift.deadlift_model import build_deadlift_model
-from opensim_models.exercises.snatch.snatch_model import build_snatch_model
-from opensim_models.exercises.squat.squat_model import build_squat_model
+from opensim_models.exercises import EXERCISE_BUILDERS
 
 logger = logging.getLogger(__name__)
 
-_EXERCISES = {
-    "squat": build_squat_model,
-    "bench_press": build_bench_press_model,
-    "deadlift": build_deadlift_model,
-    "snatch": build_snatch_model,
-    "clean_and_jerk": build_clean_and_jerk_model,
-}
+_EXERCISES = EXERCISE_BUILDERS
 
 
 def main() -> None:

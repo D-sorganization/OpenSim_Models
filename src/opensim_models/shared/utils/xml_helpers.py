@@ -37,8 +37,8 @@ def add_body(
     ET.SubElement(body, "mass").text = f"{mass:.6f}"
     ET.SubElement(body, "mass_center").text = vec3_str(*mass_center)
     ET.SubElement(body, "inertia").text = (
-        f"{inertia_xx:.6f} {inertia_xy:.6f} {inertia_xz:.6f} "
-        f"{inertia_yy:.6f} {inertia_yz:.6f} {inertia_zz:.6f}"
+        f"{inertia_xx:.6f} {inertia_yy:.6f} {inertia_zz:.6f} "
+        f"{inertia_xy:.6f} {inertia_xz:.6f} {inertia_yz:.6f}"
     )
     return body
 
@@ -146,6 +146,9 @@ def set_coordinate_default(jointset: ET.Element, coord_name: str, value: float) 
 
     Searches all joints for a Coordinate element whose 'name' attribute matches
     *coord_name* and updates its default_value text.
+
+    Raises:
+        ValueError: If *coord_name* is not found in any joint in the JointSet.
     """
     for coord in jointset.iter("Coordinate"):
         if coord.get("name") == coord_name:
@@ -153,6 +156,7 @@ def set_coordinate_default(jointset: ET.Element, coord_name: str, value: float) 
             if dv is not None:
                 dv.text = f"{value:.6f}"
             return
+    raise ValueError(f"Coordinate {coord_name!r} not found in jointset")
 
 
 def indent_xml(elem: ET.Element, level: int = 0) -> None:

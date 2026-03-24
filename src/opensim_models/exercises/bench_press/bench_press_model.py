@@ -21,14 +21,10 @@ import math
 import xml.etree.ElementTree as ET
 
 from opensim_models.exercises.base import ExerciseConfig, ExerciseModelBuilder
-from opensim_models.shared.barbell import create_barbell_bodies
-from opensim_models.shared.body import create_full_body
-from opensim_models.shared.contracts.postconditions import ensure_valid_xml
 from opensim_models.shared.utils.geometry import rectangular_prism_inertia
 from opensim_models.shared.utils.xml_helpers import (
     add_body,
     add_weld_joint,
-    serialize_model,
     set_coordinate_default,
 )
 
@@ -154,6 +150,14 @@ class BenchPressModelBuilder(ExerciseModelBuilder):
             location_in_child=(BENCH_GRIP_HALF_WIDTH, 0, 0),
         )
 
+    def _skip_ground_joint(self) -> bool:
+        """Bench press supplies its own pelvis parent via WeldJoint to bench."""
+        return True
+
+    def _pre_attach_hook(self, bodyset: ET.Element, jointset: ET.Element) -> None:
+        """Inject the bench body and pelvis-to-bench constraint."""
+        self._add_bench_and_constraint(bodyset, jointset)
+
     def set_initial_pose(self, jointset: ET.Element) -> None:
         """Set supine lockout position.
 
@@ -163,42 +167,6 @@ class BenchPressModelBuilder(ExerciseModelBuilder):
         shoulder_flex = 1.5708  # ~90 degrees (arms vertical)
         for side in ("l", "r"):
             set_coordinate_default(jointset, f"shoulder_{side}_flex", shoulder_flex)
-
-    def build(self) -> str:
-        """Build the complete bench press OpenSim model XML string.
-
-        Extends the base build() to inject the bench body and the
-        pelvis-to-bench weld constraint before serialisation.
-        """
-        root = ET.Element("OpenSimDocument", Version="40500")
-        model = ET.SubElement(root, "Model", name=self.exercise_name)
-
-        gravity = ET.SubElement(model, "gravity")
-        g = self.config.gravity
-        gravity.text = f"{g[0]:.6f} {g[1]:.6f} {g[2]:.6f}"
-
-        ground_el = ET.SubElement(model, "Ground", name="ground")
-        ET.SubElement(ground_el, "mass").text = "0"
-        ET.SubElement(ground_el, "mass_center").text = "0 0 0"
-        ET.SubElement(ground_el, "inertia").text = "0 0 0 0 0 0"
-
-        bodyset = ET.SubElement(model, "BodySet")
-        jointset = ET.SubElement(model, "JointSet")
-
-        body_bodies = create_full_body(bodyset, jointset, self.config.body_spec)
-        barbell_bodies = create_barbell_bodies(
-            bodyset, jointset, self.config.barbell_spec
-        )
-
-        # Add bench body and pelvis constraint (bench-press specific)
-        self._add_bench_and_constraint(bodyset, jointset)
-
-        self.attach_barbell(jointset, body_bodies, barbell_bodies)
-        self.set_initial_pose(jointset)
-
-        xml_str = serialize_model(root)
-        ensure_valid_xml(xml_str)
-        return xml_str
 
 
 def build_bench_press_model(

@@ -7,25 +7,11 @@ import logging
 import sys
 from pathlib import Path
 
-from opensim_models.exercises.bench_press.bench_press_model import (
-    build_bench_press_model,
-)
-from opensim_models.exercises.clean_and_jerk.clean_and_jerk_model import (
-    build_clean_and_jerk_model,
-)
-from opensim_models.exercises.deadlift.deadlift_model import build_deadlift_model
-from opensim_models.exercises.snatch.snatch_model import build_snatch_model
-from opensim_models.exercises.squat.squat_model import build_squat_model
+from opensim_models.exercises import EXERCISE_BUILDERS
 
 logger = logging.getLogger(__name__)
 
-_BUILDERS = {
-    "squat": build_squat_model,
-    "bench_press": build_bench_press_model,
-    "deadlift": build_deadlift_model,
-    "snatch": build_snatch_model,
-    "clean_and_jerk": build_clean_and_jerk_model,
-}
+_BUILDERS = EXERCISE_BUILDERS
 
 
 def _build_parser() -> argparse.ArgumentParser:
@@ -85,7 +71,7 @@ def main(argv: list[str] | None = None) -> None:
     output_path = args.output or Path(f"{args.exercise}.osim")
     output_path.write_text(xml_str, encoding="utf-8")
     logger.info("Wrote %s", output_path)
-    logger.warning("Generated %s (%d bytes)", output_path, len(xml_str))
+    logger.info("Generated %s (%d bytes)", output_path, len(xml_str))
 
 
 if __name__ == "__main__":
