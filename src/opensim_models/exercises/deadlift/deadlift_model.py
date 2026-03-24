@@ -22,6 +22,11 @@ import warnings
 import xml.etree.ElementTree as ET
 
 from opensim_models.exercises.base import ExerciseConfig, ExerciseModelBuilder
+from opensim_models.exercises.constants import (
+    _FLOOR_PULL_HIP_ANGLE,
+    _FLOOR_PULL_KNEE_ANGLE,
+    _FLOOR_PULL_LUMBAR_ANGLE,
+)
 from opensim_models.shared.utils.xml_helpers import (
     add_weld_joint,
     set_coordinate_default,
@@ -30,10 +35,11 @@ from opensim_models.shared.utils.xml_helpers import (
 PLATE_RADIUS = 0.225  # Standard 450mm diameter plate radius
 _DEADLIFT_GRIP_HALF_WIDTH = 0.22  # metres from shaft center to each hand
 
-# Named angle constants for use in feasibility check
-DEADLIFT_INITIAL_HIP_ANGLE: float = 1.3963  # ~80 degrees hip flexion
-DEADLIFT_INITIAL_KNEE_ANGLE: float = -1.0472  # ~60 degrees knee flexion (negative)
-DEADLIFT_INITIAL_LUMBAR_ANGLE: float = 0.5236  # ~30 degrees lumbar flexion
+# Re-export shared constants under the original public names for backwards
+# compatibility and use within this module.
+DEADLIFT_INITIAL_HIP_ANGLE: float = _FLOOR_PULL_HIP_ANGLE
+DEADLIFT_INITIAL_KNEE_ANGLE: float = _FLOOR_PULL_KNEE_ANGLE
+DEADLIFT_INITIAL_LUMBAR_ANGLE: float = _FLOOR_PULL_LUMBAR_ANGLE
 
 
 class DeadliftModelBuilder(ExerciseModelBuilder):
@@ -50,7 +56,11 @@ class DeadliftModelBuilder(ExerciseModelBuilder):
         return "deadlift"
 
     def _check_pose_feasibility(self) -> None:
-        """Warn if the initial pose likely places hands far from barbell height."""
+        """Warn if the initial pose likely places hands far from barbell height.
+
+        Note: variable names use the ``_y`` suffix because OpenSim uses a
+        Y-up coordinate system (gravity acts in the -Y direction).
+        """
         h = self.config.body_spec.height
         # Approx Winter (2009) fractions
         shank = h * 0.246
@@ -59,15 +69,15 @@ class DeadliftModelBuilder(ExerciseModelBuilder):
         upper_arm = h * 0.186
         forearm = h * 0.146
 
-        knee_z = shank * math.cos(abs(DEADLIFT_INITIAL_KNEE_ANGLE))
-        hip_z = knee_z + thigh * math.cos(abs(DEADLIFT_INITIAL_HIP_ANGLE))
-        torso_top_z = hip_z + torso * math.cos(abs(DEADLIFT_INITIAL_LUMBAR_ANGLE))
-        hand_z = torso_top_z - upper_arm - forearm
+        knee_y = shank * math.cos(abs(DEADLIFT_INITIAL_KNEE_ANGLE))
+        hip_y = knee_y + thigh * math.cos(abs(DEADLIFT_INITIAL_HIP_ANGLE))
+        torso_top_y = hip_y + torso * math.cos(abs(DEADLIFT_INITIAL_LUMBAR_ANGLE))
+        hand_y = torso_top_y - upper_arm - forearm
 
-        if abs(hand_z - PLATE_RADIUS) > 0.15:
+        if abs(hand_y - PLATE_RADIUS) > 0.15:
             warnings.warn(
-                f"Deadlift initial pose: estimated hand height {hand_z:.3f} m differs from "
-                f"bar height {PLATE_RADIUS:.3f} m by {abs(hand_z - PLATE_RADIUS):.3f} m. "
+                f"Deadlift initial pose: estimated hand height {hand_y:.3f} m differs from "
+                f"bar height {PLATE_RADIUS:.3f} m by {abs(hand_y - PLATE_RADIUS):.3f} m. "
                 f"Consider adjusting DEADLIFT_INITIAL_* angles.",
                 stacklevel=3,
             )

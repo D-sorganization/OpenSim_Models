@@ -65,6 +65,11 @@ class BarbellSpec:
                 f"shaft_length ({self.shaft_length}) must be < "
                 f"total_length ({self.total_length})"
             )
+        if self.sleeve_inner_radius >= self.sleeve_radius:
+            raise ValueError(
+                f"sleeve_inner_radius ({self.sleeve_inner_radius}) must be < "
+                f"sleeve_radius ({self.sleeve_radius})"
+            )
 
     @property
     def sleeve_length(self) -> float:

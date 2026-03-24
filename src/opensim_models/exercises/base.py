@@ -63,6 +63,24 @@ class ExerciseModelBuilder(ABC):
     def set_initial_pose(self, jointset: ET.Element) -> None:
         """Set default coordinate values for the starting position."""
 
+    def _pre_attach_hook(  # noqa: B027
+        self, bodyset: ET.Element, jointset: ET.Element
+    ) -> None:
+        """Hook called after bodies are built, before barbell is attached.
+
+        Subclasses may override to inject additional bodies or joints
+        (e.g. a bench body and constraint for bench press).
+        The default implementation is a no-op.
+        """
+
+    def _skip_ground_joint(self) -> bool:
+        """Return True if the pelvis–ground FreeJoint should be omitted.
+
+        Override in subclasses that supply their own pelvis parent joint
+        (e.g. bench press, where pelvis is welded to the bench body).
+        """
+        return False
+
     def build(self) -> str:
         """Build the complete OpenSim model XML and return as string.
 
@@ -86,13 +104,21 @@ class ExerciseModelBuilder(ABC):
         bodyset = ET.SubElement(model, "BodySet")
         jointset = ET.SubElement(model, "JointSet")
 
-        # Build body
-        body_bodies = create_full_body(bodyset, jointset, self.config.body_spec)
+        # Build body (skip the ground FreeJoint when subclass requests it)
+        body_bodies = create_full_body(
+            bodyset,
+            jointset,
+            self.config.body_spec,
+            skip_ground_joint=self._skip_ground_joint(),
+        )
 
         # Build barbell
         barbell_bodies = create_barbell_bodies(
             bodyset, jointset, self.config.barbell_spec
         )
+
+        # Subclass hook: inject extra bodies/joints before barbell attachment
+        self._pre_attach_hook(bodyset, jointset)
 
         # Exercise-specific attachment
         self.attach_barbell(jointset, body_bodies, barbell_bodies)

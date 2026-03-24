@@ -26,6 +26,12 @@ from __future__ import annotations
 import xml.etree.ElementTree as ET
 
 from opensim_models.exercises.base import ExerciseConfig, ExerciseModelBuilder
+from opensim_models.exercises.constants import (
+    _FLOOR_PULL_HIP_ANGLE,
+    _FLOOR_PULL_KNEE_ANGLE,
+    _FLOOR_PULL_LUMBAR_ANGLE,
+    _SNATCH_GRIP_HALF_WIDTH,
+)
 from opensim_models.shared.utils.xml_helpers import (
     add_weld_joint,
     set_coordinate_default,
@@ -53,15 +59,13 @@ class SnatchModelBuilder(ExerciseModelBuilder):
         Snatch grip is approximately 0.55-0.60 m from shaft center
         on each side (~1.5x shoulder width).
         """
-        grip_offset = 0.58  # wide snatch grip
-
         add_weld_joint(
             jointset,
             name="barbell_to_left_hand",
             parent_body="hand_l",
             child_body="barbell_shaft",
             location_in_parent=(0, 0, 0),
-            location_in_child=(-grip_offset, 0, 0),
+            location_in_child=(-_SNATCH_GRIP_HALF_WIDTH, 0, 0),
         )
 
         add_weld_joint(
@@ -70,18 +74,17 @@ class SnatchModelBuilder(ExerciseModelBuilder):
             parent_body="hand_r",
             child_body="barbell_shaft",
             location_in_parent=(0, 0, 0),
-            location_in_child=(grip_offset, 0, 0),
+            location_in_child=(_SNATCH_GRIP_HALF_WIDTH, 0, 0),
         )
 
     def set_initial_pose(self, jointset: ET.Element) -> None:
         """Set starting position: bar on floor, wide grip, deep hip hinge."""
-        hip_flex = 1.3963  # ~80 degrees (same as deadlift start)
-        knee_flex = -1.0472  # ~60 degrees
-        lumbar_flex = 0.5236  # ~30 degrees forward lean
         for side in ("l", "r"):
-            set_coordinate_default(jointset, f"hip_{side}_flex", hip_flex)
-            set_coordinate_default(jointset, f"knee_{side}_flex", knee_flex)
-        set_coordinate_default(jointset, "lumbar_flex", lumbar_flex)
+            set_coordinate_default(jointset, f"hip_{side}_flex", _FLOOR_PULL_HIP_ANGLE)
+            set_coordinate_default(
+                jointset, f"knee_{side}_flex", _FLOOR_PULL_KNEE_ANGLE
+            )
+        set_coordinate_default(jointset, "lumbar_flex", _FLOOR_PULL_LUMBAR_ANGLE)
 
 
 def build_snatch_model(
@@ -91,7 +94,7 @@ def build_snatch_model(
 ) -> str:
     """Convenience function to build a snatch model XML string.
 
-    Default: 80 kg person, 120 kg total barbell (competitive 96 kg class).
+    Default: 80 kg person, 100 kg total barbell (20 kg bar + 2 × 40 kg plates).
     """
     from opensim_models.shared.barbell import BarbellSpec
     from opensim_models.shared.body import BodyModelSpec

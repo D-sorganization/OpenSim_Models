@@ -47,6 +47,12 @@ logger = logging.getLogger(__name__)
 
 _TISSUE_DENSITY_KG_M3: float = 1000.0  # Average human tissue ~1000 kg/m³
 
+# Segment names that are themselves bilateral (have _l/_r variants).
+# Used to determine whether a child segment's parent link needs a side suffix.
+_BILATERAL_SEGMENTS: frozenset[str] = frozenset(
+    {"upper_arm", "forearm", "thigh", "shank"}
+)
+
 
 def _segment_radius_from_mass(mass: float, length: float) -> float:
     """Compute cylinder radius from mass and length assuming uniform tissue density.
@@ -130,7 +136,9 @@ def _add_bilateral_limb(
         add_pin_joint(
             jointset,
             name=f"{coord_prefix}_{side}",
-            parent_body=f"{parent_name}_{side}" if "_" in parent_name else parent_name,
+            parent_body=f"{parent_name}_{side}"
+            if parent_name in _BILATERAL_SEGMENTS
+            else parent_name,
             child_body=body_name,
             location_in_parent=(sign * parent_lateral_x, parent_offset_y, 0),
             location_in_child=(0, 0, 0),
@@ -144,8 +152,19 @@ def create_full_body(
     bodyset: ET.Element,
     jointset: ET.Element,
     spec: BodyModelSpec | None = None,
+    *,
+    skip_ground_joint: bool = False,
 ) -> dict[str, ET.Element]:
     """Build the full-body model and append bodies/joints to the given sets.
+
+    Args:
+        bodyset: XML element to append Body elements to.
+        jointset: XML element to append Joint elements to.
+        spec: Anthropometric specification (defaults to 50th-percentile male).
+        skip_ground_joint: When True, the FreeJoint connecting pelvis to ground
+            is omitted. Use this when another mechanism (e.g. a WeldJoint from
+            a bench body) provides the pelvis parent joint, so the body is not
+            over-constrained.
 
     Returns dict of body name -> ET.Element for all created bodies.
     """
@@ -178,13 +197,14 @@ def create_full_body(
     _, foot_len, _ = _seg(spec, "foot")
     pelvis_height = thigh_len + shank_len + foot_len + p_len / 2.0
     logger.debug("Derived pelvis height: %.4f m", pelvis_height)
-    add_free_joint(
-        jointset,
-        name="ground_pelvis",
-        parent_body="ground",
-        child_body="pelvis",
-        location_in_parent=(0, pelvis_height, 0),
-    )
+    if not skip_ground_joint:
+        add_free_joint(
+            jointset,
+            name="ground_pelvis",
+            parent_body="ground",
+            child_body="pelvis",
+            location_in_parent=(0, pelvis_height, 0),
+        )
 
     # --- Torso ---
     t_mass, t_len, t_rad = _seg(spec, "torso")
@@ -207,7 +227,7 @@ def create_full_body(
         location_in_child=(0, 0, 0),
         coord_name="lumbar_flex",
         range_min=-0.5236,
-        range_max=0.7854,
+        range_max=1.0472,  # ~60° — lower end of clinical range (60–80°)
     )
 
     # --- Head ---
@@ -319,8 +339,8 @@ def create_full_body(
         parent_offset_y=-sh_len,
         parent_lateral_x=0,
         coord_prefix="ankle",
-        range_min=-0.7854,
-        range_max=0.7854,
+        range_min=-0.8727,  # ~-50° plantarflexion (physiological max)
+        range_max=0.3491,  # ~+20° dorsiflexion (physiological max)
     )
 
     logger.info("Full-body model complete: %d bodies created", len(bodies))
