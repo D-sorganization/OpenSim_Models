@@ -25,7 +25,7 @@ class TestSquatModelBuilder:
         root = ET.fromstring(xml_str)
         gravity = root.find(".//gravity")
         assert gravity is not None
-        assert "-9.806650" in gravity.text
+        assert "-9.806650" in gravity.text  # type: ignore
 
     def test_barbell_welded_to_torso(self):
         xml_str = SquatModelBuilder().build()
@@ -36,7 +36,7 @@ class TestSquatModelBuilder:
     def test_has_all_body_segments(self):
         xml_str = SquatModelBuilder().build()
         root = ET.fromstring(xml_str)
-        body_names = {b.get("name") for b in root.findall(".//Body")}
+        body_names = {b.get("name") for b in root.findall(".//Body")}  # type: ignore
         assert "pelvis" in body_names
         assert "torso" in body_names
         assert "barbell_shaft" in body_names
@@ -50,8 +50,8 @@ class TestSquatModelBuilder:
         xml_str = SquatModelBuilder(config).build()
         root = ET.fromstring(xml_str)
         # Verify barbell bodies exist with correct mass
-        bodies = {b.get("name"): b for b in root.findall(".//Body")}
-        shaft_mass = float(bodies["barbell_shaft"].find("mass").text)
+        bodies = {b.get("name"): b for b in root.findall(".//Body")}  # type: ignore
+        shaft_mass = float(bodies["barbell_shaft"].find("mass").text)  # type: ignore
         assert shaft_mass > 0
 
 
@@ -59,7 +59,7 @@ class TestBuildSquatModel:
     def test_convenience_function(self):
         xml_str = build_squat_model()
         root = ET.fromstring(xml_str)
-        assert root.find(".//Model").get("name") == "back_squat"
+        assert root.find(".//Model").get("name") == "back_squat"  # type: ignore
 
     def test_custom_parameters(self):
         xml_str = build_squat_model(

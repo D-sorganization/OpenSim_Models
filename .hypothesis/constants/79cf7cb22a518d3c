@@ -1,0 +1,4 @@
+# file: C:\Users\diete\Repositories\OpenSim_Models\src\opensim_models\exercises\snatch\snatch_model.py
+# hypothesis_version: 6.151.9
+
+[1.75, 40.0, 80.0, 'barbell_shaft', 'barbell_to_left_hand', 'hand_l', 'hand_r', 'l', 'lumbar_flex', 'r', 'snatch']

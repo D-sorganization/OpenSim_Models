@@ -43,7 +43,7 @@ class TestAllExercisesBuild:
         xml_str = builder()
         root = ET.fromstring(xml_str)
         model = root.find("Model")
-        assert model.get("name") == name
+        assert model.get("name") == name  # type: ignore
 
     @pytest.mark.parametrize(
         "name,builder", ALL_BUILDERS, ids=[n for n, _ in ALL_BUILDERS]
@@ -53,7 +53,7 @@ class TestAllExercisesBuild:
         root = ET.fromstring(xml_str)
         gravity = root.find(".//gravity")
         assert gravity is not None
-        assert "-9.806650" in gravity.text
+        assert "-9.806650" in gravity.text  # type: ignore
 
     @pytest.mark.parametrize(
         "name,builder", ALL_BUILDERS, ids=[n for n, _ in ALL_BUILDERS]
@@ -61,8 +61,8 @@ class TestAllExercisesBuild:
     def test_has_bodies_and_joints(self, name, builder):
         xml_str = builder()
         root = ET.fromstring(xml_str)
-        assert root.find(".//BodySet") is not None
-        assert root.find(".//JointSet") is not None
+        assert root.find(".//BodySet") is not None  # type: ignore
+        assert root.find(".//JointSet") is not None  # type: ignore
 
     @pytest.mark.parametrize(
         "name,builder", ALL_BUILDERS, ids=[n for n, _ in ALL_BUILDERS]
@@ -81,8 +81,8 @@ class TestAllExercisesBuild:
         xml_str = builder()
         root = ET.fromstring(xml_str)
         for body in root.findall(".//Body"):
-            mass = float(body.find("mass").text)
-            assert mass > 0, f"{body.get('name')} mass={mass}"
+            mass = float(body.find("mass").text)  # type: ignore
+            assert mass > 0, f"{body.get('name')} mass={mass}"  # type: ignore
 
     @pytest.mark.parametrize(
         "name,builder", ALL_BUILDERS, ids=[n for n, _ in ALL_BUILDERS]
@@ -90,7 +90,7 @@ class TestAllExercisesBuild:
     def test_barbell_present(self, name, builder):
         xml_str = builder()
         root = ET.fromstring(xml_str)
-        body_names = {b.get("name") for b in root.findall(".//Body")}
+        body_names = {b.get("name") for b in root.findall(".//Body")}  # type: ignore
         assert "barbell_shaft" in body_names
         assert "barbell_left_sleeve" in body_names
         assert "barbell_right_sleeve" in body_names

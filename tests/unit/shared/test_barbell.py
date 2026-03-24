@@ -11,14 +11,14 @@ class TestBarbellSpec:
     def test_mens_defaults(self):
         spec = BarbellSpec.mens_olympic()
         assert spec.total_length == 2.20
-        assert spec.bar_mass == 20.0
+        assert spec.bar_mass == 20.0  # type: ignore
         assert spec.shaft_diameter == 0.028
         assert spec.plate_mass_per_side == 0.0
 
     def test_womens_defaults(self):
         spec = BarbellSpec.womens_olympic()
         assert spec.total_length == 2.01
-        assert spec.bar_mass == 15.0
+        assert spec.bar_mass == 15.0  # type: ignore
         assert spec.shaft_diameter == 0.025
 
     def test_sleeve_length(self):
@@ -28,7 +28,7 @@ class TestBarbellSpec:
 
     def test_total_mass_with_plates(self):
         spec = BarbellSpec.mens_olympic(plate_mass_per_side=60.0)
-        assert spec.total_mass == pytest.approx(140.0)
+        assert spec.total_mass == pytest.approx(140.0)  # type: ignore
 
     def test_shaft_mass_proportional(self):
         spec = BarbellSpec.mens_olympic()
@@ -49,7 +49,7 @@ class TestBarbellSpec:
     def test_frozen(self):
         spec = BarbellSpec.mens_olympic()
         with pytest.raises(AttributeError):
-            spec.bar_mass = 25.0
+            spec.bar_mass = 25.0  # type: ignore
 
 
 class TestCreateBarbellBodies:
@@ -85,5 +85,5 @@ class TestCreateBarbellBodies:
         bodyset, jointset = sets
         spec = BarbellSpec.mens_olympic(plate_mass_per_side=50.0)
         create_barbell_bodies(bodyset, jointset, spec)
-        total = sum(float(b.find("mass").text) for b in bodyset.findall("Body"))
+        total = sum(float(b.find("mass").text) for b in bodyset.findall("Body"))  # type: ignore
         assert total == pytest.approx(spec.total_mass, rel=1e-4)

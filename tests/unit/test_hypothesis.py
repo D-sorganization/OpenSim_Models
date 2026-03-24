@@ -132,7 +132,7 @@ class TestBodyModelSpecProperties:
     @settings(max_examples=30)
     def test_valid_specs_accepted(self, mass, height):
         spec = BodyModelSpec(total_mass=mass, height=height)
-        assert spec.total_mass == mass
+        assert spec.total_mass == mass  # type: ignore
         assert spec.height == height
 
 

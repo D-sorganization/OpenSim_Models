@@ -39,9 +39,9 @@ class TestAddBody:
             inertia_yy=2.0,
             inertia_zz=3.0,
         )
-        assert body.get("name") == "test_body"
-        assert body.find("mass").text == "10.000000"
-        assert "0.500000" in body.find("mass_center").text
+        assert body.get("name") == "test_body"  # type: ignore
+        assert body.find("mass").text == "10.000000"  # type: ignore
+        assert "0.500000" in body.find("mass_center").text  # type: ignore
 
     def test_body_is_child_of_bodyset(self):
         bodyset = ET.Element("BodySet")
@@ -70,7 +70,7 @@ class TestAddPinJoint:
             location_in_child=(0, 0, 0),
             coord_name="test_flex",
         )
-        assert joint.get("name") == "test_joint"
+        assert joint.get("name") == "test_joint"  # type: ignore
         assert joint.tag == "PinJoint"
 
     def test_has_coordinate(self):
@@ -88,7 +88,7 @@ class TestAddPinJoint:
         )
         coord = joint.find(".//Coordinate")
         assert coord is not None
-        assert coord.get("name") == "flex"
+        assert coord.get("name") == "flex"  # type: ignore
 
 
 class TestAddFreeJoint:
