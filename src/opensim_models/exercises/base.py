@@ -31,6 +31,7 @@ class ExerciseConfig:
     body_spec: BodyModelSpec = field(default_factory=BodyModelSpec)
     barbell_spec: BarbellSpec = field(default_factory=BarbellSpec.mens_olympic)
     gravity: tuple[float, float, float] = (0.0, -9.80665, 0.0)
+    grip_offset: float = 0.40  # meters from shaft center to hand (half-width)
 
 
 class ExerciseModelBuilder(ABC):

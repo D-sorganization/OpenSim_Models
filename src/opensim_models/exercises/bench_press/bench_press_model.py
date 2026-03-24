@@ -29,7 +29,6 @@ from opensim_models.shared.utils.xml_helpers import (
 )
 
 BENCH_HEIGHT = 0.43  # IPF standard bench height (meters)
-BENCH_GRIP_HALF_WIDTH = 0.20  # meters from shaft center to each hand
 
 # Bench box geometry (approximate dimensions for a standard IPF bench)
 _BENCH_WIDTH = 0.30  # metres (X)
@@ -138,7 +137,7 @@ class BenchPressModelBuilder(ExerciseModelBuilder):
             parent_body="hand_l",
             child_body="barbell_shaft",
             location_in_parent=(0, 0, 0),
-            location_in_child=(-BENCH_GRIP_HALF_WIDTH, 0, 0),
+            location_in_child=(-self.config.grip_offset, 0, 0),
         )
 
         add_weld_joint(
@@ -147,7 +146,7 @@ class BenchPressModelBuilder(ExerciseModelBuilder):
             parent_body="hand_r",
             child_body="barbell_shaft",
             location_in_parent=(0, 0, 0),
-            location_in_child=(BENCH_GRIP_HALF_WIDTH, 0, 0),
+            location_in_child=(self.config.grip_offset, 0, 0),
         )
 
     def _skip_ground_joint(self) -> bool:
