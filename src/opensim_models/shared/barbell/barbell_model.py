@@ -48,7 +48,9 @@ class BarbellSpec:
     sleeve_diameter: float = 0.050
     bar_mass: float = 20.0
     plate_mass_per_side: float = 0.0
-    sleeve_inner_radius: float = 0.014  # Inner bore radius: fits over 28 mm shaft (metres)
+    sleeve_inner_radius: float = (
+        0.014  # Inner bore radius: fits over 28 mm shaft (metres)
+    )
 
     def __post_init__(self) -> None:
         require_positive(self.total_length, "total_length")

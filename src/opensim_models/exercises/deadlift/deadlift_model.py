@@ -31,7 +31,7 @@ PLATE_RADIUS = 0.225  # Standard 450mm diameter plate radius
 _DEADLIFT_GRIP_HALF_WIDTH = 0.22  # metres from shaft center to each hand
 
 # Named angle constants for use in feasibility check
-DEADLIFT_INITIAL_HIP_ANGLE: float = 1.3963    # ~80 degrees hip flexion
+DEADLIFT_INITIAL_HIP_ANGLE: float = 1.3963  # ~80 degrees hip flexion
 DEADLIFT_INITIAL_KNEE_ANGLE: float = -1.0472  # ~60 degrees knee flexion (negative)
 DEADLIFT_INITIAL_LUMBAR_ANGLE: float = 0.5236  # ~30 degrees lumbar flexion
 
@@ -109,8 +109,12 @@ class DeadliftModelBuilder(ExerciseModelBuilder):
         from bar height.
         """
         for side in ("l", "r"):
-            set_coordinate_default(jointset, f"hip_{side}_flex", DEADLIFT_INITIAL_HIP_ANGLE)
-            set_coordinate_default(jointset, f"knee_{side}_flex", DEADLIFT_INITIAL_KNEE_ANGLE)
+            set_coordinate_default(
+                jointset, f"hip_{side}_flex", DEADLIFT_INITIAL_HIP_ANGLE
+            )
+            set_coordinate_default(
+                jointset, f"knee_{side}_flex", DEADLIFT_INITIAL_KNEE_ANGLE
+            )
         set_coordinate_default(jointset, "lumbar_flex", DEADLIFT_INITIAL_LUMBAR_ANGLE)
 
         self._check_pose_feasibility()

@@ -36,12 +36,12 @@ BENCH_HEIGHT = 0.43  # IPF standard bench height (meters)
 BENCH_GRIP_HALF_WIDTH = 0.20  # meters from shaft center to each hand
 
 # Bench box geometry (approximate dimensions for a standard IPF bench)
-_BENCH_WIDTH = 0.30   # metres (X)
+_BENCH_WIDTH = 0.30  # metres (X)
 _BENCH_HEIGHT_DIM = 0.05  # metres (Y) — thickness of the padded top
-_BENCH_DEPTH = 1.20   # metres (Z) — length of bench
+_BENCH_DEPTH = 1.20  # metres (Z) — length of bench
 
 # Inertia for bench (treated as massless rigid constraint body)
-_BENCH_MASS = 1e-4   # near-zero mass (kg) — bench mass is borne by ground
+_BENCH_MASS = 1e-4  # near-zero mass (kg) — bench mass is borne by ground
 
 
 class BenchPressModelBuilder(ExerciseModelBuilder):
@@ -186,7 +186,9 @@ class BenchPressModelBuilder(ExerciseModelBuilder):
         jointset = ET.SubElement(model, "JointSet")
 
         body_bodies = create_full_body(bodyset, jointset, self.config.body_spec)
-        barbell_bodies = create_barbell_bodies(bodyset, jointset, self.config.barbell_spec)
+        barbell_bodies = create_barbell_bodies(
+            bodyset, jointset, self.config.barbell_spec
+        )
 
         # Add bench body and pelvis constraint (bench-press specific)
         self._add_bench_and_constraint(bodyset, jointset)

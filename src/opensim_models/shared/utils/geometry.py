@@ -85,7 +85,7 @@ def hollow_cylinder_inertia(
             f"inner_radius ({inner_radius:.4f}) must be less than outer_radius ({outer_radius:.4f})"
         )
     r_sq_sum = inner_radius**2 + outer_radius**2
-    iyy = 0.5 * mass * r_sq_sum                                      # axial
+    iyy = 0.5 * mass * r_sq_sum  # axial
     ixx = izz = (1.0 / 12.0) * mass * (3.0 * r_sq_sum + length**2)  # transverse
 
     ensure_positive_definite_inertia(ixx, iyy, izz, "hollow_cylinder")
