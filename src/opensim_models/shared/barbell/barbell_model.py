@@ -23,7 +23,10 @@ from opensim_models.shared.contracts.preconditions import (
     require_non_negative,
     require_positive,
 )
-from opensim_models.shared.utils.geometry import cylinder_inertia, hollow_cylinder_inertia
+from opensim_models.shared.utils.geometry import (
+    cylinder_inertia,
+    hollow_cylinder_inertia,
+)
 from opensim_models.shared.utils.xml_helpers import (
     add_body,
     add_weld_joint,

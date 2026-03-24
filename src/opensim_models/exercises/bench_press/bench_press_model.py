@@ -17,12 +17,18 @@ pelvis to a supine position at bench height (0.43 m, standard IPF).
 
 from __future__ import annotations
 
+import math
 import xml.etree.ElementTree as ET
 
 from opensim_models.exercises.base import ExerciseConfig, ExerciseModelBuilder
+from opensim_models.shared.barbell import create_barbell_bodies
+from opensim_models.shared.body import create_full_body
+from opensim_models.shared.contracts.postconditions import ensure_valid_xml
+from opensim_models.shared.utils.geometry import rectangular_prism_inertia
 from opensim_models.shared.utils.xml_helpers import (
     add_body,
     add_weld_joint,
+    serialize_model,
     set_coordinate_default,
 )
 
@@ -66,8 +72,6 @@ class BenchPressModelBuilder(ExerciseModelBuilder):
         lying on back), so orientation is rotated 90° about X to go from
         the default standing Y-up to the supine Z-up posture.
         """
-        from opensim_models.shared.utils.geometry import rectangular_prism_inertia
-
         bench_inertia = rectangular_prism_inertia(
             _BENCH_MASS, _BENCH_WIDTH, _BENCH_HEIGHT_DIM, _BENCH_DEPTH
         )
@@ -95,8 +99,6 @@ class BenchPressModelBuilder(ExerciseModelBuilder):
         # Weld pelvis to bench in supine orientation.
         # Supine: lifter lies face-up; pelvis Y-axis (long axis when standing)
         # becomes the Z-axis. Rotate 90° about X (pi/2) to achieve this.
-        import math
-
         add_weld_joint(
             jointset,
             name="pelvis_to_bench",
@@ -106,19 +108,22 @@ class BenchPressModelBuilder(ExerciseModelBuilder):
             location_in_child=(0, 0, 0),
         )
         # Set supine orientation on the pelvis_to_bench child frame
-        # by patching the child frame orientation after creation
+        # by patching the child frame orientation after creation.
+        # Rotate 90° about X-axis: (pi/2, 0, 0) places pelvis in supine (face-up) pose.
+        supine_orient = f"{math.pi / 2:.6f} 0.000000 0.000000"
         bench_pelvis_joint = None
         for j in jointset.findall("WeldJoint"):
             if j.get("name") == "pelvis_to_bench":
                 bench_pelvis_joint = j
                 break
         if bench_pelvis_joint is not None:
-            child_frame = bench_pelvis_joint.find("PhysicalOffsetFrame[@name='pelvis_to_bench_child']")
+            child_frame = bench_pelvis_joint.find(
+                "PhysicalOffsetFrame[@name='pelvis_to_bench_child']"
+            )
             if child_frame is not None:
                 orient_el = child_frame.find("orientation")
                 if orient_el is not None:
-                    # Rotate 90° about X-axis: (pi/2, 0, 0) in body-fixed XYZ
-                    orient_el.text = f"{math.pi / 2:.6f} 0.000000 0.000000"
+                    orient_el.text = supine_orient
 
     def attach_barbell(
         self,
@@ -165,27 +170,20 @@ class BenchPressModelBuilder(ExerciseModelBuilder):
         Extends the base build() to inject the bench body and the
         pelvis-to-bench weld constraint before serialisation.
         """
-        import xml.etree.ElementTree as _ET
+        root = ET.Element("OpenSimDocument", Version="40500")
+        model = ET.SubElement(root, "Model", name=self.exercise_name)
 
-        from opensim_models.shared.barbell import create_barbell_bodies
-        from opensim_models.shared.body import create_full_body
-        from opensim_models.shared.contracts.postconditions import ensure_valid_xml
-        from opensim_models.shared.utils.xml_helpers import serialize_model
-
-        root = _ET.Element("OpenSimDocument", Version="40500")
-        model = _ET.SubElement(root, "Model", name=self.exercise_name)
-
-        gravity = _ET.SubElement(model, "gravity")
+        gravity = ET.SubElement(model, "gravity")
         g = self.config.gravity
         gravity.text = f"{g[0]:.6f} {g[1]:.6f} {g[2]:.6f}"
 
-        ground_el = _ET.SubElement(model, "Ground", name="ground")
-        _ET.SubElement(ground_el, "mass").text = "0"
-        _ET.SubElement(ground_el, "mass_center").text = "0 0 0"
-        _ET.SubElement(ground_el, "inertia").text = "0 0 0 0 0 0"
+        ground_el = ET.SubElement(model, "Ground", name="ground")
+        ET.SubElement(ground_el, "mass").text = "0"
+        ET.SubElement(ground_el, "mass_center").text = "0 0 0"
+        ET.SubElement(ground_el, "inertia").text = "0 0 0 0 0 0"
 
-        bodyset = _ET.SubElement(model, "BodySet")
-        jointset = _ET.SubElement(model, "JointSet")
+        bodyset = ET.SubElement(model, "BodySet")
+        jointset = ET.SubElement(model, "JointSet")
 
         body_bodies = create_full_body(bodyset, jointset, self.config.body_spec)
         barbell_bodies = create_barbell_bodies(bodyset, jointset, self.config.barbell_spec)
