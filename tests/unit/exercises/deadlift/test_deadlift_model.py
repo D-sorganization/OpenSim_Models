@@ -32,7 +32,7 @@ class TestDeadliftModelBuilder:
     def test_has_lower_body_segments(self):
         xml_str = DeadliftModelBuilder().build()
         root = ET.fromstring(xml_str)
-        body_names = {b.get("name") for b in root.findall(".//Body")}
+        body_names = {b.get("name") for b in root.findall(".//Body")}  # type: ignore
         assert "thigh_l" in body_names
         assert "shank_l" in body_names
         assert "foot_l" in body_names
@@ -42,7 +42,7 @@ class TestBuildDeadliftModel:
     def test_convenience_function(self):
         xml_str = build_deadlift_model()
         root = ET.fromstring(xml_str)
-        assert root.find(".//Model").get("name") == "deadlift"
+        assert root.find(".//Model").get("name") == "deadlift"  # type: ignore
 
     def test_default_plate_mass(self):
         xml_str = build_deadlift_model(plate_mass_per_side=80.0)

@@ -10,7 +10,7 @@ from opensim_models.shared.body import BodyModelSpec, create_full_body
 class TestBodyModelSpec:
     def test_defaults(self):
         spec = BodyModelSpec()
-        assert spec.total_mass == 80.0
+        assert spec.total_mass == 80.0  # type: ignore
         assert spec.height == 1.75
 
     def test_rejects_zero_mass(self):
@@ -24,7 +24,7 @@ class TestBodyModelSpec:
     def test_frozen(self):
         spec = BodyModelSpec()
         with pytest.raises(AttributeError):
-            spec.total_mass = 100.0
+            spec.total_mass = 100.0  # type: ignore
 
 
 class TestCreateFullBody:
@@ -49,14 +49,14 @@ class TestCreateFullBody:
 
     def test_creates_bilateral_arms(self, model_elements):
         bodyset, _, _ = model_elements
-        names = {b.get("name") for b in bodyset.findall("Body")}
+        names = {b.get("name") for b in bodyset.findall("Body")}  # type: ignore
         for seg in ["upper_arm", "forearm", "hand"]:
             assert f"{seg}_l" in names
             assert f"{seg}_r" in names
 
     def test_creates_bilateral_legs(self, model_elements):
         bodyset, _, _ = model_elements
-        names = {b.get("name") for b in bodyset.findall("Body")}
+        names = {b.get("name") for b in bodyset.findall("Body")}  # type: ignore
         for seg in ["thigh", "shank", "foot"]:
             assert f"{seg}_l" in names
             assert f"{seg}_r" in names
@@ -70,14 +70,14 @@ class TestCreateFullBody:
     def test_has_ground_pelvis_free_joint(self, model_elements):
         _, jointset, _ = model_elements
         free_joints = jointset.findall("FreeJoint")
-        names = [j.get("name") for j in free_joints]
+        names = [j.get("name") for j in free_joints]  # type: ignore
         assert "ground_pelvis" in names
 
     def test_all_masses_positive(self, model_elements):
         bodyset, _, _ = model_elements
         for body in bodyset.findall("Body"):
-            mass = float(body.find("mass").text)
-            assert mass > 0, f"{body.get('name')} has non-positive mass {mass}"
+            mass = float(body.find("mass").text)  # type: ignore
+            assert mass > 0, f"{body.get('name')} has non-positive mass {mass}"  # type: ignore
 
     def test_custom_spec(self):
         bodyset = ET.Element("BodySet")
@@ -85,5 +85,5 @@ class TestCreateFullBody:
         spec = BodyModelSpec(total_mass=100.0, height=1.90)
         bodies = create_full_body(bodyset, jointset, spec)
         # Pelvis mass should scale with total mass
-        pelvis_mass = float(bodies["pelvis"].find("mass").text)
+        pelvis_mass = float(bodies["pelvis"].find("mass").text)  # type: ignore
         assert pelvis_mass == pytest.approx(100.0 * 0.142)

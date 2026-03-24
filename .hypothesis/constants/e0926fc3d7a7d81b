@@ -1,0 +1,4 @@
+# file: C:\Users\diete\Repositories\OpenSim_Models\src\opensim_models\exercises\__init__.py
+# hypothesis_version: 6.151.9
+
+['EXERCISE_BUILDERS', 'bench_press', 'build_deadlift_model', 'build_snatch_model', 'build_squat_model', 'clean_and_jerk', 'deadlift', 'snatch', 'squat']

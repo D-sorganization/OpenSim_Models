@@ -32,7 +32,7 @@ class TestSnatchModelBuilder:
     def test_has_full_body_for_overhead_squat(self):
         xml_str = SnatchModelBuilder().build()
         root = ET.fromstring(xml_str)
-        body_names = {b.get("name") for b in root.findall(".//Body")}
+        body_names = {b.get("name") for b in root.findall(".//Body")}  # type: ignore
         # Snatch requires full body — upper and lower
         assert "upper_arm_l" in body_names
         assert "thigh_l" in body_names
@@ -43,4 +43,4 @@ class TestBuildSnatchModel:
     def test_convenience_function(self):
         xml_str = build_snatch_model()
         root = ET.fromstring(xml_str)
-        assert root.find(".//Model").get("name") == "snatch"
+        assert root.find(".//Model").get("name") == "snatch"  # type: ignore

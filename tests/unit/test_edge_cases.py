@@ -163,11 +163,11 @@ class TestBarbellSpecEdgeCases:
 
     def test_zero_plate_mass_ok(self):
         spec = BarbellSpec(plate_mass_per_side=0.0)
-        assert spec.total_mass == spec.bar_mass
+        assert spec.total_mass == spec.bar_mass  # type: ignore
 
     def test_womens_bar_dimensions(self):
         spec = BarbellSpec.womens_olympic()
-        assert spec.bar_mass == 15.0
+        assert spec.bar_mass == 15.0  # type: ignore
         assert spec.total_length == 2.01
 
 
@@ -183,7 +183,7 @@ class TestBodyModelSpecEdgeCases:
     def test_extreme_anthropometrics(self):
         """Very tall/heavy person should still produce valid model."""
         spec = BodyModelSpec(total_mass=200.0, height=2.20)
-        assert spec.total_mass == 200.0
+        assert spec.total_mass == 200.0  # type: ignore
 
     def test_small_person(self):
         """Small person (child) should still produce valid model."""
@@ -216,7 +216,7 @@ class TestModelBuildEdgeCases:
         xml_str = build_bench_press_model()
         root = ET.fromstring(xml_str)
         jointset = root.find(".//JointSet")
-        joint_names = [j.get("name", "") for j in jointset]
+        joint_names = [j.get("name", "") for j in jointset]  # type: ignore
         assert "barbell_to_left_hand" in joint_names
         assert "barbell_to_right_hand" in joint_names
 
@@ -235,4 +235,4 @@ class TestModelBuildEdgeCases:
         builder = BenchPressModelBuilder(config)
         xml_str = builder.build()
         root = ET.fromstring(xml_str)
-        assert root.find(".//Model").get("name") == "bench_press"
+        assert root.find(".//Model").get("name") == "bench_press"  # type: ignore

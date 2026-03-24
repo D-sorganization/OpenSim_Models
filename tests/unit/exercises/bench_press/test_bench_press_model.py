@@ -30,7 +30,7 @@ class TestBenchPressModelBuilder:
     def test_has_upper_body_segments(self):
         xml_str = BenchPressModelBuilder().build()
         root = ET.fromstring(xml_str)
-        body_names = {b.get("name") for b in root.findall(".//Body")}
+        body_names = {b.get("name") for b in root.findall(".//Body")}  # type: ignore
         assert "upper_arm_l" in body_names
         assert "upper_arm_r" in body_names
         assert "forearm_l" in body_names
@@ -44,4 +44,4 @@ class TestBuildBenchPressModel:
     def test_convenience_function(self):
         xml_str = build_bench_press_model()
         root = ET.fromstring(xml_str)
-        assert root.find(".//Model").get("name") == "bench_press"
+        assert root.find(".//Model").get("name") == "bench_press"  # type: ignore

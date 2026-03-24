@@ -152,7 +152,9 @@ def create_barbell_bodies(
             spec.plate_mass_per_side,
             inner_radius=spec.sleeve_radius,
             outer_radius=0.225,
-            length=max(0.01, spec.plate_mass_per_side * 0.002), # approximate plate thickness
+            length=max(
+                0.01, spec.plate_mass_per_side * 0.002
+            ),  # approximate plate thickness
         )
         sleeve_inertia = (
             sleeve_inertia[0] + plate_inertia[0],

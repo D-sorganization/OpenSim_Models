@@ -26,7 +26,7 @@ class TestCleanAndJerkModelBuilder:
     def test_has_all_segments_for_full_motion(self):
         xml_str = CleanAndJerkModelBuilder().build()
         root = ET.fromstring(xml_str)
-        body_names = {b.get("name") for b in root.findall(".//Body")}
+        body_names = {b.get("name") for b in root.findall(".//Body")}  # type: ignore
         # Clean and jerk needs everything
         for seg in ["pelvis", "torso", "head"]:
             assert seg in body_names
@@ -46,7 +46,7 @@ class TestBuildCleanAndJerkModel:
     def test_convenience_function(self):
         xml_str = build_clean_and_jerk_model()
         root = ET.fromstring(xml_str)
-        assert root.find(".//Model").get("name") == "clean_and_jerk"
+        assert root.find(".//Model").get("name") == "clean_and_jerk"  # type: ignore
 
     def test_custom_mass(self):
         xml_str = build_clean_and_jerk_model(body_mass=90.0, plate_mass_per_side=60.0)
