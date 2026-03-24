@@ -7,6 +7,7 @@ import pytest
 
 from opensim_models.shared.utils.geometry import (
     cylinder_inertia,
+    hollow_cylinder_inertia,
     parallel_axis_shift,
     rectangular_prism_inertia,
     rotation_matrix_x,
@@ -36,6 +37,42 @@ class TestCylinderInertia:
         """Ixx should equal Izz for a cylinder aligned along Y."""
         ixx, _, izz = cylinder_inertia(5.0, 0.05, 2.0)
         assert ixx == pytest.approx(izz)
+
+
+class TestHollowCylinderInertia:
+    def test_known_values(self):
+        """Olympic barbell sleeve: 1 kg, inner=0.025 m, outer=0.029 m, L=0.445 m."""
+        ixx, iyy, izz = hollow_cylinder_inertia(1.0, 0.025, 0.029, 0.445)
+        r_sq_sum = 0.025**2 + 0.029**2
+        assert iyy == pytest.approx(0.5 * 1.0 * r_sq_sum)
+        assert ixx == pytest.approx((1.0 / 12.0) * (3.0 * r_sq_sum + 0.445**2))
+        assert izz == pytest.approx(ixx)
+
+    def test_symmetry_ixx_equals_izz(self):
+        ixx, _, izz = hollow_cylinder_inertia(2.0, 0.01, 0.05, 0.30)
+        assert ixx == pytest.approx(izz)
+
+    def test_greater_than_solid_cylinder_axial(self):
+        """Hollow cylinder has higher axial inertia than solid of same mass and outer radius."""
+        ixx_h, iyy_h, _ = hollow_cylinder_inertia(1.0, 0.01, 0.05, 0.30)
+        ixx_s, iyy_s, _ = cylinder_inertia(1.0, 0.05, 0.30)
+        assert iyy_h > iyy_s
+
+    def test_rejects_zero_mass(self):
+        with pytest.raises(ValueError, match="must be positive"):
+            hollow_cylinder_inertia(0.0, 0.025, 0.029, 0.445)
+
+    def test_rejects_inner_greater_than_outer(self):
+        with pytest.raises(ValueError, match="inner_radius"):
+            hollow_cylinder_inertia(1.0, 0.05, 0.03, 0.445)
+
+    def test_rejects_inner_equal_outer(self):
+        with pytest.raises(ValueError, match="inner_radius"):
+            hollow_cylinder_inertia(1.0, 0.025, 0.025, 0.445)
+
+    def test_rejects_negative_length(self):
+        with pytest.raises(ValueError, match="must be positive"):
+            hollow_cylinder_inertia(1.0, 0.025, 0.029, -0.1)
 
 
 class TestRectangularPrismInertia:

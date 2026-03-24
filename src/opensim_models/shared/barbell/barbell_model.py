@@ -23,7 +23,7 @@ from opensim_models.shared.contracts.preconditions import (
     require_non_negative,
     require_positive,
 )
-from opensim_models.shared.utils.geometry import cylinder_inertia
+from opensim_models.shared.utils.geometry import cylinder_inertia, hollow_cylinder_inertia
 from opensim_models.shared.utils.xml_helpers import (
     add_body,
     add_weld_joint,
@@ -45,6 +45,7 @@ class BarbellSpec:
     sleeve_diameter: float = 0.050
     bar_mass: float = 20.0
     plate_mass_per_side: float = 0.0
+    sleeve_inner_radius: float = 0.014  # Inner bore radius: fits over 28 mm shaft (metres)
 
     def __post_init__(self) -> None:
         require_positive(self.total_length, "total_length")
@@ -53,6 +54,7 @@ class BarbellSpec:
         require_positive(self.sleeve_diameter, "sleeve_diameter")
         require_positive(self.bar_mass, "bar_mass")
         require_non_negative(self.plate_mass_per_side, "plate_mass_per_side")
+        require_positive(self.sleeve_inner_radius, "sleeve_inner_radius")
         if self.shaft_length >= self.total_length:
             raise ValueError(
                 f"shaft_length ({self.shaft_length}) must be < "
@@ -127,8 +129,11 @@ def create_barbell_bodies(
     )
 
     sleeve_total_mass = spec.sleeve_mass + spec.plate_mass_per_side
-    sleeve_inertia = cylinder_inertia(
-        sleeve_total_mass, spec.sleeve_radius, spec.sleeve_length
+    sleeve_inertia = hollow_cylinder_inertia(
+        sleeve_total_mass,
+        inner_radius=spec.sleeve_inner_radius,
+        outer_radius=spec.sleeve_radius,
+        length=spec.sleeve_length,
     )
 
     shaft_name = f"{prefix}_shaft"

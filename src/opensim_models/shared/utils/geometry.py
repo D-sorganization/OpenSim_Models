@@ -60,6 +60,38 @@ def rectangular_prism_inertia(
     return (ixx, iyy, izz)
 
 
+def hollow_cylinder_inertia(
+    mass: float,
+    inner_radius: float,
+    outer_radius: float,
+    length: float,
+) -> tuple[float, float, float]:
+    """Inertia tensor for a hollow cylinder with axis along Y.
+
+    Returns (ixx, iyy, izz) where iyy is axial moment, ixx=izz are transverse.
+
+    Args:
+        mass: Total mass in kg
+        inner_radius: Inner bore radius in metres (Olympic standard: ~0.025 m)
+        outer_radius: Outer sleeve radius in metres (Olympic standard: ~0.029 m)
+        length: Sleeve length in metres
+    """
+    require_positive(mass, "mass")
+    require_positive(inner_radius, "inner_radius")
+    require_positive(outer_radius, "outer_radius")
+    require_positive(length, "length")
+    if inner_radius >= outer_radius:
+        raise ValueError(
+            f"inner_radius ({inner_radius:.4f}) must be less than outer_radius ({outer_radius:.4f})"
+        )
+    r_sq_sum = inner_radius**2 + outer_radius**2
+    iyy = 0.5 * mass * r_sq_sum                                      # axial
+    ixx = izz = (1.0 / 12.0) * mass * (3.0 * r_sq_sum + length**2)  # transverse
+
+    ensure_positive_definite_inertia(ixx, iyy, izz, "hollow_cylinder")
+    return ixx, iyy, izz
+
+
 def sphere_inertia(mass: float, radius: float) -> tuple[float, float, float]:
     """Compute principal inertias for a solid sphere (uniform in all axes)."""
     require_positive(mass, "mass")
