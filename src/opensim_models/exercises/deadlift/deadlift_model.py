@@ -33,7 +33,6 @@ from opensim_models.shared.utils.xml_helpers import (
 )
 
 PLATE_RADIUS = 0.225  # Standard 450mm diameter plate radius
-_DEADLIFT_GRIP_HALF_WIDTH = 0.22  # metres from shaft center to each hand
 
 # Re-export shared constants under the original public names for backwards
 # compatibility and use within this module.
@@ -98,7 +97,7 @@ class DeadliftModelBuilder(ExerciseModelBuilder):
             parent_body="hand_l",
             child_body="barbell_shaft",
             location_in_parent=(0, 0, 0),
-            location_in_child=(-_DEADLIFT_GRIP_HALF_WIDTH, 0, 0),
+            location_in_child=(-self.config.grip_offset, 0, 0),
         )
 
         add_weld_joint(
@@ -107,7 +106,7 @@ class DeadliftModelBuilder(ExerciseModelBuilder):
             parent_body="hand_r",
             child_body="barbell_shaft",
             location_in_parent=(0, 0, 0),
-            location_in_child=(_DEADLIFT_GRIP_HALF_WIDTH, 0, 0),
+            location_in_child=(self.config.grip_offset, 0, 0),
         )
 
     def set_initial_pose(self, jointset: ET.Element) -> None:
