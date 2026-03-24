@@ -138,13 +138,29 @@ def create_barbell_bodies(
         spec.shaft_mass, spec.shaft_radius, spec.shaft_length
     )
 
-    sleeve_total_mass = spec.sleeve_mass + spec.plate_mass_per_side
+    # Compute inertia for bare sleeve
     sleeve_inertia = hollow_cylinder_inertia(
-        sleeve_total_mass,
+        spec.sleeve_mass,
         inner_radius=spec.sleeve_inner_radius,
         outer_radius=spec.sleeve_radius,
         length=spec.sleeve_length,
     )
+
+    if spec.plate_mass_per_side > 0:
+        # Standard plate radius is 0.225m (450mm diameter)
+        plate_inertia = hollow_cylinder_inertia(
+            spec.plate_mass_per_side,
+            inner_radius=spec.sleeve_radius,
+            outer_radius=0.225,
+            length=max(0.01, spec.plate_mass_per_side * 0.002), # approximate plate thickness
+        )
+        sleeve_inertia = (
+            sleeve_inertia[0] + plate_inertia[0],
+            sleeve_inertia[1] + plate_inertia[1],
+            sleeve_inertia[2] + plate_inertia[2],
+        )
+
+    sleeve_total_mass = spec.sleeve_mass + spec.plate_mass_per_side
 
     shaft_name = f"{prefix}_shaft"
     left_name = f"{prefix}_left_sleeve"
