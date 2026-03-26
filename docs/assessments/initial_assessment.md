@@ -9,9 +9,9 @@
 ## Repository Overview
 
 **Codebase Size:**
-- Source: ~1848 lines across 29 Python files
-- Tests: ~1397 lines across 26 test files
-- Test Ratio: 75%
+- Source: ~2172 lines across 31 Python files
+- Tests: ~1434 lines across 26 test files
+- Test Ratio: 66%
 
 ---
 
@@ -24,7 +24,7 @@
 - `README.md` present: True
 
 ### C - Testing: B
-- Test coverage ratio: 75%
+- Test coverage ratio: 66%
 
 ### D - Security: A
 - Checked via AST, no obvious hardcoded keys.
