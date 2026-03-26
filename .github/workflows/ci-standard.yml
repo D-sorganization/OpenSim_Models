@@ -64,6 +64,7 @@ jobs:
       - name: Security Audit
         run: |
           pip install pip-audit
+          pip install --upgrade pygments
           pip-audit --skip-editable
 
       - name: Bandit Security Scan
