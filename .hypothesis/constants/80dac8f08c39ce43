@@ -1,0 +1,4 @@
+# file: C:\Users\diete\Repositories\OpenSim_Models\src\opensim_models\shared\utils\geometry.py
+# hypothesis_version: 6.151.9
+
+[0.5, 1.0, 2.0, 3.0, 5.0, 12.0, 'cylinder', 'depth', 'height', 'length', 'mass', 'radius', 'rectangular_prism', 'sphere', 'width']
