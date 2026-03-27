@@ -24,8 +24,8 @@ from opensim_models.shared.contracts.preconditions import (
     require_positive,
 )
 from opensim_models.shared.utils.geometry import (
-    cylinder_inertia,
-    hollow_cylinder_inertia,
+    cylinder_inertia_along_x,
+    hollow_cylinder_inertia_along_x,
 )
 from opensim_models.shared.utils.xml_helpers import (
     add_body,
@@ -134,12 +134,12 @@ def create_barbell_bodies(
     symmetrically along the X-axis (left = -X, right = +X).
     """
     logger.info("Creating barbell: %.1f kg total", spec.total_mass)
-    shaft_inertia = cylinder_inertia(
+    shaft_inertia = cylinder_inertia_along_x(
         spec.shaft_mass, spec.shaft_radius, spec.shaft_length
     )
 
-    # Compute inertia for bare sleeve
-    sleeve_inertia = hollow_cylinder_inertia(
+    # Compute inertia for bare sleeve (axis along X)
+    sleeve_inertia = hollow_cylinder_inertia_along_x(
         spec.sleeve_mass,
         inner_radius=spec.sleeve_inner_radius,
         outer_radius=spec.sleeve_radius,
@@ -148,7 +148,7 @@ def create_barbell_bodies(
 
     if spec.plate_mass_per_side > 0:
         # Standard plate radius is 0.225m (450mm diameter)
-        plate_inertia = hollow_cylinder_inertia(
+        plate_inertia = hollow_cylinder_inertia_along_x(
             spec.plate_mass_per_side,
             inner_radius=spec.sleeve_radius,
             outer_radius=0.225,
