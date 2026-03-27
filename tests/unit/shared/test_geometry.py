@@ -7,7 +7,9 @@ import pytest
 
 from opensim_models.shared.utils.geometry import (
     cylinder_inertia,
+    cylinder_inertia_along_x,
     hollow_cylinder_inertia,
+    hollow_cylinder_inertia_along_x,
     parallel_axis_shift,
     rectangular_prism_inertia,
     rotation_matrix_x,
@@ -73,6 +75,42 @@ class TestHollowCylinderInertia:
     def test_rejects_negative_length(self):
         with pytest.raises(ValueError, match="must be positive"):
             hollow_cylinder_inertia(1.0, 0.025, 0.029, -0.1)
+
+
+class TestCylinderInertiaAlongX:
+    def test_known_values(self):
+        """1 kg cylinder, r=0.1 m, L=1.0 m, axis along X."""
+        ixx, iyy, izz = cylinder_inertia_along_x(1.0, 0.1, 1.0)
+        assert ixx == pytest.approx(0.5 * 1.0 * 0.1**2)
+        assert iyy == pytest.approx((1.0 / 12.0) * (3 * 0.01 + 1.0))
+        assert izz == pytest.approx(iyy)
+
+    def test_axes_swapped_vs_along_y(self):
+        """Ixx along X should equal Iyy along Y (same axial moment)."""
+        _, iyy_y, _ = cylinder_inertia(2.0, 0.05, 0.5)
+        ixx_x, _, _ = cylinder_inertia_along_x(2.0, 0.05, 0.5)
+        assert ixx_x == pytest.approx(iyy_y)
+
+    def test_symmetry(self):
+        """Iyy should equal Izz for a cylinder aligned along X."""
+        _, iyy, izz = cylinder_inertia_along_x(5.0, 0.05, 2.0)
+        assert iyy == pytest.approx(izz)
+
+
+class TestHollowCylinderInertiaAlongX:
+    def test_known_values(self):
+        """Olympic barbell sleeve along X axis."""
+        ixx, iyy, izz = hollow_cylinder_inertia_along_x(1.0, 0.025, 0.029, 0.445)
+        r_sq_sum = 0.025**2 + 0.029**2
+        assert ixx == pytest.approx(0.5 * 1.0 * r_sq_sum)
+        assert iyy == pytest.approx((1.0 / 12.0) * (3.0 * r_sq_sum + 0.445**2))
+        assert izz == pytest.approx(iyy)
+
+    def test_axes_swapped_vs_along_y(self):
+        """Ixx along X should equal Iyy along Y."""
+        _, iyy_y, _ = hollow_cylinder_inertia(2.0, 0.01, 0.05, 0.30)
+        ixx_x, _, _ = hollow_cylinder_inertia_along_x(2.0, 0.01, 0.05, 0.30)
+        assert ixx_x == pytest.approx(iyy_y)
 
 
 class TestRectangularPrismInertia:

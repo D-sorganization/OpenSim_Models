@@ -40,6 +40,61 @@ def cylinder_inertia(
     return (ixx, iyy, izz)
 
 
+def cylinder_inertia_along_x(
+    mass: float, radius: float, length: float
+) -> tuple[float, float, float]:
+    """Compute principal inertias (Ixx, Iyy, Izz) for a solid cylinder along X.
+
+    The cylinder axis is aligned with the X-axis (barbell shaft convention).
+
+    Returns (Ixx, Iyy, Izz) where Ixx is the axial moment.
+    """
+    require_positive(mass, "mass")
+    require_positive(radius, "radius")
+    require_positive(length, "length")
+
+    # Axial (about X)
+    ixx = 0.5 * mass * radius**2
+    # Transverse (about Y and Z)
+    iyy = izz = (1.0 / 12.0) * mass * (3.0 * radius**2 + length**2)
+
+    ensure_positive_definite_inertia(ixx, iyy, izz, "cylinder_along_x")
+    return (ixx, iyy, izz)
+
+
+def hollow_cylinder_inertia_along_x(
+    mass: float,
+    inner_radius: float,
+    outer_radius: float,
+    length: float,
+) -> tuple[float, float, float]:
+    """Inertia tensor for a hollow cylinder with axis along X.
+
+    Returns (ixx, iyy, izz) where ixx is axial moment, iyy=izz are transverse.
+
+    Args:
+        mass: Total mass in kg
+        inner_radius: Inner bore radius in metres
+        outer_radius: Outer radius in metres
+        length: Length in metres
+    """
+    require_positive(mass, "mass")
+    require_positive(inner_radius, "inner_radius")
+    require_positive(outer_radius, "outer_radius")
+    require_positive(length, "length")
+    if inner_radius >= outer_radius:
+        raise ValueError(
+            f"inner_radius ({inner_radius:.4f}) must be less than "
+            f"outer_radius ({outer_radius:.4f})"
+        )
+    r_sq_sum = inner_radius**2 + outer_radius**2
+    ixx = 0.5 * mass * r_sq_sum  # axial
+    iyy = izz = (1.0 / 12.0) * mass * (3.0 * r_sq_sum + length**2)  # transverse
+
+    ensure_positive_definite_inertia(ixx, iyy, izz, "hollow_cylinder_along_x")
+    return ixx, iyy, izz
+
+
 def rectangular_prism_inertia(
     mass: float, width: float, height: float, depth: float
 ) -> tuple[float, float, float]:
