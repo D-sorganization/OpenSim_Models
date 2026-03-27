@@ -73,6 +73,61 @@ class TestCreateFullBody:
         names = [j.get("name") for j in free_joints]  # type: ignore
         assert "ground_pelvis" in names
 
+    def test_hip_is_ball_joint(self, model_elements):
+        _, jointset, _ = model_elements
+        ball_joints = jointset.findall("BallJoint")
+        names = [j.get("name") for j in ball_joints]  # type: ignore
+        assert "hip_l" in names
+        assert "hip_r" in names
+
+    def test_shoulder_is_ball_joint(self, model_elements):
+        _, jointset, _ = model_elements
+        ball_joints = jointset.findall("BallJoint")
+        names = [j.get("name") for j in ball_joints]  # type: ignore
+        assert "shoulder_l" in names
+        assert "shoulder_r" in names
+
+    def test_lumbar_is_ball_joint(self, model_elements):
+        _, jointset, _ = model_elements
+        ball_joints = jointset.findall("BallJoint")
+        names = [j.get("name") for j in ball_joints]  # type: ignore
+        assert "lumbar" in names
+
+    def test_ankle_is_custom_joint(self, model_elements):
+        _, jointset, _ = model_elements
+        custom_joints = jointset.findall("CustomJoint")
+        names = [j.get("name") for j in custom_joints]  # type: ignore
+        assert "ankle_l" in names
+        assert "ankle_r" in names
+
+    def test_wrist_is_custom_joint(self, model_elements):
+        _, jointset, _ = model_elements
+        custom_joints = jointset.findall("CustomJoint")
+        names = [j.get("name") for j in custom_joints]  # type: ignore
+        assert "wrist_l" in names
+        assert "wrist_r" in names
+
+    def test_hip_has_three_coordinates(self, model_elements):
+        _, jointset, _ = model_elements
+        for ball in jointset.findall("BallJoint"):
+            if ball.get("name") == "hip_r":
+                coords = ball.findall(".//Coordinate")
+                assert len(coords) == 3
+                coord_names = {c.get("name") for c in coords}
+                assert "hip_r_flex" in coord_names
+                assert "hip_r_adduct" in coord_names
+                assert "hip_r_rotate" in coord_names
+
+    def test_ankle_has_two_coordinates(self, model_elements):
+        _, jointset, _ = model_elements
+        for cj in jointset.findall("CustomJoint"):
+            if cj.get("name") == "ankle_r":
+                coords = cj.findall(".//Coordinate")
+                assert len(coords) == 2
+                coord_names = {c.get("name") for c in coords}
+                assert "ankle_r_flex" in coord_names
+                assert "ankle_r_inversion" in coord_names
+
     def test_all_masses_positive(self, model_elements):
         bodyset, _, _ = model_elements
         for body in bodyset.findall("Body"):

@@ -161,11 +161,15 @@ class BenchPressModelBuilder(ExerciseModelBuilder):
         """Set supine lockout position.
 
         Shoulders flexed ~90 deg (arms pointing up), elbows near-extended.
-        The supine orientation is enforced by the bench–pelvis weld constraint.
+        Shoulder adduction set for bench grip width.
+        The supine orientation is enforced by the bench-pelvis weld constraint.
         """
         shoulder_flex = 1.5708  # ~90 degrees (arms vertical)
+        shoulder_adduct = -0.5236  # ~-30° (arms abducted from midline)
         for side in ("l", "r"):
             set_coordinate_default(jointset, f"shoulder_{side}_flex", shoulder_flex)
+            set_coordinate_default(jointset, f"shoulder_{side}_adduct", shoulder_adduct)
+            set_coordinate_default(jointset, f"shoulder_{side}_rotate", 0.0)
 
 
 def build_bench_press_model(

@@ -2,8 +2,12 @@
 
 import xml.etree.ElementTree as ET
 
+import pytest
+
 from opensim_models.shared.utils.xml_helpers import (
+    add_ball_joint,
     add_body,
+    add_custom_joint,
     add_free_joint,
     add_pin_joint,
     add_weld_joint,
@@ -114,6 +118,142 @@ class TestAddWeldJoint:
             location_in_parent=(0, 1, 0),
         )
         assert joint.tag == "WeldJoint"
+
+
+class TestAddBallJoint:
+    def test_creates_ball_joint(self):
+        jointset = ET.Element("JointSet")
+        coords = [
+            {"name": "flex", "default_value": 0.0, "range_min": -1.0, "range_max": 1.0},
+            {
+                "name": "adduct",
+                "default_value": 0.0,
+                "range_min": -0.5,
+                "range_max": 0.5,
+            },
+            {
+                "name": "rotate",
+                "default_value": 0.0,
+                "range_min": -0.7,
+                "range_max": 0.7,
+            },
+        ]
+        joint = add_ball_joint(
+            jointset,
+            name="hip_r",
+            parent_body="pelvis",
+            child_body="thigh_r",
+            location_in_parent=(0, 0, 0),
+            location_in_child=(0, 0, 0),
+            coordinates=coords,
+        )
+        assert joint.tag == "BallJoint"
+        assert joint.get("name") == "hip_r"
+
+    def test_has_three_coordinates(self):
+        jointset = ET.Element("JointSet")
+        coords = [
+            {"name": "c1", "default_value": 0.0, "range_min": -1.0, "range_max": 1.0},
+            {"name": "c2", "default_value": 0.0, "range_min": -1.0, "range_max": 1.0},
+            {"name": "c3", "default_value": 0.0, "range_min": -1.0, "range_max": 1.0},
+        ]
+        joint = add_ball_joint(
+            jointset,
+            name="test",
+            parent_body="p",
+            child_body="c",
+            location_in_parent=(0, 0, 0),
+            location_in_child=(0, 0, 0),
+            coordinates=coords,
+        )
+        all_coords = joint.findall(".//Coordinate")
+        assert len(all_coords) == 3
+
+    def test_rejects_wrong_coordinate_count(self):
+        jointset = ET.Element("JointSet")
+        coords = [
+            {"name": "c1", "default_value": 0.0, "range_min": -1.0, "range_max": 1.0},
+        ]
+        with pytest.raises(ValueError, match="exactly 3 coordinates"):
+            add_ball_joint(
+                jointset,
+                name="bad",
+                parent_body="p",
+                child_body="c",
+                location_in_parent=(0, 0, 0),
+                location_in_child=(0, 0, 0),
+                coordinates=coords,
+            )
+
+    def test_has_parent_and_child_frames(self):
+        jointset = ET.Element("JointSet")
+        coords = [
+            {"name": "c1", "default_value": 0.0, "range_min": -1.0, "range_max": 1.0},
+            {"name": "c2", "default_value": 0.0, "range_min": -1.0, "range_max": 1.0},
+            {"name": "c3", "default_value": 0.0, "range_min": -1.0, "range_max": 1.0},
+        ]
+        joint = add_ball_joint(
+            jointset,
+            name="j",
+            parent_body="p",
+            child_body="c",
+            location_in_parent=(0, 1, 0),
+            location_in_child=(0, 0, 0),
+            coordinates=coords,
+        )
+        parent_frame = joint.find("PhysicalOffsetFrame[@name='j_parent']")
+        child_frame = joint.find("PhysicalOffsetFrame[@name='j_child']")
+        assert parent_frame is not None
+        assert child_frame is not None
+
+
+class TestAddCustomJoint:
+    def test_creates_custom_joint(self):
+        jointset = ET.Element("JointSet")
+        coords = [
+            {"name": "flex", "default_value": 0.0, "range_min": -1.0, "range_max": 1.0},
+            {"name": "dev", "default_value": 0.0, "range_min": -0.5, "range_max": 0.5},
+        ]
+        joint = add_custom_joint(
+            jointset,
+            name="wrist_r",
+            parent_body="forearm_r",
+            child_body="hand_r",
+            location_in_parent=(0, 0, 0),
+            location_in_child=(0, 0, 0),
+            coordinates=coords,
+        )
+        assert joint.tag == "CustomJoint"
+
+    def test_has_spatial_transform(self):
+        jointset = ET.Element("JointSet")
+        coords = [
+            {"name": "flex", "default_value": 0.0, "range_min": -1.0, "range_max": 1.0},
+        ]
+        joint = add_custom_joint(
+            jointset,
+            name="test",
+            parent_body="p",
+            child_body="c",
+            location_in_parent=(0, 0, 0),
+            location_in_child=(0, 0, 0),
+            coordinates=coords,
+        )
+        spatial = joint.find("SpatialTransform")
+        assert spatial is not None
+
+    def test_rejects_empty_coordinates(self):
+        jointset = ET.Element("JointSet")
+        with pytest.raises(ValueError, match="at least 1 coordinate"):
+            add_custom_joint(
+                jointset,
+                name="bad",
+                parent_body="p",
+                child_body="c",
+                location_in_parent=(0, 0, 0),
+                location_in_child=(0, 0, 0),
+                coordinates=[],
+            )
 
 
 class TestSerializeModel:

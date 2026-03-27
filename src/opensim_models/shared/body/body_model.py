@@ -7,14 +7,14 @@ Segments (bilateral where noted):
 
 Joints:
   ground_pelvis (FreeJoint — 6 DOF),
-  lumbar (PinJoint — flexion/extension),
+  lumbar (BallJoint — 3 DOF: flex, lateral, rotation),
   neck (PinJoint),
-  shoulder_{l,r} (PinJoint — simplified, flexion only for v0.1),
+  shoulder_{l,r} (BallJoint — 3 DOF: flex, adduction, rotation),
   elbow_{l,r} (PinJoint),
-  wrist_{l,r} (PinJoint),
-  hip_{l,r} (PinJoint — flexion/extension),
+  wrist_{l,r} (CustomJoint — 2 DOF: flex, deviation),
+  hip_{l,r} (BallJoint — 3 DOF: flex, adduction, rotation),
   knee_{l,r} (PinJoint),
-  ankle_{l,r} (PinJoint)
+  ankle_{l,r} (CustomJoint — 2 DOF: flex, inversion)
 
 Anthropometric defaults are for a 50th-percentile male (height=1.75 m,
 mass=80 kg) following Winter (2009) segment proportions.
@@ -38,7 +38,9 @@ from opensim_models.shared.utils.geometry import (
     rectangular_prism_inertia,
 )
 from opensim_models.shared.utils.xml_helpers import (
+    add_ball_joint,
     add_body,
+    add_custom_joint,
     add_free_joint,
     add_pin_joint,
 )
@@ -148,6 +150,110 @@ def _add_bilateral_limb(
         )
 
 
+def _add_bilateral_ball_joint_limb(
+    bodyset: ET.Element,
+    jointset: ET.Element,
+    spec: BodyModelSpec,
+    *,
+    seg_name: str,
+    parent_name: str,
+    parent_offset_y: float,
+    parent_lateral_x: float,
+    coord_prefix: str,
+    coord_suffixes: tuple[str, str, str],
+    ranges: tuple[
+        tuple[float, float],
+        tuple[float, float],
+        tuple[float, float],
+    ],
+) -> None:
+    """Add left and right limb segments with BallJoints (3-DOF)."""
+    mass, length, radius = _seg(spec, seg_name)
+    inertia = cylinder_inertia(mass, radius, length)
+
+    for side, sign in [("l", -1.0), ("r", 1.0)]:
+        body_name = f"{seg_name}_{side}"
+        add_body(
+            bodyset,
+            name=body_name,
+            mass=mass,
+            mass_center=(0, -length / 2.0, 0),
+            inertia_xx=inertia[0],
+            inertia_yy=inertia[1],
+            inertia_zz=inertia[2],
+        )
+        coordinates = [
+            {
+                "name": f"{coord_prefix}_{side}_{suffix}",
+                "default_value": 0.0,
+                "range_min": rng[0],
+                "range_max": rng[1],
+            }
+            for suffix, rng in zip(coord_suffixes, ranges, strict=True)
+        ]
+        add_ball_joint(
+            jointset,
+            name=f"{coord_prefix}_{side}",
+            parent_body=f"{parent_name}_{side}"
+            if parent_name in _BILATERAL_SEGMENTS
+            else parent_name,
+            child_body=body_name,
+            location_in_parent=(sign * parent_lateral_x, parent_offset_y, 0),
+            location_in_child=(0, 0, 0),
+            coordinates=coordinates,
+        )
+
+
+def _add_bilateral_custom_joint_limb(
+    bodyset: ET.Element,
+    jointset: ET.Element,
+    spec: BodyModelSpec,
+    *,
+    seg_name: str,
+    parent_name: str,
+    parent_offset_y: float,
+    parent_lateral_x: float,
+    coord_prefix: str,
+    coord_defs: list[dict[str, str | float]],
+) -> None:
+    """Add left and right limb segments with CustomJoints (N-DOF)."""
+    mass, length, radius = _seg(spec, seg_name)
+    inertia = cylinder_inertia(mass, radius, length)
+
+    for side, sign in [("l", -1.0), ("r", 1.0)]:
+        body_name = f"{seg_name}_{side}"
+        add_body(
+            bodyset,
+            name=body_name,
+            mass=mass,
+            mass_center=(0, -length / 2.0, 0),
+            inertia_xx=inertia[0],
+            inertia_yy=inertia[1],
+            inertia_zz=inertia[2],
+        )
+        coordinates = [
+            {
+                "name": f"{coord_prefix}_{side}_{c['suffix']}",
+                "default_value": float(c.get("default_value", 0.0)),
+                "range_min": float(c["range_min"]),
+                "range_max": float(c["range_max"]),
+                "axis": str(c.get("axis", "0 0 1")),
+            }
+            for c in coord_defs
+        ]
+        add_custom_joint(
+            jointset,
+            name=f"{coord_prefix}_{side}",
+            parent_body=f"{parent_name}_{side}"
+            if parent_name in _BILATERAL_SEGMENTS
+            else parent_name,
+            child_body=body_name,
+            location_in_parent=(sign * parent_lateral_x, parent_offset_y, 0),
+            location_in_child=(0, 0, 0),
+            coordinates=coordinates,
+        )
+
+
 def create_full_body(
     bodyset: ET.Element,
     jointset: ET.Element,
@@ -218,16 +324,33 @@ def create_full_body(
         inertia_yy=t_inertia[1],
         inertia_zz=t_inertia[2],
     )
-    add_pin_joint(
+    add_ball_joint(
         jointset,
         name="lumbar",
         parent_body="pelvis",
         child_body="torso",
         location_in_parent=(0, p_len / 2.0, 0),
         location_in_child=(0, 0, 0),
-        coord_name="lumbar_flex",
-        range_min=-0.5236,
-        range_max=1.0472,  # ~60° — lower end of clinical range (60–80°)
+        coordinates=[
+            {
+                "name": "lumbar_flex",
+                "default_value": 0.0,
+                "range_min": -0.5236,  # -30°
+                "range_max": 0.7854,  # 45°
+            },
+            {
+                "name": "lumbar_lateral",
+                "default_value": 0.0,
+                "range_min": -0.5236,  # -30°
+                "range_max": 0.5236,  # 30°
+            },
+            {
+                "name": "lumbar_rotate",
+                "default_value": 0.0,
+                "range_min": -0.5236,  # -30°
+                "range_max": 0.5236,  # 30°
+            },
+        ],
     )
 
     # --- Head ---
@@ -258,7 +381,7 @@ def create_full_body(
     shoulder_y = t_len * 0.95
     shoulder_x = t_rad * 1.2
 
-    _add_bilateral_limb(
+    _add_bilateral_ball_joint_limb(
         bodyset,
         jointset,
         spec,
@@ -267,8 +390,12 @@ def create_full_body(
         parent_offset_y=shoulder_y,
         parent_lateral_x=shoulder_x,
         coord_prefix="shoulder",
-        range_min=-3.1416,
-        range_max=3.1416,
+        coord_suffixes=("flex", "adduct", "rotate"),
+        ranges=(
+            (-1.0472, 3.1416),  # flexion: -60° to 180°
+            (-0.5236, 3.1416),  # abduction: -30° to 180°
+            (-1.5708, 1.5708),  # rotation: -90° to 90°
+        ),
     )
 
     _, ua_len, _ = _seg(spec, "upper_arm")
@@ -286,7 +413,7 @@ def create_full_body(
     )
 
     _, fa_len, _ = _seg(spec, "forearm")
-    _add_bilateral_limb(
+    _add_bilateral_custom_joint_limb(
         bodyset,
         jointset,
         spec,
@@ -295,14 +422,26 @@ def create_full_body(
         parent_offset_y=-fa_len,
         parent_lateral_x=0,
         coord_prefix="wrist",
-        range_min=-1.2217,
-        range_max=1.2217,
+        coord_defs=[
+            {
+                "suffix": "flex",
+                "range_min": -1.2217,  # -70°
+                "range_max": 1.2217,  # 70°
+                "axis": "0 0 1",
+            },
+            {
+                "suffix": "deviation",
+                "range_min": -0.3491,  # -20°
+                "range_max": 0.5236,  # 30°
+                "axis": "1 0 0",
+            },
+        ],
     )
 
     # --- Legs ---
     hip_x = p_rad * 0.6
 
-    _add_bilateral_limb(
+    _add_bilateral_ball_joint_limb(
         bodyset,
         jointset,
         spec,
@@ -311,8 +450,12 @@ def create_full_body(
         parent_offset_y=-p_len / 2.0,
         parent_lateral_x=hip_x,
         coord_prefix="hip",
-        range_min=-0.5236,
-        range_max=2.0944,
+        coord_suffixes=("flex", "adduct", "rotate"),
+        ranges=(
+            (-0.5236, 2.0944),  # flexion: -30° to 120°
+            (-0.7854, 0.5236),  # abduction/adduction: -45° to 30°
+            (-0.7854, 0.7854),  # rotation: -45° to 45°
+        ),
     )
 
     _, th_len, _ = _seg(spec, "thigh")
@@ -330,7 +473,7 @@ def create_full_body(
     )
 
     _, sh_len, _ = _seg(spec, "shank")
-    _add_bilateral_limb(
+    _add_bilateral_custom_joint_limb(
         bodyset,
         jointset,
         spec,
@@ -339,8 +482,20 @@ def create_full_body(
         parent_offset_y=-sh_len,
         parent_lateral_x=0,
         coord_prefix="ankle",
-        range_min=-0.8727,  # ~-50° plantarflexion (physiological max)
-        range_max=0.3491,  # ~+20° dorsiflexion (physiological max)
+        coord_defs=[
+            {
+                "suffix": "flex",
+                "range_min": -0.3491,  # -20° dorsiflexion
+                "range_max": 0.8727,  # 50° plantarflexion
+                "axis": "0 0 1",
+            },
+            {
+                "suffix": "inversion",
+                "range_min": -0.3491,  # -20° eversion
+                "range_max": 0.3491,  # 20° inversion
+                "axis": "1 0 0",
+            },
+        ],
     )
 
     logger.info("Full-body model complete: %d bodies created", len(bodies))

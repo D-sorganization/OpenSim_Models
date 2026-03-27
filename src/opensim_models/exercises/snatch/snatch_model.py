@@ -78,12 +78,20 @@ class SnatchModelBuilder(ExerciseModelBuilder):
         )
 
     def set_initial_pose(self, jointset: ET.Element) -> None:
-        """Set starting position: bar on floor, wide grip, deep hip hinge."""
+        """Set starting position: bar on floor, wide grip, deep hip hinge.
+
+        Wide snatch grip requires slight shoulder abduction.
+        """
+        shoulder_abduct = -0.3491  # ~-20° abduction for wide grip
         for side in ("l", "r"):
             set_coordinate_default(jointset, f"hip_{side}_flex", _FLOOR_PULL_HIP_ANGLE)
+            set_coordinate_default(jointset, f"hip_{side}_adduct", 0.0)
+            set_coordinate_default(jointset, f"hip_{side}_rotate", 0.0)
             set_coordinate_default(
                 jointset, f"knee_{side}_flex", _FLOOR_PULL_KNEE_ANGLE
             )
+            set_coordinate_default(jointset, f"shoulder_{side}_adduct", shoulder_abduct)
+            set_coordinate_default(jointset, f"shoulder_{side}_rotate", 0.0)
         set_coordinate_default(jointset, "lumbar_flex", _FLOOR_PULL_LUMBAR_ANGLE)
 
 
