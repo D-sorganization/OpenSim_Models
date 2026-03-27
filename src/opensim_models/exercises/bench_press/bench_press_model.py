@@ -24,6 +24,9 @@ from opensim_models.exercises.base import ExerciseConfig, ExerciseModelBuilder
 from opensim_models.shared.utils.geometry import rectangular_prism_inertia
 from opensim_models.shared.utils.xml_helpers import (
     add_body,
+    add_contact_half_space,
+    add_contact_sphere,
+    add_hunt_crossley_force,
     add_weld_joint,
     set_coordinate_default,
 )
@@ -156,6 +159,29 @@ class BenchPressModelBuilder(ExerciseModelBuilder):
     def _pre_attach_hook(self, bodyset: ET.Element, jointset: ET.Element) -> None:
         """Inject the bench body and pelvis-to-bench constraint."""
         self._add_bench_and_constraint(bodyset, jointset)
+
+    def _post_contact_hook(self, model: ET.Element) -> None:
+        """Add bench contact surface and pelvis-to-bench contact force."""
+        add_contact_half_space(
+            model,
+            name="bench_contact",
+            body="bench",
+            location=(0, _BENCH_HEIGHT_DIM / 2.0, 0),
+            orientation=(0, 0, -math.pi / 2),
+        )
+        add_contact_sphere(
+            model,
+            name="pelvis_contact",
+            body="pelvis",
+            location=(0, -0.05, 0),
+            radius=0.05,
+        )
+        add_hunt_crossley_force(
+            model,
+            name="force_pelvis_bench",
+            contact_geometry_1="pelvis_contact",
+            contact_geometry_2="bench_contact",
+        )
 
     def set_initial_pose(self, jointset: ET.Element) -> None:
         """Set supine lockout position.
