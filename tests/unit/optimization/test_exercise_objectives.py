@@ -22,7 +22,15 @@ from opensim_models.optimization.trajectory_optimizer import (
 # All five objectives exist and are well-formed
 # ---------------------------------------------------------------------------
 
-EXPECTED_EXERCISES = {"squat", "deadlift", "bench_press", "snatch", "clean_and_jerk"}
+EXPECTED_EXERCISES = {
+    "squat",
+    "deadlift",
+    "bench_press",
+    "snatch",
+    "clean_and_jerk",
+    "gait",
+    "sit_to_stand",
+}
 
 
 class TestExerciseObjectiveRegistry:
@@ -89,6 +97,8 @@ class TestPhaseCount:
             ("bench_press", 5),
             ("snatch", 6),
             ("clean_and_jerk", 8),
+            ("gait", 8),
+            ("sit_to_stand", 6),
         ],
     )
     def test_phase_count(self, name: str, expected_count: int) -> None:

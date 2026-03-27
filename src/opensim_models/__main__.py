@@ -62,11 +62,16 @@ def main(argv: list[str] | None = None) -> None:
     )
 
     builder = _BUILDERS[args.exercise]
-    xml_str = builder(
-        body_mass=args.mass,
-        height=args.height,
-        plate_mass_per_side=args.plates,
-    )
+    # Gait and sit-to-stand models don't accept plate_mass_per_side
+    _NO_BARBELL_EXERCISES = {"gait", "sit_to_stand"}
+    if args.exercise in _NO_BARBELL_EXERCISES:
+        xml_str = builder(body_mass=args.mass, height=args.height)
+    else:
+        xml_str = builder(
+            body_mass=args.mass,
+            height=args.height,
+            plate_mass_per_side=args.plates,
+        )
 
     output_path = args.output or Path(f"{args.exercise}.osim")
     output_path.write_text(xml_str, encoding="utf-8")

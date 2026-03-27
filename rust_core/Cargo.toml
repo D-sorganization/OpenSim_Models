@@ -1,0 +1,16 @@
+[package]
+name = "opensim_models_core"
+version = "0.1.0"
+edition = "2021"
+description = "Rust accelerator for OpenSim Models: parallel inverse dynamics, COM, and phase interpolation"
+license = "MIT"
+
+[lib]
+name = "opensim_models_core"
+crate-type = ["cdylib"]
+
+[dependencies]
+pyo3 = { version = "0.22", features = ["extension-module"] }
+numpy = "0.22"
+ndarray = "0.16"
+rayon = "1.10"
