@@ -1,4 +1,0 @@
-# file: C:\Users\diete\Repositories\OpenSim_Models\src\opensim_models\shared\utils\xml_helpers.py
-# hypothesis_version: 6.151.9
-
-[-1.5708, 0.0, 1.5708, 'Body', 'Coordinate', 'FreeJoint', 'PhysicalOffsetFrame', 'PinJoint', 'WeldJoint', 'coordinates', 'default_value', 'inertia', 'mass', 'mass_center', 'name', 'orientation', 'range', 'socket_child_frame', 'socket_parent', 'socket_parent_frame', 'translation', 'unicode']

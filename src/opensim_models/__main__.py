@@ -31,7 +31,9 @@ def _build_parser() -> argparse.ArgumentParser:
         default=None,
         help="Output file path (default: <exercise>.osim in current directory).",
     )
-    parser.add_argument("--mass", type=float, default=80.0, help="Body mass in kg (default: 80).")
+    parser.add_argument(
+        "--mass", type=float, default=80.0, help="Body mass in kg (default: 80)."
+    )
     parser.add_argument(
         "--height",
         type=float,
@@ -44,7 +46,9 @@ def _build_parser() -> argparse.ArgumentParser:
         default=60.0,
         help="Plate mass per side in kg (default: 60).",
     )
-    parser.add_argument("--verbose", "-v", action="store_true", help="Enable debug logging.")
+    parser.add_argument(
+        "--verbose", "-v", action="store_true", help="Enable debug logging."
+    )
     return parser
 
 

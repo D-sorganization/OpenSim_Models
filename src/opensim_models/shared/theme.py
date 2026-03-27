@@ -20,7 +20,9 @@ try:
     logger.debug(f"Loaded shared plot theme: {theme.name}")
 
 except ImportError:
-    logger.warning("ud-tools plot_theme not available. Plotting theme will fallback to defaults.")
+    logger.warning(
+        "ud-tools plot_theme not available. Plotting theme will fallback to defaults."
+    )
 
     theme = None
 

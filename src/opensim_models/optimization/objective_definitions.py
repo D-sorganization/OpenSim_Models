@@ -1,81 +1,18 @@
-"""Exercise-specific optimization objectives for OpenSim Moco trajectory planning.
+"""Exercise objective data definitions.
 
-Each exercise is described as a sequence of phases with target joint angles,
-timing fractions, and coordinate bounds. These objectives drive the trajectory
-optimizer to produce biomechanically realistic motion.
-
-Design by Contract: all angle values are stored in radians internally.
-Phases must have strictly monotonic time fractions in [0, 1].
+DRY: Phase and angle data for each exercise is defined here as module-level
+constants.  The ``exercise_objectives`` module re-exports the registry and
+look-up helper so that downstream code does not need to change imports.
 """
 
 from __future__ import annotations
 
-import logging
 import math
-from dataclasses import dataclass, field
 
-logger = logging.getLogger(__name__)
-
-
-@dataclass(frozen=True)
-class Phase:
-    """A single phase within an exercise movement pattern.
-
-    Attributes:
-        name: Human-readable phase label (e.g. "bottom", "lockout").
-        time_fraction: Normalised time within [0, 1] at which this phase occurs.
-        joint_targets: Mapping of coordinate name to target angle in radians.
-        description: Optional narrative description of the phase.
-    """
-
-    name: str
-    time_fraction: float
-    joint_targets: dict[str, float] = field(default_factory=dict)
-    description: str = ""
-
-    def __post_init__(self) -> None:
-        if not 0.0 <= self.time_fraction <= 1.0:
-            raise ValueError(
-                f"Phase '{self.name}' time_fraction must be in [0, 1], "
-                f"got {self.time_fraction}"
-            )
-
-
-@dataclass(frozen=True)
-class ExerciseObjective:
-    """Complete movement objective for an exercise.
-
-    Attributes:
-        name: Canonical exercise name (e.g. "squat").
-        phases: Ordered sequence of movement phases.
-        primary_coordinates: Coordinate names most relevant to the exercise.
-        description: Narrative summary of the movement.
-    """
-
-    name: str
-    phases: tuple[Phase, ...]
-    primary_coordinates: tuple[str, ...] = ()
-    description: str = ""
-
-    def __post_init__(self) -> None:
-        if len(self.phases) < 2:
-            raise ValueError(
-                f"Exercise '{self.name}' must have at least 2 phases, "
-                f"got {len(self.phases)}"
-            )
-        fractions = [p.time_fraction for p in self.phases]
-        for i in range(1, len(fractions)):
-            if fractions[i] <= fractions[i - 1]:
-                raise ValueError(
-                    f"Exercise '{self.name}' phases must have strictly monotonic "
-                    f"time fractions. Phase '{self.phases[i].name}' "
-                    f"({fractions[i]}) <= '{self.phases[i - 1].name}' "
-                    f"({fractions[i - 1]})"
-                )
-
+from opensim_models.optimization.exercise_objectives import ExerciseObjective, Phase
 
 # ---------------------------------------------------------------------------
-# Exercise objective definitions
+# Barbell exercises
 # ---------------------------------------------------------------------------
 
 SQUAT = ExerciseObjective(
@@ -228,6 +165,10 @@ BENCH_PRESS = ExerciseObjective(
     ),
 )
 
+# ---------------------------------------------------------------------------
+# Olympic lifts
+# ---------------------------------------------------------------------------
+
 SNATCH = ExerciseObjective(
     name="snatch",
     description="Olympic snatch: barbell from floor to overhead in one motion.",
@@ -306,7 +247,6 @@ CLEAN_AND_JERK = ExerciseObjective(
         "elbow_flexion",
     ),
     phases=(
-        # --- Clean ---
         Phase(
             name="clean_setup",
             time_fraction=0.0,
@@ -351,7 +291,6 @@ CLEAN_AND_JERK = ExerciseObjective(
             },
             description="Receiving bar in front rack, deep squat.",
         ),
-        # --- Jerk ---
         Phase(
             name="jerk_dip",
             time_fraction=0.55,
@@ -398,6 +337,10 @@ CLEAN_AND_JERK = ExerciseObjective(
         ),
     ),
 )
+
+# ---------------------------------------------------------------------------
+# Non-barbell exercises
+# ---------------------------------------------------------------------------
 
 GAIT = ExerciseObjective(
     name="gait",
@@ -568,16 +511,3 @@ EXERCISE_OBJECTIVES: dict[str, ExerciseObjective] = {
     "gait": GAIT,
     "sit_to_stand": SIT_TO_STAND,
 }
-
-
-def get_exercise_objective(name: str) -> ExerciseObjective:
-    """Look up an exercise objective by canonical name.
-
-    Raises:
-        KeyError: If *name* is not a registered exercise.
-    """
-    try:
-        return EXERCISE_OBJECTIVES[name]
-    except KeyError:
-        available = ", ".join(sorted(EXERCISE_OBJECTIVES))
-        raise KeyError(f"Unknown exercise '{name}'. Available: {available}") from None

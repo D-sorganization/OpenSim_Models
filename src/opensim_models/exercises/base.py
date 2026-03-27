@@ -191,7 +191,9 @@ class ExerciseModelBuilder(ABC):
         # Build barbell (only for exercises that use one)
         barbell_bodies: dict[str, ET.Element] = {}
         if self.uses_barbell:
-            barbell_bodies = create_barbell_bodies(bodyset, jointset, self.config.barbell_spec)
+            barbell_bodies = create_barbell_bodies(
+                bodyset, jointset, self.config.barbell_spec
+            )
 
         # Subclass hook: inject extra bodies/joints before barbell attachment
         self._pre_attach_hook(bodyset, jointset)

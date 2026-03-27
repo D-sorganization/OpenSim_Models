@@ -1,4 +1,0 @@
-# file: C:\Users\diete\Repositories\OpenSim_Models\src\opensim_models\shared\barbell\barbell_model.py
-# hypothesis_version: 6.151.9
-
-[0.0, 0.025, 0.028, 0.05, 1.31, 2.0, 2.01, 2.2, 15.0, 20.0, 'bar_mass', 'barbell', 'plate_mass_per_side', 'shaft_diameter', 'shaft_length', 'sleeve_diameter', 'total_length']

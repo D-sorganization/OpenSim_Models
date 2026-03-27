@@ -122,7 +122,8 @@ def plot_phase_diagram(
         raise ValueError(f"Exercise '{objective.name}' has no joint targets in phases")
 
     # Color palette
-    colors = plt.cm.Set2(np.linspace(0, 1, max(len(coord_list), 1)))
+    cmap = plt.colormaps["Set2"]
+    colors = cmap(np.linspace(0, 1, max(len(coord_list), 1)))
 
     with plt.rc_context(_STYLE):
         fig, ax = plt.subplots(figsize=(12, 6))
