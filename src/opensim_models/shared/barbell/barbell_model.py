@@ -48,9 +48,7 @@ class BarbellSpec:
     sleeve_diameter: float = 0.050
     bar_mass: float = 20.0
     plate_mass_per_side: float = 0.0
-    sleeve_inner_radius: float = (
-        0.014  # Inner bore radius: fits over 28 mm shaft (metres)
-    )
+    sleeve_inner_radius: float = 0.014  # Inner bore radius: fits over 28 mm shaft (metres)
 
     def __post_init__(self) -> None:
         require_positive(self.total_length, "total_length")
@@ -134,9 +132,7 @@ def create_barbell_bodies(
     symmetrically along the X-axis (left = -X, right = +X).
     """
     logger.info("Creating barbell: %.1f kg total", spec.total_mass)
-    shaft_inertia = cylinder_inertia_along_x(
-        spec.shaft_mass, spec.shaft_radius, spec.shaft_length
-    )
+    shaft_inertia = cylinder_inertia_along_x(spec.shaft_mass, spec.shaft_radius, spec.shaft_length)
 
     # Compute inertia for bare sleeve (axis along X)
     sleeve_inertia = hollow_cylinder_inertia_along_x(
@@ -152,9 +148,7 @@ def create_barbell_bodies(
             spec.plate_mass_per_side,
             inner_radius=spec.sleeve_radius,
             outer_radius=0.225,
-            length=max(
-                0.01, spec.plate_mass_per_side * 0.002
-            ),  # approximate plate thickness
+            length=max(0.01, spec.plate_mass_per_side * 0.002),  # approximate plate thickness
         )
         sleeve_inertia = (
             sleeve_inertia[0] + plate_inertia[0],

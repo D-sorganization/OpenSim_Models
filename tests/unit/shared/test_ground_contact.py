@@ -51,31 +51,23 @@ class TestContactHalfSpace:
 class TestContactSphere:
     def test_creates_element(self):
         model = ET.Element("Model")
-        geom = add_contact_sphere(
-            model, name="foot_l_heel", body="foot_l", location=(0, 0, 0)
-        )
+        geom = add_contact_sphere(model, name="foot_l_heel", body="foot_l", location=(0, 0, 0))
         assert geom.tag == "ContactSphere"
         assert geom.get("name") == "foot_l_heel"
 
     def test_has_radius(self):
         model = ET.Element("Model")
-        geom = add_contact_sphere(
-            model, name="cs", body="foot_l", location=(0, 0, 0), radius=0.03
-        )
+        geom = add_contact_sphere(model, name="cs", body="foot_l", location=(0, 0, 0), radius=0.03)
         assert geom.find("radius").text == "0.030000"
 
     def test_rejects_nonpositive_radius(self):
         model = ET.Element("Model")
         with pytest.raises(ValueError, match="positive"):
-            add_contact_sphere(
-                model, name="bad", body="foot_l", location=(0, 0, 0), radius=0.0
-            )
+            add_contact_sphere(model, name="bad", body="foot_l", location=(0, 0, 0), radius=0.0)
 
     def test_has_location(self):
         model = ET.Element("Model")
-        geom = add_contact_sphere(
-            model, name="cs", body="foot_l", location=(0.1, -0.02, -0.03)
-        )
+        geom = add_contact_sphere(model, name="cs", body="foot_l", location=(0.1, -0.02, -0.03))
         loc_text = geom.find("location").text
         assert "0.100000" in loc_text
         assert "-0.020000" in loc_text
@@ -118,21 +110,15 @@ class TestHuntCrossleyForce:
 
     def test_creates_force_set(self):
         model = ET.Element("Model")
-        add_hunt_crossley_force(
-            model, name="f", contact_geometry_1="a", contact_geometry_2="b"
-        )
+        add_hunt_crossley_force(model, name="f", contact_geometry_1="a", contact_geometry_2="b")
         fs = model.find("ForceSet")
         assert fs is not None
         assert len(fs) == 1
 
     def test_reuses_existing_force_set(self):
         model = ET.Element("Model")
-        add_hunt_crossley_force(
-            model, name="f1", contact_geometry_1="a", contact_geometry_2="b"
-        )
-        add_hunt_crossley_force(
-            model, name="f2", contact_geometry_1="c", contact_geometry_2="d"
-        )
+        add_hunt_crossley_force(model, name="f1", contact_geometry_1="a", contact_geometry_2="b")
+        add_hunt_crossley_force(model, name="f2", contact_geometry_1="c", contact_geometry_2="d")
         force_sets = model.findall("ForceSet")
         assert len(force_sets) == 1
         assert len(force_sets[0]) == 2

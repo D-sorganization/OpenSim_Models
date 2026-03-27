@@ -16,14 +16,24 @@ import xml.etree.ElementTree as ET
 from abc import ABC, abstractmethod
 from dataclasses import dataclass, field
 
+from opensim_models.exercises.constants import (
+    _FLOOR_PULL_HIP_ANGLE,
+    _FLOOR_PULL_KNEE_ANGLE,
+    _FLOOR_PULL_LUMBAR_ANGLE,
+)
 from opensim_models.shared.barbell import BarbellSpec, create_barbell_bodies
-from opensim_models.shared.body import BodyModelSpec, create_full_body
-from opensim_models.shared.body.body_model import _add_foot_contact_spheres
+from opensim_models.shared.body import (
+    BodyModelSpec,
+    add_foot_contact_spheres,
+    create_full_body,
+)
 from opensim_models.shared.contracts.postconditions import ensure_valid_xml
 from opensim_models.shared.utils.xml_helpers import (
     add_contact_half_space,
     add_hunt_crossley_force,
+    add_weld_joint,
     serialize_model,
+    set_coordinate_default,
 )
 
 logger = logging.getLogger(__name__)
@@ -37,6 +47,51 @@ class ExerciseConfig:
     barbell_spec: BarbellSpec = field(default_factory=BarbellSpec.mens_olympic)
     gravity: tuple[float, float, float] = (0.0, -9.80665, 0.0)
     grip_offset: float = 0.40  # meters from shaft center to hand (half-width)
+
+
+def _set_floor_pull_initial_pose(jointset: ET.Element) -> None:
+    """Set the shared floor-pull initial pose (deadlift, snatch, clean-and-jerk).
+
+    DRY: extracted from three identical loops in deadlift, snatch, and
+    clean_and_jerk set_initial_pose methods.
+    """
+    for side in ("l", "r"):
+        set_coordinate_default(jointset, f"hip_{side}_flex", _FLOOR_PULL_HIP_ANGLE)
+        set_coordinate_default(jointset, f"hip_{side}_adduct", 0.0)
+        set_coordinate_default(jointset, f"hip_{side}_rotate", 0.0)
+        set_coordinate_default(jointset, f"knee_{side}_flex", _FLOOR_PULL_KNEE_ANGLE)
+    set_coordinate_default(jointset, "lumbar_flex", _FLOOR_PULL_LUMBAR_ANGLE)
+
+
+def _attach_barbell_to_hands(
+    jointset: ET.Element,
+    grip_offset: float,
+) -> None:
+    """Weld barbell shaft to both hands at the given grip offset.
+
+    DRY: extracted from four identical attach_barbell implementations
+    (deadlift, snatch, clean_and_jerk, bench_press).
+
+    Args:
+        jointset: XML JointSet element.
+        grip_offset: distance from shaft center to each hand (metres).
+    """
+    add_weld_joint(
+        jointset,
+        name="barbell_to_left_hand",
+        parent_body="hand_l",
+        child_body="barbell_shaft",
+        location_in_parent=(0, 0, 0),
+        location_in_child=(-grip_offset, 0, 0),
+    )
+    add_weld_joint(
+        jointset,
+        name="barbell_to_right_hand",
+        parent_body="hand_r",
+        child_body="barbell_shaft",
+        location_in_parent=(0, 0, 0),
+        location_in_child=(grip_offset, 0, 0),
+    )
 
 
 class ExerciseModelBuilder(ABC):
@@ -56,6 +111,15 @@ class ExerciseModelBuilder(ABC):
     def exercise_name(self) -> str:
         """Human-readable exercise name used in the model XML."""
 
+    @property
+    def uses_barbell(self) -> bool:
+        """Return True if this exercise uses a barbell.
+
+        Override in subclasses (e.g. gait, sit-to-stand) that do not
+        attach a barbell to the model.
+        """
+        return True
+
     @abstractmethod
     def attach_barbell(
         self,
@@ -69,9 +133,7 @@ class ExerciseModelBuilder(ABC):
     def set_initial_pose(self, jointset: ET.Element) -> None:
         """Set default coordinate values for the starting position."""
 
-    def _pre_attach_hook(  # noqa: B027
-        self, bodyset: ET.Element, jointset: ET.Element
-    ) -> None:
+    def _pre_attach_hook(self, bodyset: ET.Element, jointset: ET.Element) -> None:  # noqa: B027
         """Hook called after bodies are built, before barbell is attached.
 
         Subclasses may override to inject additional bodies or joints
@@ -126,10 +188,10 @@ class ExerciseModelBuilder(ABC):
             skip_ground_joint=self._skip_ground_joint(),
         )
 
-        # Build barbell
-        barbell_bodies = create_barbell_bodies(
-            bodyset, jointset, self.config.barbell_spec
-        )
+        # Build barbell (only for exercises that use one)
+        barbell_bodies: dict[str, ET.Element] = {}
+        if self.uses_barbell:
+            barbell_bodies = create_barbell_bodies(bodyset, jointset, self.config.barbell_spec)
 
         # Subclass hook: inject extra bodies/joints before barbell attachment
         self._pre_attach_hook(bodyset, jointset)
@@ -142,7 +204,7 @@ class ExerciseModelBuilder(ABC):
 
         # --- Ground contact geometry and forces ---
         add_contact_half_space(model, name="ground_contact", body="ground")
-        _add_foot_contact_spheres(model, self.config.body_spec)
+        add_foot_contact_spheres(model, self.config.body_spec)
 
         # Connect each foot contact sphere to the ground half-space
         foot_contact_names = [

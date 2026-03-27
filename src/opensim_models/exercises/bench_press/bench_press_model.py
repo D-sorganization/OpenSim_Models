@@ -20,7 +20,11 @@ from __future__ import annotations
 import math
 import xml.etree.ElementTree as ET
 
-from opensim_models.exercises.base import ExerciseConfig, ExerciseModelBuilder
+from opensim_models.exercises.base import (
+    ExerciseConfig,
+    ExerciseModelBuilder,
+    _attach_barbell_to_hands,
+)
 from opensim_models.shared.utils.geometry import rectangular_prism_inertia
 from opensim_models.shared.utils.xml_helpers import (
     add_body,
@@ -134,23 +138,7 @@ class BenchPressModelBuilder(ExerciseModelBuilder):
         The grip is approximately shoulder-width (~0.40 m from center
         on each side for a standard grip).
         """
-        add_weld_joint(
-            jointset,
-            name="barbell_to_left_hand",
-            parent_body="hand_l",
-            child_body="barbell_shaft",
-            location_in_parent=(0, 0, 0),
-            location_in_child=(-self.config.grip_offset, 0, 0),
-        )
-
-        add_weld_joint(
-            jointset,
-            name="barbell_to_right_hand",
-            parent_body="hand_r",
-            child_body="barbell_shaft",
-            location_in_parent=(0, 0, 0),
-            location_in_child=(self.config.grip_offset, 0, 0),
-        )
+        _attach_barbell_to_hands(jointset, self.config.grip_offset)
 
     def _skip_ground_joint(self) -> bool:
         """Bench press supplies its own pelvis parent via WeldJoint to bench."""

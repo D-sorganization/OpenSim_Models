@@ -82,4 +82,4 @@ EXERCISE_PHASE_COUNTS = {
     "clean_and_jerk": 8,
 }
 
-GRAVITY = (0.0, 0.0, -9.80665)
+GRAVITY = (0.0, -9.80665, 0.0)

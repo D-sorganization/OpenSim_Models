@@ -24,9 +24,7 @@ class TestSnatchModelBuilder:
         weld = root.find(".//WeldJoint[@name='barbell_to_left_hand']")
         assert weld is not None
         # Verify the grip offset is in the child translation
-        child_frame = weld.find(
-            ".//PhysicalOffsetFrame[@name='barbell_to_left_hand_child']"
-        )
+        child_frame = weld.find(".//PhysicalOffsetFrame[@name='barbell_to_left_hand_child']")
         assert child_frame is not None
 
     def test_has_full_body_for_overhead_squat(self):
