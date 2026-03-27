@@ -52,7 +52,9 @@ _TISSUE_DENSITY_KG_M3: float = 1000.0  # Average human tissue ~1000 kg/m³
 
 # Segment names that are themselves bilateral (have _l/_r variants).
 # Used to determine whether a child segment's parent link needs a side suffix.
-_BILATERAL_SEGMENTS: frozenset[str] = frozenset({"upper_arm", "forearm", "thigh", "shank"})
+_BILATERAL_SEGMENTS: frozenset[str] = frozenset(
+    {"upper_arm", "forearm", "thigh", "shank"}
+)
 
 
 def _segment_radius_from_mass(mass: float, length: float) -> float:
@@ -141,7 +143,9 @@ def _add_bilateral_limb(
             jointset,
             name=f"{coord_prefix}_{side}",
             parent_body=(
-                f"{parent_name}_{side}" if parent_name in _BILATERAL_SEGMENTS else parent_name
+                f"{parent_name}_{side}"
+                if parent_name in _BILATERAL_SEGMENTS
+                else parent_name
             ),
             child_body=body_name,
             location_in_parent=(sign * parent_lateral_x, parent_offset_y, 0),
@@ -187,7 +191,7 @@ def _add_bilateral_ball_joint_limb(
         )
         if bodies is not None:
             bodies[body_name] = body_el
-        coordinates = [
+        coordinates: list[dict[str, float | str]] = [
             {
                 "name": f"{coord_prefix}_{side}_{suffix}",
                 "default_value": 0.0,
@@ -200,7 +204,9 @@ def _add_bilateral_ball_joint_limb(
             jointset,
             name=f"{coord_prefix}_{side}",
             parent_body=(
-                f"{parent_name}_{side}" if parent_name in _BILATERAL_SEGMENTS else parent_name
+                f"{parent_name}_{side}"
+                if parent_name in _BILATERAL_SEGMENTS
+                else parent_name
             ),
             child_body=body_name,
             location_in_parent=(sign * parent_lateral_x, parent_offset_y, 0),
@@ -239,7 +245,7 @@ def _add_bilateral_custom_joint_limb(
         )
         if bodies is not None:
             bodies[body_name] = body_el
-        coordinates = [
+        coordinates: list[dict[str, float | str]] = [
             {
                 "name": f"{coord_prefix}_{side}_{c['suffix']}",
                 "default_value": float(c.get("default_value", 0.0)),
@@ -253,7 +259,9 @@ def _add_bilateral_custom_joint_limb(
             jointset,
             name=f"{coord_prefix}_{side}",
             parent_body=(
-                f"{parent_name}_{side}" if parent_name in _BILATERAL_SEGMENTS else parent_name
+                f"{parent_name}_{side}"
+                if parent_name in _BILATERAL_SEGMENTS
+                else parent_name
             ),
             child_body=body_name,
             location_in_parent=(sign * parent_lateral_x, parent_offset_y, 0),

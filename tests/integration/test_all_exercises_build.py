@@ -23,7 +23,13 @@ from opensim_models.exercises.snatch.snatch_model import build_snatch_model
 from opensim_models.exercises.squat.squat_model import build_squat_model
 
 # Exercises that use a barbell (barbell-specific assertions apply).
-_BARBELL_EXERCISES = {"back_squat", "bench_press", "deadlift", "snatch", "clean_and_jerk"}
+_BARBELL_EXERCISES = {
+    "back_squat",
+    "bench_press",
+    "deadlift",
+    "snatch",
+    "clean_and_jerk",
+}
 
 ALL_BUILDERS = [
     ("back_squat", build_squat_model),
@@ -37,20 +43,26 @@ ALL_BUILDERS = [
 
 
 class TestAllExercisesBuild:
-    @pytest.mark.parametrize("name,builder", ALL_BUILDERS, ids=[n for n, _ in ALL_BUILDERS])
+    @pytest.mark.parametrize(
+        "name,builder", ALL_BUILDERS, ids=[n for n, _ in ALL_BUILDERS]
+    )
     def test_produces_valid_xml(self, name, builder):
         xml_str = builder()
         root = ET.fromstring(xml_str)
         assert root.tag == "OpenSimDocument"
 
-    @pytest.mark.parametrize("name,builder", ALL_BUILDERS, ids=[n for n, _ in ALL_BUILDERS])
+    @pytest.mark.parametrize(
+        "name,builder", ALL_BUILDERS, ids=[n for n, _ in ALL_BUILDERS]
+    )
     def test_model_name_matches(self, name, builder):
         xml_str = builder()
         root = ET.fromstring(xml_str)
         model = root.find("Model")
         assert model.get("name") == name  # type: ignore
 
-    @pytest.mark.parametrize("name,builder", ALL_BUILDERS, ids=[n for n, _ in ALL_BUILDERS])
+    @pytest.mark.parametrize(
+        "name,builder", ALL_BUILDERS, ids=[n for n, _ in ALL_BUILDERS]
+    )
     def test_has_gravity(self, name, builder):
         xml_str = builder()
         root = ET.fromstring(xml_str)
@@ -58,14 +70,18 @@ class TestAllExercisesBuild:
         assert gravity is not None
         assert "-9.806650" in gravity.text  # type: ignore
 
-    @pytest.mark.parametrize("name,builder", ALL_BUILDERS, ids=[n for n, _ in ALL_BUILDERS])
+    @pytest.mark.parametrize(
+        "name,builder", ALL_BUILDERS, ids=[n for n, _ in ALL_BUILDERS]
+    )
     def test_has_bodies_and_joints(self, name, builder):
         xml_str = builder()
         root = ET.fromstring(xml_str)
         assert root.find(".//BodySet") is not None  # type: ignore
         assert root.find(".//JointSet") is not None  # type: ignore
 
-    @pytest.mark.parametrize("name,builder", ALL_BUILDERS, ids=[n for n, _ in ALL_BUILDERS])
+    @pytest.mark.parametrize(
+        "name,builder", ALL_BUILDERS, ids=[n for n, _ in ALL_BUILDERS]
+    )
     def test_minimum_body_count(self, name, builder):
         """Barbell exercises: >= 18 bodies (15 body + 3 barbell).
         Non-barbell exercises: >= 15 bodies.
@@ -78,7 +94,9 @@ class TestAllExercisesBuild:
         else:
             assert len(bodies) >= 15
 
-    @pytest.mark.parametrize("name,builder", ALL_BUILDERS, ids=[n for n, _ in ALL_BUILDERS])
+    @pytest.mark.parametrize(
+        "name,builder", ALL_BUILDERS, ids=[n for n, _ in ALL_BUILDERS]
+    )
     def test_all_masses_positive(self, name, builder):
         xml_str = builder()
         root = ET.fromstring(xml_str)

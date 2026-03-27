@@ -167,10 +167,14 @@ class TestInterpolatePhases:
         result = interpolate_phases(obj, num_points=200, duration=3.0)
         # First point should match first phase targets
         for coord, value in obj.phases[0].joint_targets.items():
-            np.testing.assert_almost_equal(result.coordinates[coord][0], value, decimal=5)
+            np.testing.assert_almost_equal(
+                result.coordinates[coord][0], value, decimal=5
+            )
         # Last point should match last phase targets
         for coord, value in obj.phases[-1].joint_targets.items():
-            np.testing.assert_almost_equal(result.coordinates[coord][-1], value, decimal=5)
+            np.testing.assert_almost_equal(
+                result.coordinates[coord][-1], value, decimal=5
+            )
 
     def test_rejects_fewer_than_two_points(self) -> None:
         obj = get_exercise_objective("squat")

@@ -106,7 +106,9 @@ def add_ball_joint(
       - ``range_max`` (float): upper bound in radians
     """
     if len(coordinates) != 3:
-        raise ValueError(f"BallJoint requires exactly 3 coordinates, got {len(coordinates)}")
+        raise ValueError(
+            f"BallJoint requires exactly 3 coordinates, got {len(coordinates)}"
+        )
 
     joint = ET.SubElement(jointset, "BallJoint", name=name)
 
@@ -130,9 +132,9 @@ def add_ball_joint(
     for c in coordinates:
         coord = ET.SubElement(coord_set, "Coordinate", name=str(c["name"]))
         ET.SubElement(coord, "default_value").text = f"{float(c['default_value']):.6f}"
-        ET.SubElement(coord, "range").text = (
-            f"{float(c['range_min']):.6f} {float(c['range_max']):.6f}"
-        )
+        ET.SubElement(
+            coord, "range"
+        ).text = f"{float(c['range_min']):.6f} {float(c['range_max']):.6f}"
 
     return joint
 
@@ -183,9 +185,9 @@ def add_custom_joint(
     for c in coordinates:
         coord = ET.SubElement(coord_set, "Coordinate", name=str(c["name"]))
         ET.SubElement(coord, "default_value").text = f"{float(c['default_value']):.6f}"
-        ET.SubElement(coord, "range").text = (
-            f"{float(c['range_min']):.6f} {float(c['range_max']):.6f}"
-        )
+        ET.SubElement(
+            coord, "range"
+        ).text = f"{float(c['range_min']):.6f} {float(c['range_max']):.6f}"
 
     # SpatialTransform with TransformAxis elements
     spatial = ET.SubElement(joint, "SpatialTransform")
@@ -274,7 +276,9 @@ def add_contact_half_space(
     if cg_set is None:
         cg_set = ET.SubElement(model, "ContactGeometrySet")
     geom = ET.SubElement(cg_set, "ContactHalfSpace", name=name)
-    ET.SubElement(geom, "socket_frame").text = f"/bodyset/{body}" if body != "ground" else "/ground"
+    ET.SubElement(geom, "socket_frame").text = (
+        f"/bodyset/{body}" if body != "ground" else "/ground"
+    )
     ET.SubElement(geom, "location").text = vec3_str(*location)
     ET.SubElement(geom, "orientation").text = vec3_str(*orientation)
     return geom
