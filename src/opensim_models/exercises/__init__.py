@@ -11,6 +11,10 @@ from opensim_models.exercises.clean_and_jerk.clean_and_jerk_model import (
     build_clean_and_jerk_model,
 )
 from opensim_models.exercises.deadlift.deadlift_model import build_deadlift_model
+from opensim_models.exercises.gait.gait_model import build_gait_model
+from opensim_models.exercises.sit_to_stand.sit_to_stand_model import (
+    build_sit_to_stand_model,
+)
 from opensim_models.exercises.snatch.snatch_model import build_snatch_model
 from opensim_models.exercises.squat.squat_model import build_squat_model
 
@@ -20,6 +24,8 @@ EXERCISE_BUILDERS: dict[str, Callable[..., str]] = {
     "bench_press": build_bench_press_model,
     "clean_and_jerk": build_clean_and_jerk_model,
     "deadlift": build_deadlift_model,
+    "gait": build_gait_model,
+    "sit_to_stand": build_sit_to_stand_model,
     "snatch": build_snatch_model,
     "squat": build_squat_model,
 }
@@ -29,6 +35,8 @@ __all__ = [
     "build_bench_press_model",
     "build_clean_and_jerk_model",
     "build_deadlift_model",
+    "build_gait_model",
+    "build_sit_to_stand_model",
     "build_snatch_model",
     "build_squat_model",
 ]
