@@ -52,9 +52,7 @@ _TISSUE_DENSITY_KG_M3: float = 1000.0  # Average human tissue ~1000 kg/m³
 
 # Segment names that are themselves bilateral (have _l/_r variants).
 # Used to determine whether a child segment's parent link needs a side suffix.
-_BILATERAL_SEGMENTS: frozenset[str] = frozenset(
-    {"upper_arm", "forearm", "thigh", "shank"}
-)
+_BILATERAL_SEGMENTS: frozenset[str] = frozenset({"upper_arm", "forearm", "thigh", "shank"})
 
 
 def _segment_radius_from_mass(mass: float, length: float) -> float:
@@ -120,6 +118,7 @@ def _add_bilateral_limb(
     coord_prefix: str,
     range_min: float,
     range_max: float,
+    bodies: dict[str, ET.Element] | None = None,
 ) -> None:
     """Add left and right limb segments with pin joints."""
     mass, length, radius = _seg(spec, seg_name)
@@ -127,7 +126,7 @@ def _add_bilateral_limb(
 
     for side, sign in [("l", -1.0), ("r", 1.0)]:
         body_name = f"{seg_name}_{side}"
-        add_body(
+        body_el = add_body(
             bodyset,
             name=body_name,
             mass=mass,
@@ -136,12 +135,14 @@ def _add_bilateral_limb(
             inertia_yy=inertia[1],
             inertia_zz=inertia[2],
         )
+        if bodies is not None:
+            bodies[body_name] = body_el
         add_pin_joint(
             jointset,
             name=f"{coord_prefix}_{side}",
-            parent_body=f"{parent_name}_{side}"
-            if parent_name in _BILATERAL_SEGMENTS
-            else parent_name,
+            parent_body=(
+                f"{parent_name}_{side}" if parent_name in _BILATERAL_SEGMENTS else parent_name
+            ),
             child_body=body_name,
             location_in_parent=(sign * parent_lateral_x, parent_offset_y, 0),
             location_in_child=(0, 0, 0),
@@ -167,6 +168,7 @@ def _add_bilateral_ball_joint_limb(
         tuple[float, float],
         tuple[float, float],
     ],
+    bodies: dict[str, ET.Element] | None = None,
 ) -> None:
     """Add left and right limb segments with BallJoints (3-DOF)."""
     mass, length, radius = _seg(spec, seg_name)
@@ -174,7 +176,7 @@ def _add_bilateral_ball_joint_limb(
 
     for side, sign in [("l", -1.0), ("r", 1.0)]:
         body_name = f"{seg_name}_{side}"
-        add_body(
+        body_el = add_body(
             bodyset,
             name=body_name,
             mass=mass,
@@ -183,6 +185,8 @@ def _add_bilateral_ball_joint_limb(
             inertia_yy=inertia[1],
             inertia_zz=inertia[2],
         )
+        if bodies is not None:
+            bodies[body_name] = body_el
         coordinates = [
             {
                 "name": f"{coord_prefix}_{side}_{suffix}",
@@ -195,9 +199,9 @@ def _add_bilateral_ball_joint_limb(
         add_ball_joint(
             jointset,
             name=f"{coord_prefix}_{side}",
-            parent_body=f"{parent_name}_{side}"
-            if parent_name in _BILATERAL_SEGMENTS
-            else parent_name,
+            parent_body=(
+                f"{parent_name}_{side}" if parent_name in _BILATERAL_SEGMENTS else parent_name
+            ),
             child_body=body_name,
             location_in_parent=(sign * parent_lateral_x, parent_offset_y, 0),
             location_in_child=(0, 0, 0),
@@ -216,6 +220,7 @@ def _add_bilateral_custom_joint_limb(
     parent_lateral_x: float,
     coord_prefix: str,
     coord_defs: list[dict[str, str | float]],
+    bodies: dict[str, ET.Element] | None = None,
 ) -> None:
     """Add left and right limb segments with CustomJoints (N-DOF)."""
     mass, length, radius = _seg(spec, seg_name)
@@ -223,7 +228,7 @@ def _add_bilateral_custom_joint_limb(
 
     for side, sign in [("l", -1.0), ("r", 1.0)]:
         body_name = f"{seg_name}_{side}"
-        add_body(
+        body_el = add_body(
             bodyset,
             name=body_name,
             mass=mass,
@@ -232,6 +237,8 @@ def _add_bilateral_custom_joint_limb(
             inertia_yy=inertia[1],
             inertia_zz=inertia[2],
         )
+        if bodies is not None:
+            bodies[body_name] = body_el
         coordinates = [
             {
                 "name": f"{coord_prefix}_{side}_{c['suffix']}",
@@ -245,9 +252,9 @@ def _add_bilateral_custom_joint_limb(
         add_custom_joint(
             jointset,
             name=f"{coord_prefix}_{side}",
-            parent_body=f"{parent_name}_{side}"
-            if parent_name in _BILATERAL_SEGMENTS
-            else parent_name,
+            parent_body=(
+                f"{parent_name}_{side}" if parent_name in _BILATERAL_SEGMENTS else parent_name
+            ),
             child_body=body_name,
             location_in_parent=(sign * parent_lateral_x, parent_offset_y, 0),
             location_in_child=(0, 0, 0),
@@ -255,7 +262,7 @@ def _add_bilateral_custom_joint_limb(
         )
 
 
-def _add_foot_contact_spheres(
+def add_foot_contact_spheres(
     model: ET.Element,
     spec: BodyModelSpec,
 ) -> None:
@@ -429,6 +436,7 @@ def create_full_body(
             (-0.5236, 3.1416),  # abduction: -30° to 180°
             (-1.5708, 1.5708),  # rotation: -90° to 90°
         ),
+        bodies=bodies,
     )
 
     _, ua_len, _ = _seg(spec, "upper_arm")
@@ -443,6 +451,7 @@ def create_full_body(
         coord_prefix="elbow",
         range_min=0,
         range_max=2.618,
+        bodies=bodies,
     )
 
     _, fa_len, _ = _seg(spec, "forearm")
@@ -469,6 +478,7 @@ def create_full_body(
                 "axis": "1 0 0",
             },
         ],
+        bodies=bodies,
     )
 
     # --- Legs ---
@@ -489,6 +499,7 @@ def create_full_body(
             (-0.7854, 0.5236),  # abduction/adduction: -45° to 30°
             (-0.7854, 0.7854),  # rotation: -45° to 45°
         ),
+        bodies=bodies,
     )
 
     _, th_len, _ = _seg(spec, "thigh")
@@ -503,6 +514,7 @@ def create_full_body(
         coord_prefix="knee",
         range_min=-2.618,
         range_max=0,
+        bodies=bodies,
     )
 
     _, sh_len, _ = _seg(spec, "shank")
@@ -529,6 +541,7 @@ def create_full_body(
                 "axis": "1 0 0",
             },
         ],
+        bodies=bodies,
     )
 
     logger.info("Full-body model complete: %d bodies created", len(bodies))

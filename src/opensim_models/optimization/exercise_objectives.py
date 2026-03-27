@@ -36,8 +36,7 @@ class Phase:
     def __post_init__(self) -> None:
         if not 0.0 <= self.time_fraction <= 1.0:
             raise ValueError(
-                f"Phase '{self.name}' time_fraction must be in [0, 1], "
-                f"got {self.time_fraction}"
+                f"Phase '{self.name}' time_fraction must be in [0, 1], " f"got {self.time_fraction}"
             )
 
 
@@ -60,8 +59,7 @@ class ExerciseObjective:
     def __post_init__(self) -> None:
         if len(self.phases) < 2:
             raise ValueError(
-                f"Exercise '{self.name}' must have at least 2 phases, "
-                f"got {len(self.phases)}"
+                f"Exercise '{self.name}' must have at least 2 phases, " f"got {len(self.phases)}"
             )
         fractions = [p.time_fraction for p in self.phases]
         for i in range(1, len(fractions)):

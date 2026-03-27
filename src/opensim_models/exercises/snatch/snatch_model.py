@@ -25,17 +25,16 @@ from __future__ import annotations
 
 import xml.etree.ElementTree as ET
 
-from opensim_models.exercises.base import ExerciseConfig, ExerciseModelBuilder
+from opensim_models.exercises.base import (
+    ExerciseConfig,
+    ExerciseModelBuilder,
+    _attach_barbell_to_hands,
+    _set_floor_pull_initial_pose,
+)
 from opensim_models.exercises.constants import (
-    _FLOOR_PULL_HIP_ANGLE,
-    _FLOOR_PULL_KNEE_ANGLE,
-    _FLOOR_PULL_LUMBAR_ANGLE,
     _SNATCH_GRIP_HALF_WIDTH,
 )
-from opensim_models.shared.utils.xml_helpers import (
-    add_weld_joint,
-    set_coordinate_default,
-)
+from opensim_models.shared.utils.xml_helpers import set_coordinate_default
 
 
 class SnatchModelBuilder(ExerciseModelBuilder):
@@ -59,40 +58,18 @@ class SnatchModelBuilder(ExerciseModelBuilder):
         Snatch grip is approximately 0.55-0.60 m from shaft center
         on each side (~1.5x shoulder width).
         """
-        add_weld_joint(
-            jointset,
-            name="barbell_to_left_hand",
-            parent_body="hand_l",
-            child_body="barbell_shaft",
-            location_in_parent=(0, 0, 0),
-            location_in_child=(-_SNATCH_GRIP_HALF_WIDTH, 0, 0),
-        )
-
-        add_weld_joint(
-            jointset,
-            name="barbell_to_right_hand",
-            parent_body="hand_r",
-            child_body="barbell_shaft",
-            location_in_parent=(0, 0, 0),
-            location_in_child=(_SNATCH_GRIP_HALF_WIDTH, 0, 0),
-        )
+        _attach_barbell_to_hands(jointset, _SNATCH_GRIP_HALF_WIDTH)
 
     def set_initial_pose(self, jointset: ET.Element) -> None:
         """Set starting position: bar on floor, wide grip, deep hip hinge.
 
         Wide snatch grip requires slight shoulder abduction.
         """
+        _set_floor_pull_initial_pose(jointset)
         shoulder_abduct = -0.3491  # ~-20° abduction for wide grip
         for side in ("l", "r"):
-            set_coordinate_default(jointset, f"hip_{side}_flex", _FLOOR_PULL_HIP_ANGLE)
-            set_coordinate_default(jointset, f"hip_{side}_adduct", 0.0)
-            set_coordinate_default(jointset, f"hip_{side}_rotate", 0.0)
-            set_coordinate_default(
-                jointset, f"knee_{side}_flex", _FLOOR_PULL_KNEE_ANGLE
-            )
             set_coordinate_default(jointset, f"shoulder_{side}_adduct", shoulder_abduct)
             set_coordinate_default(jointset, f"shoulder_{side}_rotate", 0.0)
-        set_coordinate_default(jointset, "lumbar_flex", _FLOOR_PULL_LUMBAR_ANGLE)
 
 
 def build_snatch_model(

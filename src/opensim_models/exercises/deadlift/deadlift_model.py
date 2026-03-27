@@ -21,15 +21,16 @@ import math
 import warnings
 import xml.etree.ElementTree as ET
 
-from opensim_models.exercises.base import ExerciseConfig, ExerciseModelBuilder
+from opensim_models.exercises.base import (
+    ExerciseConfig,
+    ExerciseModelBuilder,
+    _attach_barbell_to_hands,
+    _set_floor_pull_initial_pose,
+)
 from opensim_models.exercises.constants import (
     _FLOOR_PULL_HIP_ANGLE,
     _FLOOR_PULL_KNEE_ANGLE,
     _FLOOR_PULL_LUMBAR_ANGLE,
-)
-from opensim_models.shared.utils.xml_helpers import (
-    add_weld_joint,
-    set_coordinate_default,
 )
 
 PLATE_RADIUS = 0.225  # Standard 450mm diameter plate radius
@@ -91,23 +92,7 @@ class DeadliftModelBuilder(ExerciseModelBuilder):
 
         Grip is slightly outside the knees (~0.22 m from center).
         """
-        add_weld_joint(
-            jointset,
-            name="barbell_to_left_hand",
-            parent_body="hand_l",
-            child_body="barbell_shaft",
-            location_in_parent=(0, 0, 0),
-            location_in_child=(-self.config.grip_offset, 0, 0),
-        )
-
-        add_weld_joint(
-            jointset,
-            name="barbell_to_right_hand",
-            parent_body="hand_r",
-            child_body="barbell_shaft",
-            location_in_parent=(0, 0, 0),
-            location_in_child=(self.config.grip_offset, 0, 0),
-        )
+        _attach_barbell_to_hands(jointset, self.config.grip_offset)
 
     def set_initial_pose(self, jointset: ET.Element) -> None:
         """Set the starting position: deep hip hinge, knees flexed.
@@ -118,16 +103,7 @@ class DeadliftModelBuilder(ExerciseModelBuilder):
         Runs a feasibility check and emits a warning if hands are far
         from bar height.
         """
-        for side in ("l", "r"):
-            set_coordinate_default(
-                jointset, f"hip_{side}_flex", DEADLIFT_INITIAL_HIP_ANGLE
-            )
-            set_coordinate_default(jointset, f"hip_{side}_adduct", 0.0)
-            set_coordinate_default(jointset, f"hip_{side}_rotate", 0.0)
-            set_coordinate_default(
-                jointset, f"knee_{side}_flex", DEADLIFT_INITIAL_KNEE_ANGLE
-            )
-        set_coordinate_default(jointset, "lumbar_flex", DEADLIFT_INITIAL_LUMBAR_ANGLE)
+        _set_floor_pull_initial_pose(jointset)
 
         self._check_pose_feasibility()
 

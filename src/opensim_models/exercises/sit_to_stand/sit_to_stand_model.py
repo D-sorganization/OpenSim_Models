@@ -43,6 +43,10 @@ class SitToStandModelBuilder(ExerciseModelBuilder):
     def exercise_name(self) -> str:
         return "sit_to_stand"
 
+    @property
+    def uses_barbell(self) -> bool:
+        return False
+
     def _pre_attach_hook(self, bodyset: ET.Element, jointset: ET.Element) -> None:
         """Add a chair body welded to ground."""
         chair = ET.SubElement(bodyset, "Body", name="chair")

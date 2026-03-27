@@ -33,6 +33,10 @@ class GaitModelBuilder(ExerciseModelBuilder):
     def exercise_name(self) -> str:
         return "gait"
 
+    @property
+    def uses_barbell(self) -> bool:
+        return False
+
     def attach_barbell(
         self,
         jointset: ET.Element,

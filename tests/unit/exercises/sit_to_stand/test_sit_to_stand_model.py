@@ -68,8 +68,6 @@ class TestBuildSitToStandModel:
         assert root.find(".//Model").get("name") == "sit_to_stand"  # type: ignore
 
     def test_custom_parameters(self):
-        xml_str = build_sit_to_stand_model(
-            body_mass=70.0, height=1.65, seat_height=0.40
-        )
+        xml_str = build_sit_to_stand_model(body_mass=70.0, height=1.65, seat_height=0.40)
         root = ET.fromstring(xml_str)
         assert root is not None

@@ -55,9 +55,7 @@ class TestSegmentMassFractions:
     def test_fractions_sum_bilateral(self):
         """Bilateral sum: paired limbs counted twice."""
         paired = {"upper_arm", "forearm", "hand", "thigh", "shank", "foot"}
-        total = sum(
-            v * (2 if k in paired else 1) for k, v in SEGMENT_MASS_FRACTIONS.items()
-        )
+        total = sum(v * (2 if k in paired else 1) for k, v in SEGMENT_MASS_FRACTIONS.items())
         assert abs(total - 1.0) < 0.01
 
     def test_all_positive(self):
@@ -183,8 +181,8 @@ class TestGravity:
 
     def test_direction(self):
         assert GRAVITY[0] == 0.0
-        assert GRAVITY[1] == 0.0
-        assert GRAVITY[2] < 0.0
+        assert GRAVITY[1] < 0.0
+        assert GRAVITY[2] == 0.0
 
     def test_magnitude(self):
         mag = math.sqrt(sum(g**2 for g in GRAVITY))

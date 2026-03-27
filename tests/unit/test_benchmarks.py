@@ -41,9 +41,9 @@ class TestModelGenerationPerformance:
         start = time.perf_counter()
         xml_str = builder()
         elapsed = time.perf_counter() - start
-        assert elapsed < _MAX_GENERATION_TIME, (
-            f"{name} took {elapsed:.3f}s (limit: {_MAX_GENERATION_TIME}s)"
-        )
+        assert (
+            elapsed < _MAX_GENERATION_TIME
+        ), f"{name} took {elapsed:.3f}s (limit: {_MAX_GENERATION_TIME}s)"
         assert len(xml_str) > 0
 
     def test_all_models_batch_under_time_limit(self):
@@ -59,6 +59,4 @@ class TestModelGenerationPerformance:
         """Generated XML should be between 1 KB and 1 MB."""
         xml_str = builder()
         size = len(xml_str.encode("utf-8"))
-        assert 1_000 < size < 1_000_000, (
-            f"{name} XML is {size} bytes (expected 1KB-1MB)"
-        )
+        assert 1_000 < size < 1_000_000, f"{name} XML is {size} bytes (expected 1KB-1MB)"
