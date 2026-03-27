@@ -63,13 +63,20 @@ class SquatModelBuilder(ExerciseModelBuilder):
         )
 
     def set_initial_pose(self, jointset: ET.Element) -> None:
-        """Set standing unrack position: slight hip/knee flexion (~5 deg)."""
-        # Slight hip flexion (positive) and knee flexion (negative in this model)
+        """Set standing unrack position: slight hip/knee flexion (~5 deg).
+
+        Multi-DOF defaults: slight hip external rotation for squat stance.
+        """
         hip_flex = 0.0873  # ~5 degrees
         knee_flex = -0.0873  # ~5 degrees
+        hip_rotate = 0.1745  # ~10° external rotation for squat stance
         for side in ("l", "r"):
             set_coordinate_default(jointset, f"hip_{side}_flex", hip_flex)
+            set_coordinate_default(jointset, f"hip_{side}_adduct", 0.0)
+            set_coordinate_default(jointset, f"hip_{side}_rotate", hip_rotate)
             set_coordinate_default(jointset, f"knee_{side}_flex", knee_flex)
+            set_coordinate_default(jointset, f"ankle_{side}_flex", 0.0)
+            set_coordinate_default(jointset, f"ankle_{side}_inversion", 0.0)
 
 
 def build_squat_model(

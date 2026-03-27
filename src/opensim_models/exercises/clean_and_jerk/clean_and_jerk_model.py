@@ -85,9 +85,14 @@ class CleanAndJerkModelBuilder(ExerciseModelBuilder):
         )
 
     def set_initial_pose(self, jointset: ET.Element) -> None:
-        """Set starting position: bar on floor, clean grip, hip hinge."""
+        """Set starting position: bar on floor, clean grip, hip hinge.
+
+        Multi-DOF joints default to neutral for adduction/rotation.
+        """
         for side in ("l", "r"):
             set_coordinate_default(jointset, f"hip_{side}_flex", _FLOOR_PULL_HIP_ANGLE)
+            set_coordinate_default(jointset, f"hip_{side}_adduct", 0.0)
+            set_coordinate_default(jointset, f"hip_{side}_rotate", 0.0)
             set_coordinate_default(
                 jointset, f"knee_{side}_flex", _FLOOR_PULL_KNEE_ANGLE
             )

@@ -114,6 +114,7 @@ class DeadliftModelBuilder(ExerciseModelBuilder):
 
         The bar is on the floor at PLATE_RADIUS height, so the body
         must flex at the hips (~80 deg) and knees (~60 deg) to reach.
+        Multi-DOF joints default to neutral (0) for adduction/rotation.
         Runs a feasibility check and emits a warning if hands are far
         from bar height.
         """
@@ -121,6 +122,8 @@ class DeadliftModelBuilder(ExerciseModelBuilder):
             set_coordinate_default(
                 jointset, f"hip_{side}_flex", DEADLIFT_INITIAL_HIP_ANGLE
             )
+            set_coordinate_default(jointset, f"hip_{side}_adduct", 0.0)
+            set_coordinate_default(jointset, f"hip_{side}_rotate", 0.0)
             set_coordinate_default(
                 jointset, f"knee_{side}_flex", DEADLIFT_INITIAL_KNEE_ANGLE
             )
