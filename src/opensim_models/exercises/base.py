@@ -18,8 +18,13 @@ from dataclasses import dataclass, field
 
 from opensim_models.shared.barbell import BarbellSpec, create_barbell_bodies
 from opensim_models.shared.body import BodyModelSpec, create_full_body
+from opensim_models.shared.body.body_model import _add_foot_contact_spheres
 from opensim_models.shared.contracts.postconditions import ensure_valid_xml
-from opensim_models.shared.utils.xml_helpers import serialize_model
+from opensim_models.shared.utils.xml_helpers import (
+    add_contact_half_space,
+    add_hunt_crossley_force,
+    serialize_model,
+)
 
 logger = logging.getLogger(__name__)
 
@@ -75,12 +80,20 @@ class ExerciseModelBuilder(ABC):
         """
 
     def _skip_ground_joint(self) -> bool:
-        """Return True if the pelvis–ground FreeJoint should be omitted.
+        """Return True if the pelvis-ground FreeJoint should be omitted.
 
         Override in subclasses that supply their own pelvis parent joint
         (e.g. bench press, where pelvis is welded to the bench body).
         """
         return False
+
+    def _post_contact_hook(self, model: ET.Element) -> None:  # noqa: B027
+        """Hook called after standard ground contact is added.
+
+        Subclasses may override to inject additional contact surfaces
+        (e.g. a bench contact surface for bench press).
+        The default implementation is a no-op.
+        """
 
     def build(self) -> str:
         """Build the complete OpenSim model XML and return as string.
@@ -126,6 +139,27 @@ class ExerciseModelBuilder(ABC):
 
         # Exercise-specific initial pose
         self.set_initial_pose(jointset)
+
+        # --- Ground contact geometry and forces ---
+        add_contact_half_space(model, name="ground_contact", body="ground")
+        _add_foot_contact_spheres(model, self.config.body_spec)
+
+        # Connect each foot contact sphere to the ground half-space
+        foot_contact_names = [
+            f"foot_{side}_{point}"
+            for side in ("l", "r")
+            for point in ("heel_medial", "heel_lateral", "toe_medial", "toe_lateral")
+        ]
+        for sphere_name in foot_contact_names:
+            add_hunt_crossley_force(
+                model,
+                name=f"force_{sphere_name}",
+                contact_geometry_1=sphere_name,
+                contact_geometry_2="ground_contact",
+            )
+
+        # Subclass hook for additional contact surfaces
+        self._post_contact_hook(model)
 
         xml_str = serialize_model(root)
 
