@@ -20,3 +20,11 @@ venv/
 .DS_Store
 Thumbs.db
 .hypothesis/
+.benchmarks/
+*.osim
+
+# Stale root files (one-off scripts / debug artifacts)
+fix_mypy.py
+mypy2.txt
+os_issues.json
+.ci_trigger.py
