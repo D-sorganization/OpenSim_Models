@@ -24,8 +24,8 @@ import xml.etree.ElementTree as ET
 from opensim_models.exercises.base import (
     ExerciseConfig,
     ExerciseModelBuilder,
-    _attach_barbell_to_hands,
-    _set_floor_pull_initial_pose,
+    attach_barbell_to_hands,
+    set_floor_pull_initial_pose,
 )
 from opensim_models.exercises.constants import (
     _FLOOR_PULL_HIP_ANGLE,
@@ -92,7 +92,7 @@ class DeadliftModelBuilder(ExerciseModelBuilder):
 
         Grip is slightly outside the knees (~0.22 m from center).
         """
-        _attach_barbell_to_hands(jointset, self.config.grip_offset)
+        attach_barbell_to_hands(jointset, self.config.grip_offset)
 
     def set_initial_pose(self, jointset: ET.Element) -> None:
         """Set the starting position: deep hip hinge, knees flexed.
@@ -103,7 +103,7 @@ class DeadliftModelBuilder(ExerciseModelBuilder):
         Runs a feasibility check and emits a warning if hands are far
         from bar height.
         """
-        _set_floor_pull_initial_pose(jointset)
+        set_floor_pull_initial_pose(jointset)
 
         self._check_pose_feasibility()
 

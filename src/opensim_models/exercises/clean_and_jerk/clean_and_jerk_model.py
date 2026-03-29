@@ -32,8 +32,8 @@ import xml.etree.ElementTree as ET
 from opensim_models.exercises.base import (
     ExerciseConfig,
     ExerciseModelBuilder,
-    _attach_barbell_to_hands,
-    _set_floor_pull_initial_pose,
+    attach_barbell_to_hands,
+    set_floor_pull_initial_pose,
 )
 from opensim_models.exercises.constants import (
     _CLEAN_GRIP_HALF_WIDTH,
@@ -64,14 +64,14 @@ class CleanAndJerkModelBuilder(ExerciseModelBuilder):
 
         Clean grip: approximately shoulder width, ~0.25 m from shaft center.
         """
-        _attach_barbell_to_hands(jointset, _CLEAN_GRIP_HALF_WIDTH)
+        attach_barbell_to_hands(jointset, _CLEAN_GRIP_HALF_WIDTH)
 
     def set_initial_pose(self, jointset: ET.Element) -> None:
         """Set starting position: bar on floor, clean grip, hip hinge.
 
         Multi-DOF joints default to neutral for adduction/rotation.
         """
-        _set_floor_pull_initial_pose(jointset)
+        set_floor_pull_initial_pose(jointset)
 
 
 def build_clean_and_jerk_model(
