@@ -28,8 +28,8 @@ import xml.etree.ElementTree as ET
 from opensim_models.exercises.base import (
     ExerciseConfig,
     ExerciseModelBuilder,
-    _attach_barbell_to_hands,
-    _set_floor_pull_initial_pose,
+    attach_barbell_to_hands,
+    set_floor_pull_initial_pose,
 )
 from opensim_models.exercises.constants import (
     _SNATCH_GRIP_HALF_WIDTH,
@@ -58,14 +58,14 @@ class SnatchModelBuilder(ExerciseModelBuilder):
         Snatch grip is approximately 0.55-0.60 m from shaft center
         on each side (~1.5x shoulder width).
         """
-        _attach_barbell_to_hands(jointset, _SNATCH_GRIP_HALF_WIDTH)
+        attach_barbell_to_hands(jointset, _SNATCH_GRIP_HALF_WIDTH)
 
     def set_initial_pose(self, jointset: ET.Element) -> None:
         """Set starting position: bar on floor, wide grip, deep hip hinge.
 
         Wide snatch grip requires slight shoulder abduction.
         """
-        _set_floor_pull_initial_pose(jointset)
+        set_floor_pull_initial_pose(jointset)
         shoulder_abduct = -0.3491  # ~-20° abduction for wide grip
         for side in ("l", "r"):
             set_coordinate_default(jointset, f"shoulder_{side}_adduct", shoulder_abduct)

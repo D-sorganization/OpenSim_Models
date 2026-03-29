@@ -1,9 +1,8 @@
 """Optimization objectives and trajectory planning for barbell exercises."""
 
+from opensim_models.optimization._types import ExerciseObjective, Phase
 from opensim_models.optimization.exercise_objectives import (
     EXERCISE_OBJECTIVES,
-    ExerciseObjective,
-    Phase,
     get_exercise_objective,
 )
 from opensim_models.optimization.trajectory_optimizer import (

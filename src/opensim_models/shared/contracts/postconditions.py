@@ -20,6 +20,31 @@ def ensure_valid_xml(xml_string: str) -> ET.Element:
         raise ValueError(f"Generated XML is not well-formed: {exc}") from exc
 
 
+def ensure_coordinates_within_bounds(root: ET.Element) -> None:
+    """Verify every Coordinate's default_value is within its declared range.
+
+    DbC: catches mismatches between set_initial_pose() values and the
+    range limits declared when the joint was created (issue #52).
+
+    Raises ValueError if any default is out of range (with 1e-6 tolerance).
+    """
+    tol = 1e-6
+    for coord in root.iter("Coordinate"):
+        name = coord.get("name", "<unnamed>")
+        dv_el = coord.find("default_value")
+        rng_el = coord.find("range")
+        if dv_el is None or rng_el is None:
+            continue
+        default = float(dv_el.text)  # type: ignore[arg-type]
+        parts = rng_el.text.split()  # type: ignore[union-attr]
+        lo, hi = float(parts[0]), float(parts[1])
+        if default < lo - tol or default > hi + tol:
+            raise ValueError(
+                f"Coordinate '{name}' default_value {default:.6f} "
+                f"is outside range [{lo:.6f}, {hi:.6f}]"
+            )
+
+
 def ensure_positive_mass(mass: float, body_name: str) -> None:
     """Assert that a body's mass is positive after computation."""
     if mass <= 0:

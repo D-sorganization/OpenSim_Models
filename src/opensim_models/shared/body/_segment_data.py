@@ -49,7 +49,21 @@ _SEGMENT_TABLE: dict[str, dict[str, float]] = {
 
 
 def _segment_radius_from_mass(mass: float, length: float) -> float:
-    """Compute cylinder radius from mass and length assuming uniform tissue density."""
+    """Compute cylinder radius from mass and length assuming uniform tissue density.
+
+    Uses: volume = mass/density = pi * r^2 * L  =>  r = sqrt(mass / (density * pi * L))
+
+    Note on usage for non-cylindrical segments (issues #58, #59):
+      - Limb segments (upper_arm, forearm, thigh, shank, etc.) use this radius
+        directly with ``cylinder_inertia`` -- a good geometric match.
+      - The pelvis and torso use this radius as a *half-width* input to
+        ``rectangular_prism_inertia(mass, 2*r, length, 2*r)``.  This produces
+        a square cross-section whose half-width equals the cylinder radius.
+        The resulting inertia values are ~4/pi times larger than the cylinder
+        (square vs circle cross-section), which is intentional: the pelvis and
+        torso are broader than a cylinder of equal mass and length.  This is a
+        deliberate simplification, not a bug.
+    """
     if length <= 0:
         raise ValueError(f"Segment length must be positive, got {length}")
     if mass <= 0:

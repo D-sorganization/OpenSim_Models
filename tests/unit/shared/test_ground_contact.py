@@ -8,7 +8,7 @@ from opensim_models.exercises.bench_press.bench_press_model import (
     BenchPressModelBuilder,
 )
 from opensim_models.exercises.squat.squat_model import SquatModelBuilder
-from opensim_models.shared.utils.xml_helpers import (
+from opensim_models.shared.utils.contact_helpers import (
     add_contact_half_space,
     add_contact_sphere,
     add_hunt_crossley_force,

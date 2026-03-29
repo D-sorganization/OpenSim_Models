@@ -23,14 +23,16 @@ import xml.etree.ElementTree as ET
 from opensim_models.exercises.base import (
     ExerciseConfig,
     ExerciseModelBuilder,
-    _attach_barbell_to_hands,
+    attach_barbell_to_hands,
+)
+from opensim_models.shared.utils.contact_helpers import (
+    add_contact_half_space,
+    add_contact_sphere,
+    add_hunt_crossley_force,
 )
 from opensim_models.shared.utils.geometry import rectangular_prism_inertia
 from opensim_models.shared.utils.xml_helpers import (
     add_body,
-    add_contact_half_space,
-    add_contact_sphere,
-    add_hunt_crossley_force,
     add_weld_joint,
     set_coordinate_default,
 )
@@ -138,7 +140,7 @@ class BenchPressModelBuilder(ExerciseModelBuilder):
         The grip is approximately shoulder-width (~0.40 m from center
         on each side for a standard grip).
         """
-        _attach_barbell_to_hands(jointset, self.config.grip_offset)
+        attach_barbell_to_hands(jointset, self.config.grip_offset)
 
     def _skip_ground_joint(self) -> bool:
         """Bench press supplies its own pelvis parent via WeldJoint to bench."""

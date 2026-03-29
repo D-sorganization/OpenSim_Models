@@ -421,4 +421,66 @@ mod tests {
         let result = interpolate_pure(&tf, &wv, 1);
         assert!((result[[0, 0]] - 5.0).abs() < 1e-10);
     }
+
+    #[test]
+    fn test_inverse_dynamics_multi_frame() {
+        // Verify parallel batch produces correct results across multiple frames
+        let pos = Array2::from_shape_vec(
+            (3, 2),
+            vec![0.0, 0.0, std::f64::consts::FRAC_PI_2, 0.0, 0.0, std::f64::consts::FRAC_PI_2],
+        )
+        .unwrap();
+        let vel = Array2::<f64>::zeros((3, 2));
+        let acc = Array2::<f64>::zeros((3, 2));
+        let inr = Array1::from_vec(vec![1.0, 1.0]);
+        let dmp = Array1::from_vec(vec![0.0, 0.0]);
+        let grv = Array1::from_vec(vec![1.0, 1.0]);
+
+        let result = inverse_dynamics_pure(&pos, &vel, &acc, &inr, &dmp, &grv);
+        // Frame 0: sin(0)=0, sin(0)=0
+        assert!(result[[0, 0]].abs() < 1e-12);
+        // Frame 1: sin(pi/2)=1, sin(0)=0
+        assert!((result[[1, 0]] - 1.0).abs() < 1e-12);
+        assert!(result[[1, 1]].abs() < 1e-12);
+        // Frame 2: sin(0)=0, sin(pi/2)=1
+        assert!(result[[2, 0]].abs() < 1e-12);
+        assert!((result[[2, 1]] - 1.0).abs() < 1e-12);
+    }
+
+    #[test]
+    fn test_com_weighted_average() {
+        // seg0 at (0,0,0) mass=2, seg1 at (6,0,0) mass=1 -> COM = (2,0,0)
+        let pos =
+            Array2::from_shape_vec((1, 6), vec![0.0, 0.0, 0.0, 6.0, 0.0, 0.0]).unwrap();
+        let masses = Array1::from_vec(vec![2.0, 1.0]);
+        let result = com_pure(&pos, &masses);
+        assert!((result[[0, 0]] - 2.0).abs() < 1e-12);
+        assert!(result[[0, 1]].abs() < 1e-12);
+        assert!(result[[0, 2]].abs() < 1e-12);
+    }
+
+    #[test]
+    fn test_interpolate_three_waypoints() {
+        // 3 waypoints: 0->10->0 at t=0, 0.5, 1.0
+        let tf = Array1::from_vec(vec![0.0, 0.5, 1.0]);
+        let wv = Array2::from_shape_vec((3, 1), vec![0.0, 10.0, 0.0]).unwrap();
+        let result = interpolate_pure(&tf, &wv, 5);
+        // t=0.0 -> 0, t=0.25 -> 5, t=0.5 -> 10, t=0.75 -> 5, t=1.0 -> 0
+        assert!((result[[0, 0]] - 0.0).abs() < 1e-10);
+        assert!((result[[1, 0]] - 5.0).abs() < 1e-10);
+        assert!((result[[2, 0]] - 10.0).abs() < 1e-10);
+        assert!((result[[3, 0]] - 5.0).abs() < 1e-10);
+        assert!((result[[4, 0]] - 0.0).abs() < 1e-10);
+    }
+
+    #[test]
+    fn test_interpolate_multi_coord() {
+        // 2 coords, 2 waypoints: coord0 goes 0->10, coord1 goes 10->0
+        let tf = Array1::from_vec(vec![0.0, 1.0]);
+        let wv = Array2::from_shape_vec((2, 2), vec![0.0, 10.0, 10.0, 0.0]).unwrap();
+        let result = interpolate_pure(&tf, &wv, 3);
+        // midpoint: coord0=5, coord1=5
+        assert!((result[[1, 0]] - 5.0).abs() < 1e-10);
+        assert!((result[[1, 1]] - 5.0).abs() < 1e-10);
+    }
 }

@@ -27,10 +27,15 @@ from opensim_models.shared.body import (
     add_foot_contact_spheres,
     create_full_body,
 )
-from opensim_models.shared.contracts.postconditions import ensure_valid_xml
-from opensim_models.shared.utils.xml_helpers import (
+from opensim_models.shared.contracts.postconditions import (
+    ensure_coordinates_within_bounds,
+    ensure_valid_xml,
+)
+from opensim_models.shared.utils.contact_helpers import (
     add_contact_half_space,
     add_hunt_crossley_force,
+)
+from opensim_models.shared.utils.xml_helpers import (
     add_weld_joint,
     serialize_model,
     set_coordinate_default,
@@ -49,7 +54,7 @@ class ExerciseConfig:
     grip_offset: float = 0.40  # meters from shaft center to hand (half-width)
 
 
-def _set_floor_pull_initial_pose(jointset: ET.Element) -> None:
+def set_floor_pull_initial_pose(jointset: ET.Element) -> None:
     """Set the shared floor-pull initial pose (deadlift, snatch, clean-and-jerk).
 
     DRY: extracted from three identical loops in deadlift, snatch, and
@@ -63,7 +68,7 @@ def _set_floor_pull_initial_pose(jointset: ET.Element) -> None:
     set_coordinate_default(jointset, "lumbar_flex", _FLOOR_PULL_LUMBAR_ANGLE)
 
 
-def _attach_barbell_to_hands(
+def attach_barbell_to_hands(
     jointset: ET.Element,
     grip_offset: float,
 ) -> None:
@@ -133,7 +138,9 @@ class ExerciseModelBuilder(ABC):
     def set_initial_pose(self, jointset: ET.Element) -> None:
         """Set default coordinate values for the starting position."""
 
-    def _pre_attach_hook(self, bodyset: ET.Element, jointset: ET.Element) -> None:  # noqa: B027
+    def _pre_attach_hook(  # noqa: B027 -- intentional no-op hook, not a missing abstract
+        self, bodyset: ET.Element, jointset: ET.Element
+    ) -> None:
         """Hook called after bodies are built, before barbell is attached.
 
         Subclasses may override to inject additional bodies or joints
@@ -149,7 +156,9 @@ class ExerciseModelBuilder(ABC):
         """
         return False
 
-    def _post_contact_hook(self, model: ET.Element) -> None:  # noqa: B027
+    def _post_contact_hook(  # noqa: B027 -- intentional no-op hook, not a missing abstract
+        self, model: ET.Element
+    ) -> None:
         """Hook called after standard ground contact is added.
 
         Subclasses may override to inject additional contact surfaces
@@ -227,8 +236,9 @@ class ExerciseModelBuilder(ABC):
 
         xml_str = serialize_model(root)
 
-        # Postcondition: well-formed XML
-        ensure_valid_xml(xml_str)
+        # Postconditions: well-formed XML and coordinate defaults within bounds
+        parsed = ensure_valid_xml(xml_str)
+        ensure_coordinates_within_bounds(parsed)
 
         logger.info("%s model built successfully", self.exercise_name)
         return xml_str
