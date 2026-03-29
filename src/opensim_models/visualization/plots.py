@@ -7,8 +7,9 @@ phase diagrams using matplotlib with consistent styling.
 from __future__ import annotations
 
 import logging
-from typing import TYPE_CHECKING
+from typing import TYPE_CHECKING, Any, cast
 
+import matplotlib
 import matplotlib.pyplot as plt
 import numpy as np
 
@@ -122,7 +123,7 @@ def plot_phase_diagram(
         raise ValueError(f"Exercise '{objective.name}' has no joint targets in phases")
 
     # Color palette
-    cmap = plt.colormaps["Set2"]
+    cmap = matplotlib.colormaps["Set2"]
     colors = cmap(np.linspace(0, 1, max(len(coord_list), 1)))
 
     with plt.rc_context(_STYLE):
@@ -152,7 +153,7 @@ def plot_phase_diagram(
             ax.annotate(
                 phase.name,
                 xy=(phase.time_fraction, 1.02),
-                xycoords=("data", "axes fraction"),
+                xycoords=cast(Any, ("data", "axes fraction")),
                 ha="center",
                 va="bottom",
                 fontsize=8,
