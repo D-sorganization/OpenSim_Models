@@ -143,7 +143,7 @@ class BenchPressModelBuilder(ExerciseModelBuilder):
         The grip is approximately shoulder-width (~0.40 m from center
         on each side for a standard grip).
         """
-        attach_barbell_to_hands(jointset, self.config.grip_offset)
+        attach_barbell_to_hands(jointset, self.grip_offset)
 
     def _skip_ground_joint(self) -> bool:
         """Bench press supplies its own pelvis parent via WeldJoint to bench."""

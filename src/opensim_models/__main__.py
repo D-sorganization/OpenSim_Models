@@ -56,6 +56,14 @@ def main(argv: list[str] | None = None) -> None:
     """Run the CLI."""
     args = _build_parser().parse_args(argv)
 
+    # DbC: validate numeric arguments before constructing any model objects
+    if args.mass <= 0:
+        sys.exit(f"--mass must be positive, got {args.mass}")
+    if args.height <= 0:
+        sys.exit(f"--height must be positive, got {args.height}")
+    if args.plates < 0:
+        sys.exit(f"--plates must be non-negative, got {args.plates}")
+
     logging.basicConfig(
         level=logging.DEBUG if args.verbose else logging.WARNING,
         format="%(name)s %(levelname)s: %(message)s",

@@ -5,6 +5,15 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.1.1] - 2026-03-30
+
+### Changed
+
+- **DRY**: Refactored `create_barbell_bodies` (was >80 lines) into three private helper functions: `_compute_sleeve_inertia`, `_add_barbell_bodies`, and `_add_sleeve_weld_joints`.
+- **LoD**: Added `body_spec`, `barbell_spec`, `gravity`, and `grip_offset` properties to `ExerciseModelBuilder` so subclasses and `build()` no longer reach two levels deep into `self.config.*`.
+- **LoD**: Updated `deadlift_model.py`, `bench_press_model.py`, and `squat_model.py` to use the new interface properties.
+- **DbC**: Added input validation to `main()` in `__main__.py` — `--mass`, `--height`, and `--plates` now fail fast with a descriptive error if out of range.
+
 ## [0.1.0] - 2026-03-22
 
 ### Added

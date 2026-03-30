@@ -64,7 +64,7 @@ class DeadliftModelBuilder(ExerciseModelBuilder):
         Note: variable names use the ``_y`` suffix because OpenSim uses a
         Y-up coordinate system (gravity acts in the -Y direction).
         """
-        h = self.config.body_spec.height
+        h = self.body_spec.height
         # Approx Winter (2009) fractions
         shank = h * 0.246
         thigh = h * 0.245
@@ -95,7 +95,7 @@ class DeadliftModelBuilder(ExerciseModelBuilder):
 
         Grip is slightly outside the knees (~0.22 m from center).
         """
-        attach_barbell_to_hands(jointset, self.config.grip_offset)
+        attach_barbell_to_hands(jointset, self.grip_offset)
 
     def set_initial_pose(self, jointset: ET.Element) -> None:
         """Set the starting position: deep hip hinge, knees flexed.

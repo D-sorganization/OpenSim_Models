@@ -111,6 +111,30 @@ class ExerciseModelBuilder(ABC):
     def __init__(self, config: ExerciseConfig | None = None) -> None:
         self.config = config or ExerciseConfig()
 
+    # --- LoD interface properties ---
+    # Callers (including subclasses) should use these accessors rather than
+    # reaching two levels deep into self.config.<field>.
+
+    @property
+    def body_spec(self) -> BodyModelSpec:
+        """Body model specification (LoD: avoids self.config.body_spec)."""
+        return self.config.body_spec
+
+    @property
+    def barbell_spec(self) -> BarbellSpec:
+        """Barbell specification (LoD: avoids self.config.barbell_spec)."""
+        return self.config.barbell_spec
+
+    @property
+    def gravity(self) -> tuple[float, float, float]:
+        """Gravity vector (LoD: avoids self.config.gravity)."""
+        return self.config.gravity
+
+    @property
+    def grip_offset(self) -> float:
+        """Grip offset in metres (LoD: avoids self.config.grip_offset)."""
+        return self.config.grip_offset
+
     @property
     @abstractmethod
     def exercise_name(self) -> str:
@@ -177,7 +201,7 @@ class ExerciseModelBuilder(ABC):
 
         # Gravity
         gravity = ET.SubElement(model, "gravity")
-        g = self.config.gravity
+        g = self.gravity
         gravity.text = f"{g[0]:.6f} {g[1]:.6f} {g[2]:.6f}"
 
         # Ground body
@@ -193,16 +217,14 @@ class ExerciseModelBuilder(ABC):
         body_bodies = create_full_body(
             bodyset,
             jointset,
-            self.config.body_spec,
+            self.body_spec,
             skip_ground_joint=self._skip_ground_joint(),
         )
 
         # Build barbell (only for exercises that use one)
         barbell_bodies: dict[str, ET.Element] = {}
         if self.uses_barbell:
-            barbell_bodies = create_barbell_bodies(
-                bodyset, jointset, self.config.barbell_spec
-            )
+            barbell_bodies = create_barbell_bodies(bodyset, jointset, self.barbell_spec)
 
         # Subclass hook: inject extra bodies/joints before barbell attachment
         self._pre_attach_hook(bodyset, jointset)
@@ -215,7 +237,7 @@ class ExerciseModelBuilder(ABC):
 
         # --- Ground contact geometry and forces ---
         add_contact_half_space(model, name="ground_contact", body="ground")
-        add_foot_contact_spheres(model, self.config.body_spec)
+        add_foot_contact_spheres(model, self.body_spec)
 
         # Connect each foot contact sphere to the ground half-space
         foot_contact_names = [
