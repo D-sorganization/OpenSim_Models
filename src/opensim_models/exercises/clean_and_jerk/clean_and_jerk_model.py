@@ -27,6 +27,7 @@ The barbell is welded to both hands at clean grip width.
 
 from __future__ import annotations
 
+import logging
 import xml.etree.ElementTree as ET
 
 from opensim_models.exercises.base import (
@@ -38,6 +39,8 @@ from opensim_models.exercises.base import (
 from opensim_models.exercises.constants import (
     _CLEAN_GRIP_HALF_WIDTH,
 )
+
+logger = logging.getLogger(__name__)
 
 
 class CleanAndJerkModelBuilder(ExerciseModelBuilder):

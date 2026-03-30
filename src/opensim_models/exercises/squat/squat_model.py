@@ -13,6 +13,7 @@ Biomechanical notes:
 
 from __future__ import annotations
 
+import logging
 import xml.etree.ElementTree as ET
 
 from opensim_models.exercises.base import ExerciseConfig, ExerciseModelBuilder
@@ -20,6 +21,8 @@ from opensim_models.shared.utils.xml_helpers import (
     add_weld_joint,
     set_coordinate_default,
 )
+
+logger = logging.getLogger(__name__)
 
 
 class SquatModelBuilder(ExerciseModelBuilder):

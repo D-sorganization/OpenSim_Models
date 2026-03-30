@@ -6,6 +6,7 @@ appropriate joint types. Used by ``body_model.create_full_body``.
 
 from __future__ import annotations
 
+import logging
 import xml.etree.ElementTree as ET
 
 from opensim_models.shared.body._segment_data import (
@@ -20,6 +21,8 @@ from opensim_models.shared.utils.xml_helpers import (
     add_custom_joint,
     add_pin_joint,
 )
+
+logger = logging.getLogger(__name__)
 
 
 def add_bilateral_limb(

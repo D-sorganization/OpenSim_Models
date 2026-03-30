@@ -17,6 +17,7 @@ pelvis to a supine position at bench height (0.43 m, standard IPF).
 
 from __future__ import annotations
 
+import logging
 import math
 import xml.etree.ElementTree as ET
 
@@ -36,6 +37,8 @@ from opensim_models.shared.utils.xml_helpers import (
     add_weld_joint,
     set_coordinate_default,
 )
+
+logger = logging.getLogger(__name__)
 
 BENCH_HEIGHT = 0.43  # IPF standard bench height (meters)
 

@@ -17,6 +17,7 @@ and knee flexion to reach the bar on the ground.
 
 from __future__ import annotations
 
+import logging
 import math
 import warnings
 import xml.etree.ElementTree as ET
@@ -32,6 +33,8 @@ from opensim_models.exercises.constants import (
     _FLOOR_PULL_KNEE_ANGLE,
     _FLOOR_PULL_LUMBAR_ANGLE,
 )
+
+logger = logging.getLogger(__name__)
 
 PLATE_RADIUS = 0.225  # Standard 450mm diameter plate radius
 

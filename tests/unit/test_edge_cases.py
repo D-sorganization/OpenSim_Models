@@ -111,6 +111,39 @@ class TestPostconditionEdgeCases:
         with pytest.raises(ValueError, match="triangle"):
             ensure_positive_definite_inertia(0.01, 0.01, 100.0, "body")
 
+    def test_coordinate_missing_default_value(self):
+        """Coordinate without default_value should be silently skipped."""
+        from opensim_models.shared.contracts.postconditions import (
+            ensure_coordinates_within_bounds,
+        )
+
+        root = ET.fromstring(
+            "<Model>"
+            '  <Coordinate name="c1">'
+            "    <range>-1.5 1.5</range>"
+            "  </Coordinate>"
+            "</Model>"
+        )
+        # Should not raise -- missing default_value is skipped
+        ensure_coordinates_within_bounds(root)
+
+    def test_coordinate_out_of_range(self):
+        """Coordinate default outside range should raise ValueError."""
+        from opensim_models.shared.contracts.postconditions import (
+            ensure_coordinates_within_bounds,
+        )
+
+        root = ET.fromstring(
+            "<Model>"
+            '  <Coordinate name="bad_coord">'
+            "    <default_value>5.0</default_value>"
+            "    <range>-1.5 1.5</range>"
+            "  </Coordinate>"
+            "</Model>"
+        )
+        with pytest.raises(ValueError, match="bad_coord"):
+            ensure_coordinates_within_bounds(root)
+
 
 class TestGeometryEdgeCases:
     def test_cylinder_zero_mass_rejected(self):
@@ -142,6 +175,24 @@ class TestGeometryEdgeCases:
         assert ixx > 0
         assert iyy > 0
         assert izz > 0
+
+    def test_hollow_cylinder_inner_ge_outer(self):
+        """hollow_cylinder_inertia_along_x rejects inner >= outer radius."""
+        from opensim_models.shared.utils.geometry import hollow_cylinder_inertia_along_x
+
+        with pytest.raises(ValueError, match="inner_radius"):
+            hollow_cylinder_inertia_along_x(
+                mass=1.0, inner_radius=0.05, outer_radius=0.03, length=0.5
+            )
+
+    def test_hollow_cylinder_equal_radii(self):
+        """hollow_cylinder_inertia_along_x rejects equal inner and outer radius."""
+        from opensim_models.shared.utils.geometry import hollow_cylinder_inertia_along_x
+
+        with pytest.raises(ValueError, match="inner_radius"):
+            hollow_cylinder_inertia_along_x(
+                mass=1.0, inner_radius=0.05, outer_radius=0.05, length=0.5
+            )
 
 
 class TestBarbellSpecEdgeCases:
@@ -236,3 +287,27 @@ class TestModelBuildEdgeCases:
         xml_str = builder.build()
         root = ET.fromstring(xml_str)
         assert root.find(".//Model").get("name") == "bench_press"  # type: ignore
+
+    def test_frozen_exercise_config(self):
+        """ExerciseConfig should be immutable (frozen dataclass)."""
+        config = ExerciseConfig()
+        with pytest.raises(AttributeError, match="cannot assign"):
+            config.gravity = (0.0, 0.0, 0.0)  # type: ignore[misc]
+
+    def test_frozen_exercise_config_grip_offset(self):
+        """Cannot mutate grip_offset on frozen ExerciseConfig."""
+        config = ExerciseConfig()
+        with pytest.raises(AttributeError, match="cannot assign"):
+            config.grip_offset = 0.5  # type: ignore[misc]
+
+
+class TestXmlHelpersEdgeCases:
+    """Tests for XML helper edge cases."""
+
+    def test_set_coordinate_default_not_found(self):
+        """set_coordinate_default raises when coordinate name is missing."""
+        from opensim_models.shared.utils.xml_helpers import set_coordinate_default
+
+        jointset = ET.Element("JointSet")
+        with pytest.raises(ValueError, match="not found"):
+            set_coordinate_default(jointset, "nonexistent_coord", 0.5)

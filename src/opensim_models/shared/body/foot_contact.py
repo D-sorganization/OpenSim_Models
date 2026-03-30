@@ -6,10 +6,13 @@ contact forces. Positions are relative to the foot body's center.
 
 from __future__ import annotations
 
+import logging
 import xml.etree.ElementTree as ET
 
 from opensim_models.shared.body._segment_data import BodyModelSpec, _seg
 from opensim_models.shared.utils.contact_helpers import add_contact_sphere
+
+logger = logging.getLogger(__name__)
 
 
 def add_foot_contact_spheres(

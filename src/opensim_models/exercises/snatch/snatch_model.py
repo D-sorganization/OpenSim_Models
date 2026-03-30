@@ -23,6 +23,7 @@ The barbell is welded to both hands with a wide grip offset.
 
 from __future__ import annotations
 
+import logging
 import xml.etree.ElementTree as ET
 
 from opensim_models.exercises.base import (
@@ -35,6 +36,8 @@ from opensim_models.exercises.constants import (
     _SNATCH_GRIP_HALF_WIDTH,
 )
 from opensim_models.shared.utils.xml_helpers import set_coordinate_default
+
+logger = logging.getLogger(__name__)
 
 
 class SnatchModelBuilder(ExerciseModelBuilder):

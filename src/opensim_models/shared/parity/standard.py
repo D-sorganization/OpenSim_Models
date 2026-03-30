@@ -2,7 +2,10 @@
 
 from __future__ import annotations
 
+import logging
 import math
+
+logger = logging.getLogger(__name__)
 
 
 def _rad(deg: float) -> float:

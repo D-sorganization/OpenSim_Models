@@ -6,9 +6,12 @@ are defined here and reused by exercise model builders.
 
 from __future__ import annotations
 
+import logging
 import xml.etree.ElementTree as ET
 
 from opensim_models.shared.utils.xml_helpers import vec3_str
+
+logger = logging.getLogger(__name__)
 
 
 def add_contact_half_space(

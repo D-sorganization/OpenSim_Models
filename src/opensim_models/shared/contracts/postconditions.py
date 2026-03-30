@@ -6,7 +6,10 @@ generation before they propagate to downstream XML or simulation.
 
 from __future__ import annotations
 
+import logging
 import xml.etree.ElementTree as ET
+
+logger = logging.getLogger(__name__)
 
 
 def ensure_valid_xml(xml_string: str) -> ET.Element:
