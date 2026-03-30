@@ -52,7 +52,7 @@ class SquatModelBuilder(ExerciseModelBuilder):
         Precondition: 'barbell_shaft' exists in barbell_bodies.
         """
         # Torso length from spec (approx 0.504 m for 1.75 m person)
-        torso_len = self.config.body_spec.height * 0.288
+        torso_len = self.body_spec.height * 0.288
         # High-bar position: top of torso minus ~3 cm
         trap_height = torso_len - 0.03
 

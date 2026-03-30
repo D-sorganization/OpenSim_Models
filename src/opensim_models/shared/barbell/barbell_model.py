@@ -119,6 +119,122 @@ class BarbellSpec:
         )
 
 
+def _compute_sleeve_inertia(
+    spec: BarbellSpec,
+) -> tuple[float, float, float]:
+    """Compute the combined inertia tuple for one loaded sleeve.
+
+    DRY helper: extracted from create_barbell_bodies to keep that function
+    under the 80-line threshold.
+
+    Returns:
+        (Ixx, Iyy, Izz) for the sleeve including any loaded plates.
+    """
+    sleeve_inertia = hollow_cylinder_inertia_along_x(
+        spec.sleeve_mass,
+        inner_radius=spec.sleeve_inner_radius,
+        outer_radius=spec.sleeve_radius,
+        length=spec.sleeve_length,
+    )
+    if spec.plate_mass_per_side > 0:
+        # Standard plate radius is 0.225 m (450 mm diameter)
+        plate_inertia = hollow_cylinder_inertia_along_x(
+            spec.plate_mass_per_side,
+            inner_radius=spec.sleeve_radius,
+            outer_radius=0.225,
+            length=max(0.01, spec.plate_mass_per_side * 0.002),
+        )
+        sleeve_inertia = (
+            sleeve_inertia[0] + plate_inertia[0],
+            sleeve_inertia[1] + plate_inertia[1],
+            sleeve_inertia[2] + plate_inertia[2],
+        )
+    return sleeve_inertia
+
+
+def _add_barbell_bodies(
+    bodyset: ET.Element,
+    spec: BarbellSpec,
+    shaft_name: str,
+    left_name: str,
+    right_name: str,
+    sleeve_inertia: tuple[float, float, float],
+) -> tuple[ET.Element, ET.Element, ET.Element]:
+    """Add shaft and sleeve body elements to *bodyset*.
+
+    DRY helper: extracted from create_barbell_bodies.
+
+    Returns:
+        (shaft_body, left_body, right_body) XML elements.
+    """
+    shaft_inertia = cylinder_inertia_along_x(
+        spec.shaft_mass, spec.shaft_radius, spec.shaft_length
+    )
+    sleeve_total_mass = spec.sleeve_mass + spec.plate_mass_per_side
+
+    shaft_body = add_body(
+        bodyset,
+        name=shaft_name,
+        mass=spec.shaft_mass,
+        mass_center=(0, 0, 0),
+        inertia_xx=shaft_inertia[0],
+        inertia_yy=shaft_inertia[1],
+        inertia_zz=shaft_inertia[2],
+    )
+    left_body = add_body(
+        bodyset,
+        name=left_name,
+        mass=sleeve_total_mass,
+        mass_center=(0, 0, 0),
+        inertia_xx=sleeve_inertia[0],
+        inertia_yy=sleeve_inertia[1],
+        inertia_zz=sleeve_inertia[2],
+    )
+    right_body = add_body(
+        bodyset,
+        name=right_name,
+        mass=sleeve_total_mass,
+        mass_center=(0, 0, 0),
+        inertia_xx=sleeve_inertia[0],
+        inertia_yy=sleeve_inertia[1],
+        inertia_zz=sleeve_inertia[2],
+    )
+    return shaft_body, left_body, right_body
+
+
+def _add_sleeve_weld_joints(
+    jointset: ET.Element,
+    spec: BarbellSpec,
+    prefix: str,
+    shaft_name: str,
+    left_name: str,
+    right_name: str,
+) -> None:
+    """Weld left and right sleeves to the shaft.
+
+    DRY helper: extracted from create_barbell_bodies.
+    """
+    half_shaft = spec.shaft_length / 2.0
+    half_sleeve = spec.sleeve_length / 2.0
+
+    add_weld_joint(
+        jointset,
+        name=f"{prefix}_left_weld",
+        parent_body=shaft_name,
+        child_body=left_name,
+        location_in_parent=(-half_shaft, 0, 0),
+        location_in_child=(half_sleeve, 0, 0),
+    )
+    add_weld_joint(
+        jointset,
+        name=f"{prefix}_right_weld",
+        parent_body=shaft_name,
+        child_body=right_name,
+        location_in_parent=(half_shaft, 0, 0),
+        location_in_child=(-half_sleeve, 0, 0),
+    )
+
+
 def create_barbell_bodies(
     bodyset: ET.Element,
     jointset: ET.Element,
@@ -132,92 +248,21 @@ def create_barbell_bodies(
 
     The barbell shaft center is at the local origin. Sleeves extend
     symmetrically along the X-axis (left = -X, right = +X).
+
+    DbC preconditions are enforced by BarbellSpec.__post_init__.
     """
+    require_positive(spec.total_mass, "spec.total_mass")
     logger.info("Creating barbell: %.1f kg total", spec.total_mass)
-    shaft_inertia = cylinder_inertia_along_x(
-        spec.shaft_mass, spec.shaft_radius, spec.shaft_length
-    )
-
-    # Compute inertia for bare sleeve (axis along X)
-    sleeve_inertia = hollow_cylinder_inertia_along_x(
-        spec.sleeve_mass,
-        inner_radius=spec.sleeve_inner_radius,
-        outer_radius=spec.sleeve_radius,
-        length=spec.sleeve_length,
-    )
-
-    if spec.plate_mass_per_side > 0:
-        # Standard plate radius is 0.225m (450mm diameter)
-        plate_inertia = hollow_cylinder_inertia_along_x(
-            spec.plate_mass_per_side,
-            inner_radius=spec.sleeve_radius,
-            outer_radius=0.225,
-            length=max(
-                0.01, spec.plate_mass_per_side * 0.002
-            ),  # approximate plate thickness
-        )
-        sleeve_inertia = (
-            sleeve_inertia[0] + plate_inertia[0],
-            sleeve_inertia[1] + plate_inertia[1],
-            sleeve_inertia[2] + plate_inertia[2],
-        )
-
-    sleeve_total_mass = spec.sleeve_mass + spec.plate_mass_per_side
 
     shaft_name = f"{prefix}_shaft"
     left_name = f"{prefix}_left_sleeve"
     right_name = f"{prefix}_right_sleeve"
 
-    shaft_body = add_body(
-        bodyset,
-        name=shaft_name,
-        mass=spec.shaft_mass,
-        mass_center=(0, 0, 0),
-        inertia_xx=shaft_inertia[0],
-        inertia_yy=shaft_inertia[1],
-        inertia_zz=shaft_inertia[2],
+    sleeve_inertia = _compute_sleeve_inertia(spec)
+    shaft_body, left_body, right_body = _add_barbell_bodies(
+        bodyset, spec, shaft_name, left_name, right_name, sleeve_inertia
     )
-
-    left_body = add_body(
-        bodyset,
-        name=left_name,
-        mass=sleeve_total_mass,
-        mass_center=(0, 0, 0),
-        inertia_xx=sleeve_inertia[0],
-        inertia_yy=sleeve_inertia[1],
-        inertia_zz=sleeve_inertia[2],
-    )
-
-    right_body = add_body(
-        bodyset,
-        name=right_name,
-        mass=sleeve_total_mass,
-        mass_center=(0, 0, 0),
-        inertia_xx=sleeve_inertia[0],
-        inertia_yy=sleeve_inertia[1],
-        inertia_zz=sleeve_inertia[2],
-    )
-
-    half_shaft = spec.shaft_length / 2.0
-    half_sleeve = spec.sleeve_length / 2.0
-
-    add_weld_joint(
-        jointset,
-        name=f"{prefix}_left_weld",
-        parent_body=shaft_name,
-        child_body=left_name,
-        location_in_parent=(-half_shaft, 0, 0),
-        location_in_child=(half_sleeve, 0, 0),
-    )
-
-    add_weld_joint(
-        jointset,
-        name=f"{prefix}_right_weld",
-        parent_body=shaft_name,
-        child_body=right_name,
-        location_in_parent=(half_shaft, 0, 0),
-        location_in_child=(-half_sleeve, 0, 0),
-    )
+    _add_sleeve_weld_joints(jointset, spec, prefix, shaft_name, left_name, right_name)
 
     return {
         shaft_name: shaft_body,
