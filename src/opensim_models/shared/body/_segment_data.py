@@ -6,10 +6,13 @@ DRY: Constants and helper functions used by both ``body_model`` and
 
 from __future__ import annotations
 
+import logging
 import math
 from dataclasses import dataclass
 
 from opensim_models.shared.contracts.preconditions import require_positive
+
+logger = logging.getLogger(__name__)
 
 _TISSUE_DENSITY_KG_M3: float = 1000.0  # Average human tissue ~1000 kg/m^3
 

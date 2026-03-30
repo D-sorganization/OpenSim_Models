@@ -7,8 +7,12 @@ accept invalid geometry or physics parameters.
 
 from __future__ import annotations
 
+import logging
+
 import numpy as np
 from numpy.typing import ArrayLike
+
+logger = logging.getLogger(__name__)
 
 
 def require_positive(value: float, name: str) -> None:

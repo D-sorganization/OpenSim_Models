@@ -6,6 +6,7 @@ bodies are defined once here and reused by barbell + body builders.
 
 from __future__ import annotations
 
+import logging
 import math
 
 import numpy as np
@@ -16,6 +17,8 @@ from opensim_models.shared.contracts.postconditions import (
 from opensim_models.shared.contracts.preconditions import (
     require_positive,
 )
+
+logger = logging.getLogger(__name__)
 
 
 def cylinder_inertia(

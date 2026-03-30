@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import logging
+from typing import Any
 
 logger = logging.getLogger(__name__)
 
@@ -13,7 +14,7 @@ try:
     # Export the default theme
     theme = get_theme(DEFAULT_THEME)
 
-    def style_axis(ax) -> None:
+    def style_axis(ax: Any) -> None:
         """Apply the global shared plot theme to a Matplotlib axis."""
         _style_axis(ax)
 
@@ -26,5 +27,5 @@ except ImportError:
 
     theme = None
 
-    def style_axis(ax) -> None:
+    def style_axis(ax: Any) -> None:
         """Fallback empty styling if plot_theme is missing."""

@@ -44,7 +44,7 @@ from opensim_models.shared.utils.xml_helpers import (
 logger = logging.getLogger(__name__)
 
 
-@dataclass
+@dataclass(frozen=True)
 class ExerciseConfig:
     """Configuration common to all exercise models."""
 
