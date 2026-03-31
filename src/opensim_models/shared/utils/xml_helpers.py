@@ -87,6 +87,45 @@ def add_pin_joint(
     return joint
 
 
+def _add_joint_frames(
+    joint: ET.Element,
+    name: str,
+    parent_body: str,
+    child_body: str,
+    location_in_parent: tuple[float, float, float],
+    location_in_child: tuple[float, float, float],
+    orientation_in_parent: tuple[float, float, float],
+    orientation_in_child: tuple[float, float, float],
+) -> None:
+    """Append parent and child PhysicalOffsetFrame elements to a joint."""
+    pf = ET.SubElement(joint, "PhysicalOffsetFrame", name=f"{name}_parent")
+    ET.SubElement(pf, "socket_parent").text = f"/bodyset/{parent_body}"
+    ET.SubElement(pf, "translation").text = vec3_str(*location_in_parent)
+    ET.SubElement(pf, "orientation").text = vec3_str(*orientation_in_parent)
+
+    cf = ET.SubElement(joint, "PhysicalOffsetFrame", name=f"{name}_child")
+    ET.SubElement(cf, "socket_parent").text = f"/bodyset/{child_body}"
+    ET.SubElement(cf, "translation").text = vec3_str(*location_in_child)
+    ET.SubElement(cf, "orientation").text = vec3_str(*orientation_in_child)
+
+    ET.SubElement(joint, "socket_parent_frame").text = f"{name}_parent"
+    ET.SubElement(joint, "socket_child_frame").text = f"{name}_child"
+
+
+def _add_coordinate_set(
+    joint: ET.Element,
+    coordinates: list[dict[str, float | str]],
+) -> None:
+    """Append a <coordinates> element with Coordinate children to a joint."""
+    coord_set = ET.SubElement(joint, "coordinates")
+    for c in coordinates:
+        coord = ET.SubElement(coord_set, "Coordinate", name=str(c["name"]))
+        ET.SubElement(coord, "default_value").text = f"{float(c['default_value']):.6f}"
+        ET.SubElement(
+            coord, "range"
+        ).text = f"{float(c['range_min']):.6f} {float(c['range_max']):.6f}"
+
+
 def add_ball_joint(
     jointset: ET.Element,
     *,
@@ -113,32 +152,34 @@ def add_ball_joint(
         )
 
     joint = ET.SubElement(jointset, "BallJoint", name=name)
-
-    # Parent frame
-    pf = ET.SubElement(joint, "PhysicalOffsetFrame", name=f"{name}_parent")
-    ET.SubElement(pf, "socket_parent").text = f"/bodyset/{parent_body}"
-    ET.SubElement(pf, "translation").text = vec3_str(*location_in_parent)
-    ET.SubElement(pf, "orientation").text = vec3_str(*orientation_in_parent)
-
-    # Child frame
-    cf = ET.SubElement(joint, "PhysicalOffsetFrame", name=f"{name}_child")
-    ET.SubElement(cf, "socket_parent").text = f"/bodyset/{child_body}"
-    ET.SubElement(cf, "translation").text = vec3_str(*location_in_child)
-    ET.SubElement(cf, "orientation").text = vec3_str(*orientation_in_child)
-
-    ET.SubElement(joint, "socket_parent_frame").text = f"{name}_parent"
-    ET.SubElement(joint, "socket_child_frame").text = f"{name}_child"
-
-    # CoordinateSet
-    coord_set = ET.SubElement(joint, "coordinates")
-    for c in coordinates:
-        coord = ET.SubElement(coord_set, "Coordinate", name=str(c["name"]))
-        ET.SubElement(coord, "default_value").text = f"{float(c['default_value']):.6f}"
-        ET.SubElement(
-            coord, "range"
-        ).text = f"{float(c['range_min']):.6f} {float(c['range_max']):.6f}"
-
+    _add_joint_frames(
+        joint,
+        name,
+        parent_body,
+        child_body,
+        location_in_parent,
+        location_in_child,
+        orientation_in_parent,
+        orientation_in_child,
+    )
+    _add_coordinate_set(joint, coordinates)
     return joint
+
+
+def _add_spatial_transform(
+    joint: ET.Element,
+    coordinates: list[dict[str, float | str]],
+) -> None:
+    """Append a <SpatialTransform> with TransformAxis elements to a CustomJoint."""
+    spatial = ET.SubElement(joint, "SpatialTransform")
+    rotation_axes = ["rotation1", "rotation2", "rotation3"]
+    translation_axes = ["translation1", "translation2", "translation3"]
+
+    for i, c in enumerate(coordinates):
+        axis_name = rotation_axes[i] if i < 3 else translation_axes[i - 3]
+        ta = ET.SubElement(spatial, "TransformAxis", name=axis_name)
+        ET.SubElement(ta, "coordinates").text = str(c["name"])
+        ET.SubElement(ta, "axis").text = str(c.get("axis", "0 0 1"))
 
 
 def add_custom_joint(
@@ -166,42 +207,18 @@ def add_custom_joint(
         raise ValueError("CustomJoint requires at least 1 coordinate")
 
     joint = ET.SubElement(jointset, "CustomJoint", name=name)
-
-    # Parent frame
-    pf = ET.SubElement(joint, "PhysicalOffsetFrame", name=f"{name}_parent")
-    ET.SubElement(pf, "socket_parent").text = f"/bodyset/{parent_body}"
-    ET.SubElement(pf, "translation").text = vec3_str(*location_in_parent)
-    ET.SubElement(pf, "orientation").text = vec3_str(*orientation_in_parent)
-
-    # Child frame
-    cf = ET.SubElement(joint, "PhysicalOffsetFrame", name=f"{name}_child")
-    ET.SubElement(cf, "socket_parent").text = f"/bodyset/{child_body}"
-    ET.SubElement(cf, "translation").text = vec3_str(*location_in_child)
-    ET.SubElement(cf, "orientation").text = vec3_str(*orientation_in_child)
-
-    ET.SubElement(joint, "socket_parent_frame").text = f"{name}_parent"
-    ET.SubElement(joint, "socket_child_frame").text = f"{name}_child"
-
-    # Coordinates
-    coord_set = ET.SubElement(joint, "coordinates")
-    for c in coordinates:
-        coord = ET.SubElement(coord_set, "Coordinate", name=str(c["name"]))
-        ET.SubElement(coord, "default_value").text = f"{float(c['default_value']):.6f}"
-        ET.SubElement(
-            coord, "range"
-        ).text = f"{float(c['range_min']):.6f} {float(c['range_max']):.6f}"
-
-    # SpatialTransform with TransformAxis elements
-    spatial = ET.SubElement(joint, "SpatialTransform")
-    rotation_axes = ["rotation1", "rotation2", "rotation3"]
-    translation_axes = ["translation1", "translation2", "translation3"]
-
-    for i, c in enumerate(coordinates):
-        axis_name = rotation_axes[i] if i < 3 else translation_axes[i - 3]
-        ta = ET.SubElement(spatial, "TransformAxis", name=axis_name)
-        ET.SubElement(ta, "coordinates").text = str(c["name"])
-        ET.SubElement(ta, "axis").text = str(c.get("axis", "0 0 1"))
-
+    _add_joint_frames(
+        joint,
+        name,
+        parent_body,
+        child_body,
+        location_in_parent,
+        location_in_child,
+        orientation_in_parent,
+        orientation_in_child,
+    )
+    _add_coordinate_set(joint, coordinates)
+    _add_spatial_transform(joint, coordinates)
     return joint
 
 

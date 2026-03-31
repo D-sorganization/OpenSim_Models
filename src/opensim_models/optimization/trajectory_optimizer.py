@@ -69,6 +69,33 @@ class TrajectoryResult:
     config: TrajectoryConfig | None = None
 
 
+def _collect_coords(objective: ExerciseObjective) -> set[str]:
+    """Return all coordinate names referenced across all phases."""
+    all_coords: set[str] = set()
+    for phase in objective.phases:
+        all_coords.update(phase.joint_targets.keys())
+    return all_coords
+
+
+def _interpolate_coord(
+    coord: str,
+    objective: ExerciseObjective,
+    normalised: np.ndarray,
+    num_points: int,
+) -> np.ndarray:
+    """Return a linearly interpolated trajectory array for one coordinate."""
+    wp_times: list[float] = []
+    wp_values: list[float] = []
+    for phase in objective.phases:
+        if coord in phase.joint_targets:
+            wp_times.append(phase.time_fraction)
+            wp_values.append(phase.joint_targets[coord])
+
+    if len(wp_times) < 2:
+        return np.full(num_points, wp_values[0] if wp_values else 0.0)
+    return np.interp(normalised, wp_times, wp_values)
+
+
 def interpolate_phases(
     objective: ExerciseObjective,
     num_points: int = 100,
@@ -95,26 +122,10 @@ def interpolate_phases(
     time = np.linspace(0.0, duration, num_points)
     normalised = time / duration  # [0, 1]
 
-    # Collect all coordinate names across all phases
-    all_coords: set[str] = set()
-    for phase in objective.phases:
-        all_coords.update(phase.joint_targets.keys())
-
-    coordinates: dict[str, np.ndarray] = {}
-    for coord in sorted(all_coords):
-        # Build waypoint arrays for this coordinate
-        wp_times: list[float] = []
-        wp_values: list[float] = []
-        for phase in objective.phases:
-            if coord in phase.joint_targets:
-                wp_times.append(phase.time_fraction)
-                wp_values.append(phase.joint_targets[coord])
-
-        if len(wp_times) < 2:
-            # Single waypoint: constant value
-            coordinates[coord] = np.full(num_points, wp_values[0] if wp_values else 0.0)
-        else:
-            coordinates[coord] = np.interp(normalised, wp_times, wp_values)
+    coordinates: dict[str, np.ndarray] = {
+        coord: _interpolate_coord(coord, objective, normalised, num_points)
+        for coord in sorted(_collect_coords(objective))
+    }
 
     return TrajectoryResult(
         time=time,
@@ -123,6 +134,34 @@ def interpolate_phases(
         objective_value=0.0,
         iterations=0,
     )
+
+
+def _build_solver_dict(config: TrajectoryConfig) -> dict:
+    """Return the MocoCasADiSolver sub-dict for a Moco study."""
+    return {
+        "type": "MocoCasADiSolver",
+        "max_iterations": config.max_iterations,
+        "convergence_tolerance": config.convergence_tolerance,
+        "constraint_tolerance": config.constraint_tolerance,
+        "num_mesh_intervals": config.num_mesh_points,
+    }
+
+
+def _build_problem_dict(
+    config: TrajectoryConfig,
+    objective: ExerciseObjective,
+    guess: TrajectoryResult,
+) -> dict:
+    """Return the problem definition sub-dict for a Moco study."""
+    return {
+        "exercise": objective.name,
+        "duration": config.duration,
+        "coordinates": list(guess.coordinates.keys()),
+        "cost_weights": {
+            "tracking": config.weight_tracking,
+            "effort": config.weight_effort,
+        },
+    }
 
 
 def create_moco_study(config: TrajectoryConfig) -> dict:
@@ -155,22 +194,8 @@ def create_moco_study(config: TrajectoryConfig) -> dict:
     )
 
     return {
-        "solver": {
-            "type": "MocoCasADiSolver",
-            "max_iterations": config.max_iterations,
-            "convergence_tolerance": config.convergence_tolerance,
-            "constraint_tolerance": config.constraint_tolerance,
-            "num_mesh_intervals": config.num_mesh_points,
-        },
-        "problem": {
-            "exercise": objective.name,
-            "duration": config.duration,
-            "coordinates": list(guess.coordinates.keys()),
-            "cost_weights": {
-                "tracking": config.weight_tracking,
-                "effort": config.weight_effort,
-            },
-        },
+        "solver": _build_solver_dict(config),
+        "problem": _build_problem_dict(config, objective, guess),
         "initial_guess": {
             "time": guess.time.tolist(),
             "coordinates": {k: v.tolist() for k, v in guess.coordinates.items()},

@@ -67,22 +67,11 @@ class BenchPressModelBuilder(ExerciseModelBuilder):
     def exercise_name(self) -> str:
         return "bench_press"
 
-    def _add_bench_and_constraint(
-        self,
-        bodyset: ET.Element,
-        jointset: ET.Element,
-    ) -> None:
-        """Add the bench body welded to ground and pelvis welded to bench.
-
-        The bench sits at BENCH_HEIGHT. The pelvis is constrained supine
-        (face-up): the Z-axis of the pelvis points up (+Z = superior when
-        lying on back), so orientation is rotated 90° about X to go from
-        the default standing Y-up to the supine Z-up posture.
-        """
+    def _add_bench_body(self, bodyset: ET.Element) -> None:
+        """Add the bench rigid body to *bodyset* with near-zero mass."""
         bench_inertia = rectangular_prism_inertia(
             _BENCH_MASS, _BENCH_WIDTH, _BENCH_HEIGHT_DIM, _BENCH_DEPTH
         )
-
         add_body(
             bodyset,
             name="bench",
@@ -93,7 +82,8 @@ class BenchPressModelBuilder(ExerciseModelBuilder):
             inertia_zz=bench_inertia[2],
         )
 
-        # Weld bench to ground at bench height (top surface of bench at BENCH_HEIGHT)
+    def _weld_bench_to_ground(self, jointset: ET.Element) -> None:
+        """Weld the bench body to ground at BENCH_HEIGHT."""
         add_weld_joint(
             jointset,
             name="bench_to_ground",
@@ -103,9 +93,12 @@ class BenchPressModelBuilder(ExerciseModelBuilder):
             location_in_child=(0, 0, 0),
         )
 
-        # Weld pelvis to bench in supine orientation.
-        # Supine: lifter lies face-up; pelvis Y-axis (long axis when standing)
-        # becomes the Z-axis. Rotate 90° about X (pi/2) to achieve this.
+    def _weld_pelvis_to_bench_supine(self, jointset: ET.Element) -> None:
+        """Weld pelvis to bench and patch child frame to supine orientation.
+
+        Supine: lifter lies face-up; pelvis Y-axis (long axis when standing)
+        becomes the Z-axis. Rotate 90° about X (pi/2) to achieve this.
+        """
         add_weld_joint(
             jointset,
             name="pelvis_to_bench",
@@ -114,23 +107,27 @@ class BenchPressModelBuilder(ExerciseModelBuilder):
             location_in_parent=(0, 0, 0),
             location_in_child=(0, 0, 0),
         )
-        # Set supine orientation on the pelvis_to_bench child frame
-        # by patching the child frame orientation after creation.
-        # Rotate 90° about X-axis: (pi/2, 0, 0) places pelvis in supine (face-up) pose.
         supine_orient = f"{math.pi / 2:.6f} 0.000000 0.000000"
-        bench_pelvis_joint = None
         for j in jointset.findall("WeldJoint"):
             if j.get("name") == "pelvis_to_bench":
-                bench_pelvis_joint = j
+                child_frame = j.find(
+                    "PhysicalOffsetFrame[@name='pelvis_to_bench_child']"
+                )
+                if child_frame is not None:
+                    orient_el = child_frame.find("orientation")
+                    if orient_el is not None:
+                        orient_el.text = supine_orient
                 break
-        if bench_pelvis_joint is not None:
-            child_frame = bench_pelvis_joint.find(
-                "PhysicalOffsetFrame[@name='pelvis_to_bench_child']"
-            )
-            if child_frame is not None:
-                orient_el = child_frame.find("orientation")
-                if orient_el is not None:
-                    orient_el.text = supine_orient
+
+    def _add_bench_and_constraint(
+        self,
+        bodyset: ET.Element,
+        jointset: ET.Element,
+    ) -> None:
+        """Add the bench body welded to ground and pelvis welded to bench."""
+        self._add_bench_body(bodyset)
+        self._weld_bench_to_ground(jointset)
+        self._weld_pelvis_to_bench_supine(jointset)
 
     def attach_barbell(
         self,
