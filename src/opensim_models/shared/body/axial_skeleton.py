@@ -56,31 +56,33 @@ def add_axial_body(
     return mass, length, radius
 
 
-def add_axial_joints(
-    jointset: ET.Element,
-    spec: BodyModelSpec,
-    p_len: float,
-    t_len: float,
-    *,
-    skip_ground_joint: bool,
-) -> None:
-    """Add the axial skeleton joints (ground-pelvis, lumbar, neck)."""
+def _compute_pelvis_height(spec: BodyModelSpec, p_len: float) -> float:
+    """Derive standing pelvis height from lower-limb segment lengths."""
     _, thigh_len, _ = _seg(spec, "thigh")
     _, shank_len, _ = _seg(spec, "shank")
     _, foot_len, _ = _seg(spec, "foot")
-    pelvis_height = thigh_len + shank_len + foot_len + p_len / 2.0
-    logger.debug("Derived pelvis height: %.4f m", pelvis_height)
+    return thigh_len + shank_len + foot_len + p_len / 2.0
 
-    if not skip_ground_joint:
-        add_free_joint(
-            jointset,
-            name="ground_pelvis",
-            parent_body="ground",
-            child_body="pelvis",
-            location_in_parent=(0, pelvis_height, 0),
-        )
 
-    # Lumbar: BallJoint connecting pelvis to torso
+def _add_ground_pelvis_joint(
+    jointset: ET.Element,
+    pelvis_height: float,
+) -> None:
+    """Add the 6-DOF FreeJoint connecting the ground to the pelvis."""
+    add_free_joint(
+        jointset,
+        name="ground_pelvis",
+        parent_body="ground",
+        child_body="pelvis",
+        location_in_parent=(0, pelvis_height, 0),
+    )
+
+
+def _add_lumbar_joint(
+    jointset: ET.Element,
+    p_len: float,
+) -> None:
+    """Add the 3-DOF BallJoint connecting pelvis to torso."""
     add_ball_joint(
         jointset,
         name="lumbar",
@@ -110,7 +112,12 @@ def add_axial_joints(
         ],
     )
 
-    # Neck: PinJoint connecting torso to head
+
+def _add_neck_joint(
+    jointset: ET.Element,
+    t_len: float,
+) -> None:
+    """Add the 1-DOF PinJoint connecting torso to head."""
     add_pin_joint(
         jointset,
         name="neck",
@@ -122,3 +129,22 @@ def add_axial_joints(
         range_min=-0.5236,
         range_max=0.5236,
     )
+
+
+def add_axial_joints(
+    jointset: ET.Element,
+    spec: BodyModelSpec,
+    p_len: float,
+    t_len: float,
+    *,
+    skip_ground_joint: bool,
+) -> None:
+    """Add the axial skeleton joints (ground-pelvis, lumbar, neck)."""
+    pelvis_height = _compute_pelvis_height(spec, p_len)
+    logger.debug("Derived pelvis height: %.4f m", pelvis_height)
+
+    if not skip_ground_joint:
+        _add_ground_pelvis_joint(jointset, pelvis_height)
+
+    _add_lumbar_joint(jointset, p_len)
+    _add_neck_joint(jointset, t_len)

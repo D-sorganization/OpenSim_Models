@@ -190,30 +190,30 @@ class ExerciseModelBuilder(ABC):
         The default implementation is a no-op.
         """
 
-    def build(self) -> str:
-        """Build the complete OpenSim model XML and return as string.
-
-        Postcondition: returned string is well-formed XML.
-        """
-        logger.info("Building %s model", self.exercise_name)
+    def _create_model_root(self) -> tuple[ET.Element, ET.Element]:
+        """Create the OpenSim document root and Model element."""
         root = ET.Element("OpenSimDocument", Version="40500")
         model = ET.SubElement(root, "Model", name=self.exercise_name)
+        return root, model
 
-        # Gravity
+    def _add_gravity_and_ground(self, model: ET.Element) -> None:
+        """Append gravity vector and massless Ground body to the model."""
         gravity = ET.SubElement(model, "gravity")
         g = self.gravity
         gravity.text = f"{g[0]:.6f} {g[1]:.6f} {g[2]:.6f}"
 
-        # Ground body
         ground_el = ET.SubElement(model, "Ground", name="ground")
         ET.SubElement(ground_el, "mass").text = "0"
         ET.SubElement(ground_el, "mass_center").text = "0 0 0"
         ET.SubElement(ground_el, "inertia").text = "0 0 0 0 0 0"
 
+    def _build_bodies_and_joints(
+        self, model: ET.Element
+    ) -> tuple[ET.Element, ET.Element, dict[str, ET.Element], dict[str, ET.Element]]:
+        """Build body/joint sets, populate them, and return the sets and body dicts."""
         bodyset = ET.SubElement(model, "BodySet")
         jointset = ET.SubElement(model, "JointSet")
 
-        # Build body (skip the ground FreeJoint when subclass requests it)
         body_bodies = create_full_body(
             bodyset,
             jointset,
@@ -221,25 +221,17 @@ class ExerciseModelBuilder(ABC):
             skip_ground_joint=self._skip_ground_joint(),
         )
 
-        # Build barbell (only for exercises that use one)
         barbell_bodies: dict[str, ET.Element] = {}
         if self.uses_barbell:
             barbell_bodies = create_barbell_bodies(bodyset, jointset, self.barbell_spec)
 
-        # Subclass hook: inject extra bodies/joints before barbell attachment
-        self._pre_attach_hook(bodyset, jointset)
+        return bodyset, jointset, body_bodies, barbell_bodies
 
-        # Exercise-specific attachment
-        self.attach_barbell(jointset, body_bodies, barbell_bodies)
-
-        # Exercise-specific initial pose
-        self.set_initial_pose(jointset)
-
-        # --- Ground contact geometry and forces ---
+    def _add_ground_contact(self, model: ET.Element) -> None:
+        """Add the ground contact half-space and foot sphere forces."""
         add_contact_half_space(model, name="ground_contact", body="ground")
         add_foot_contact_spheres(model, self.body_spec)
 
-        # Connect each foot contact sphere to the ground half-space
         foot_contact_names = [
             f"foot_{side}_{point}"
             for side in ("l", "r")
@@ -253,7 +245,28 @@ class ExerciseModelBuilder(ABC):
                 contact_geometry_2="ground_contact",
             )
 
-        # Subclass hook for additional contact surfaces
+    def build(self) -> str:
+        """Build the complete OpenSim model XML and return as string.
+
+        Postcondition: returned string is well-formed XML.
+        """
+        logger.info("Building %s model", self.exercise_name)
+        root, model = self._create_model_root()
+        self._add_gravity_and_ground(model)
+
+        bodyset, jointset, body_bodies, barbell_bodies = self._build_bodies_and_joints(
+            model
+        )
+
+        # Subclass hook: inject extra bodies/joints before barbell attachment
+        self._pre_attach_hook(bodyset, jointset)
+
+        # Exercise-specific attachment and initial pose
+        self.attach_barbell(jointset, body_bodies, barbell_bodies)
+        self.set_initial_pose(jointset)
+
+        # Ground contact geometry and forces, plus subclass hook
+        self._add_ground_contact(model)
         self._post_contact_hook(model)
 
         xml_str = serialize_model(root)

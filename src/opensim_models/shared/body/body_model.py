@@ -24,18 +24,15 @@ from opensim_models.shared.body.limb_builders import (
 logger = logging.getLogger(__name__)
 
 
-def _add_upper_limbs(
+def _add_upper_arm(
     bodyset: ET.Element,
     jointset: ET.Element,
     spec: BodyModelSpec,
-    t_len: float,
-    t_rad: float,
+    shoulder_y: float,
+    shoulder_x: float,
     bodies: dict[str, ET.Element],
 ) -> None:
-    """Add bilateral upper-limb segments (arms, forearms, hands)."""
-    shoulder_y = t_len * 0.95
-    shoulder_x = t_rad * 1.2
-
+    """Add bilateral upper-arm segments with 3-DOF shoulder ball joints."""
     add_bilateral_ball_joint_limb(
         bodyset,
         jointset,
@@ -54,6 +51,14 @@ def _add_upper_limbs(
         bodies=bodies,
     )
 
+
+def _add_forearm(
+    bodyset: ET.Element,
+    jointset: ET.Element,
+    spec: BodyModelSpec,
+    bodies: dict[str, ET.Element],
+) -> None:
+    """Add bilateral forearm segments with single-axis elbow pin joints."""
     _, ua_len, _ = _seg(spec, "upper_arm")
     add_bilateral_limb(
         bodyset,
@@ -69,6 +74,14 @@ def _add_upper_limbs(
         bodies=bodies,
     )
 
+
+def _add_hand(
+    bodyset: ET.Element,
+    jointset: ET.Element,
+    spec: BodyModelSpec,
+    bodies: dict[str, ET.Element],
+) -> None:
+    """Add bilateral hand segments with 2-DOF wrist custom joints."""
     _, fa_len, _ = _seg(spec, "forearm")
     add_bilateral_custom_joint_limb(
         bodyset,
@@ -97,17 +110,31 @@ def _add_upper_limbs(
     )
 
 
-def _add_lower_limbs(
+def _add_upper_limbs(
+    bodyset: ET.Element,
+    jointset: ET.Element,
+    spec: BodyModelSpec,
+    t_len: float,
+    t_rad: float,
+    bodies: dict[str, ET.Element],
+) -> None:
+    """Add bilateral upper-limb segments (arms, forearms, hands)."""
+    shoulder_y = t_len * 0.95
+    shoulder_x = t_rad * 1.2
+    _add_upper_arm(bodyset, jointset, spec, shoulder_y, shoulder_x, bodies)
+    _add_forearm(bodyset, jointset, spec, bodies)
+    _add_hand(bodyset, jointset, spec, bodies)
+
+
+def _add_thigh(
     bodyset: ET.Element,
     jointset: ET.Element,
     spec: BodyModelSpec,
     p_len: float,
-    p_rad: float,
+    hip_x: float,
     bodies: dict[str, ET.Element],
 ) -> None:
-    """Add bilateral lower-limb segments (thighs, shanks, feet)."""
-    hip_x = p_rad * 0.6
-
+    """Add bilateral thigh segments with 3-DOF hip ball joints."""
     add_bilateral_ball_joint_limb(
         bodyset,
         jointset,
@@ -126,6 +153,14 @@ def _add_lower_limbs(
         bodies=bodies,
     )
 
+
+def _add_shank(
+    bodyset: ET.Element,
+    jointset: ET.Element,
+    spec: BodyModelSpec,
+    bodies: dict[str, ET.Element],
+) -> None:
+    """Add bilateral shank segments with single-axis knee pin joints."""
     _, th_len, _ = _seg(spec, "thigh")
     add_bilateral_limb(
         bodyset,
@@ -141,6 +176,14 @@ def _add_lower_limbs(
         bodies=bodies,
     )
 
+
+def _add_foot(
+    bodyset: ET.Element,
+    jointset: ET.Element,
+    spec: BodyModelSpec,
+    bodies: dict[str, ET.Element],
+) -> None:
+    """Add bilateral foot segments with 2-DOF ankle custom joints."""
     _, sh_len, _ = _seg(spec, "shank")
     add_bilateral_custom_joint_limb(
         bodyset,
@@ -167,6 +210,21 @@ def _add_lower_limbs(
         ],
         bodies=bodies,
     )
+
+
+def _add_lower_limbs(
+    bodyset: ET.Element,
+    jointset: ET.Element,
+    spec: BodyModelSpec,
+    p_len: float,
+    p_rad: float,
+    bodies: dict[str, ET.Element],
+) -> None:
+    """Add bilateral lower-limb segments (thighs, shanks, feet)."""
+    hip_x = p_rad * 0.6
+    _add_thigh(bodyset, jointset, spec, p_len, hip_x, bodies)
+    _add_shank(bodyset, jointset, spec, bodies)
+    _add_foot(bodyset, jointset, spec, bodies)
 
 
 def create_full_body(

@@ -25,6 +25,38 @@ from opensim_models.shared.utils.xml_helpers import (
 logger = logging.getLogger(__name__)
 
 
+def _resolve_parent_name(parent_name: str, side: str) -> str:
+    """Return the side-qualified parent name for bilateral segments."""
+    return (
+        f"{parent_name}_{side}" if parent_name in _BILATERAL_SEGMENTS else parent_name
+    )
+
+
+def _add_bilateral_body(
+    bodyset: ET.Element,
+    seg_name: str,
+    side: str,
+    mass: float,
+    length: float,
+    inertia: tuple[float, float, float],
+    bodies: dict[str, ET.Element] | None,
+) -> str:
+    """Add one side's body element and register it in *bodies*. Returns body name."""
+    body_name = f"{seg_name}_{side}"
+    body_el = add_body(
+        bodyset,
+        name=body_name,
+        mass=mass,
+        mass_center=(0, -length / 2.0, 0),
+        inertia_xx=inertia[0],
+        inertia_yy=inertia[1],
+        inertia_zz=inertia[2],
+    )
+    if bodies is not None:
+        bodies[body_name] = body_el
+    return body_name
+
+
 def add_bilateral_limb(
     bodyset: ET.Element,
     jointset: ET.Element,
@@ -44,26 +76,13 @@ def add_bilateral_limb(
     inertia = cylinder_inertia(mass, radius, length)
 
     for side, sign in [("l", -1.0), ("r", 1.0)]:
-        body_name = f"{seg_name}_{side}"
-        body_el = add_body(
-            bodyset,
-            name=body_name,
-            mass=mass,
-            mass_center=(0, -length / 2.0, 0),
-            inertia_xx=inertia[0],
-            inertia_yy=inertia[1],
-            inertia_zz=inertia[2],
+        body_name = _add_bilateral_body(
+            bodyset, seg_name, side, mass, length, inertia, bodies
         )
-        if bodies is not None:
-            bodies[body_name] = body_el
         add_pin_joint(
             jointset,
             name=f"{coord_prefix}_{side}",
-            parent_body=(
-                f"{parent_name}_{side}"
-                if parent_name in _BILATERAL_SEGMENTS
-                else parent_name
-            ),
+            parent_body=_resolve_parent_name(parent_name, side),
             child_body=body_name,
             location_in_parent=(sign * parent_lateral_x, parent_offset_y, 0),
             location_in_child=(0, 0, 0),
@@ -96,18 +115,9 @@ def add_bilateral_ball_joint_limb(
     inertia = cylinder_inertia(mass, radius, length)
 
     for side, sign in [("l", -1.0), ("r", 1.0)]:
-        body_name = f"{seg_name}_{side}"
-        body_el = add_body(
-            bodyset,
-            name=body_name,
-            mass=mass,
-            mass_center=(0, -length / 2.0, 0),
-            inertia_xx=inertia[0],
-            inertia_yy=inertia[1],
-            inertia_zz=inertia[2],
+        body_name = _add_bilateral_body(
+            bodyset, seg_name, side, mass, length, inertia, bodies
         )
-        if bodies is not None:
-            bodies[body_name] = body_el
         coordinates: list[dict[str, float | str]] = [
             {
                 "name": f"{coord_prefix}_{side}_{suffix}",
@@ -120,11 +130,7 @@ def add_bilateral_ball_joint_limb(
         add_ball_joint(
             jointset,
             name=f"{coord_prefix}_{side}",
-            parent_body=(
-                f"{parent_name}_{side}"
-                if parent_name in _BILATERAL_SEGMENTS
-                else parent_name
-            ),
+            parent_body=_resolve_parent_name(parent_name, side),
             child_body=body_name,
             location_in_parent=(sign * parent_lateral_x, parent_offset_y, 0),
             location_in_child=(0, 0, 0),
@@ -150,18 +156,9 @@ def add_bilateral_custom_joint_limb(
     inertia = cylinder_inertia(mass, radius, length)
 
     for side, sign in [("l", -1.0), ("r", 1.0)]:
-        body_name = f"{seg_name}_{side}"
-        body_el = add_body(
-            bodyset,
-            name=body_name,
-            mass=mass,
-            mass_center=(0, -length / 2.0, 0),
-            inertia_xx=inertia[0],
-            inertia_yy=inertia[1],
-            inertia_zz=inertia[2],
+        body_name = _add_bilateral_body(
+            bodyset, seg_name, side, mass, length, inertia, bodies
         )
-        if bodies is not None:
-            bodies[body_name] = body_el
         coordinates: list[dict[str, float | str]] = [
             {
                 "name": f"{coord_prefix}_{side}_{c['suffix']}",
@@ -175,11 +172,7 @@ def add_bilateral_custom_joint_limb(
         add_custom_joint(
             jointset,
             name=f"{coord_prefix}_{side}",
-            parent_body=(
-                f"{parent_name}_{side}"
-                if parent_name in _BILATERAL_SEGMENTS
-                else parent_name
-            ),
+            parent_body=_resolve_parent_name(parent_name, side),
             child_body=body_name,
             location_in_parent=(sign * parent_lateral_x, parent_offset_y, 0),
             location_in_child=(0, 0, 0),
