@@ -5,6 +5,7 @@ import xml.etree.ElementTree as ET
 import pytest
 
 from opensim_models.shared.utils.xml_helpers import (
+    Vec3,
     add_ball_joint,
     add_body,
     add_custom_joint,
@@ -26,9 +27,15 @@ class TestVecFormatters:
         assert "-0.500000" in result
 
     def test_vec6_str(self):
-        result = vec6_str(0, 0, 0, 1, 2, 3)
+        result = vec6_str(Vec3(0, 0, 0), Vec3(1, 2, 3))
         parts = result.split()
         assert len(parts) == 6
+
+    def test_vec6_str_values(self):
+        result = vec6_str(Vec3(0.1, 0.2, 0.3), Vec3(1.0, 2.0, 3.0))
+        assert "0.100000" in result
+        assert "1.000000" in result
+        assert "3.000000" in result
 
 
 class TestAddBody:

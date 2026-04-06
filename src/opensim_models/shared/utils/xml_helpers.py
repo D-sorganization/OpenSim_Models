@@ -7,8 +7,17 @@ from __future__ import annotations
 
 import logging
 import xml.etree.ElementTree as ET
+from typing import NamedTuple
 
 logger = logging.getLogger(__name__)
+
+
+class Vec3(NamedTuple):
+    """Immutable 3-component vector (x, y, z) for OpenSim XML helpers."""
+
+    x: float
+    y: float
+    z: float
 
 
 def vec3_str(x: float, y: float, z: float) -> str:
@@ -16,9 +25,20 @@ def vec3_str(x: float, y: float, z: float) -> str:
     return f"{x:.6f} {y:.6f} {z:.6f}"
 
 
-def vec6_str(r1: float, r2: float, r3: float, t1: float, t2: float, t3: float) -> str:
-    """Format six floats (rotation + translation) for OpenSim frames."""
-    return f"{r1:.6f} {r2:.6f} {r3:.6f} {t1:.6f} {t2:.6f} {t3:.6f}"
+def vec6_str(rotation: Vec3, translation: Vec3) -> str:
+    """Format a rotation Vec3 and translation Vec3 for OpenSim frames.
+
+    Args:
+        rotation: Euler angles (r1, r2, r3) in radians.
+        translation: Cartesian offsets (t1, t2, t3) in metres.
+
+    Returns:
+        Space-separated string of six floats: ``r1 r2 r3 t1 t2 t3``.
+    """
+    return (
+        f"{rotation.x:.6f} {rotation.y:.6f} {rotation.z:.6f} "
+        f"{translation.x:.6f} {translation.y:.6f} {translation.z:.6f}"
+    )
 
 
 def add_body(
