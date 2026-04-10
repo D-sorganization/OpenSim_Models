@@ -143,4 +143,3 @@ class TestCreateMocoStudy:
         assert list(study["problem"]["coordinates"]) == list(
             study["initial_guess"]["coordinates"].keys()
         )
-

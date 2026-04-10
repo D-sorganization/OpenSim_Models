@@ -46,12 +46,34 @@ class TestAddBilateralLimb:
         assert left_joint is not None
         assert right_joint is not None
         assert left_joint.find("PhysicalOffsetFrame[@name='knee_l_parent']") is not None
-        assert right_joint.find("PhysicalOffsetFrame[@name='knee_r_parent']") is not None
+        assert (
+            right_joint.find("PhysicalOffsetFrame[@name='knee_r_parent']") is not None
+        )
 
-        assert left_joint.find("PhysicalOffsetFrame[@name='knee_l_parent']/socket_parent").text == "/bodyset/thigh_l"  # type: ignore[union-attr]
-        assert right_joint.find("PhysicalOffsetFrame[@name='knee_r_parent']/socket_parent").text == "/bodyset/thigh_r"  # type: ignore[union-attr]
-        assert left_joint.find("PhysicalOffsetFrame[@name='knee_l_parent']/translation").text == "-0.080000 -0.420000 0.000000"  # type: ignore[union-attr]
-        assert right_joint.find("PhysicalOffsetFrame[@name='knee_r_parent']/translation").text == "0.080000 -0.420000 0.000000"  # type: ignore[union-attr]
+        assert (
+            left_joint.find(
+                "PhysicalOffsetFrame[@name='knee_l_parent']/socket_parent"
+            ).text
+            == "/bodyset/thigh_l"
+        )  # type: ignore[union-attr]
+        assert (
+            right_joint.find(
+                "PhysicalOffsetFrame[@name='knee_r_parent']/socket_parent"
+            ).text
+            == "/bodyset/thigh_r"
+        )  # type: ignore[union-attr]
+        assert (
+            left_joint.find(
+                "PhysicalOffsetFrame[@name='knee_l_parent']/translation"
+            ).text
+            == "-0.080000 -0.420000 0.000000"
+        )  # type: ignore[union-attr]
+        assert (
+            right_joint.find(
+                "PhysicalOffsetFrame[@name='knee_r_parent']/translation"
+            ).text
+            == "0.080000 -0.420000 0.000000"
+        )  # type: ignore[union-attr]
         assert left_joint.find(".//Coordinate").get("name") == "knee_l_flex"  # type: ignore[union-attr]
         assert right_joint.find(".//Coordinate").get("name") == "knee_r_flex"  # type: ignore[union-attr]
 
@@ -84,8 +106,18 @@ class TestAddBilateralBallJointLimb:
         for side, sign in [("l", -1.0), ("r", 1.0)]:
             joint = jointset.find(f"BallJoint[@name='shoulder_{side}']")
             assert joint is not None
-            assert joint.find(f"PhysicalOffsetFrame[@name='shoulder_{side}_parent']/socket_parent").text == "/bodyset/torso"  # type: ignore[union-attr]
-            assert joint.find(f"PhysicalOffsetFrame[@name='shoulder_{side}_parent']/translation").text == f"{sign * 0.110000:.6f} 0.330000 0.000000"  # type: ignore[union-attr]
+            assert (
+                joint.find(
+                    f"PhysicalOffsetFrame[@name='shoulder_{side}_parent']/socket_parent"
+                ).text
+                == "/bodyset/torso"
+            )  # type: ignore[union-attr]
+            assert (
+                joint.find(
+                    f"PhysicalOffsetFrame[@name='shoulder_{side}_parent']/translation"
+                ).text
+                == f"{sign * 0.110000:.6f} 0.330000 0.000000"
+            )  # type: ignore[union-attr]
 
             coords = joint.findall(".//Coordinate")
             assert [c.get("name") for c in coords] == [
@@ -136,7 +168,12 @@ class TestAddBilateralCustomJointLimb:
         for side in ("l", "r"):
             joint = jointset.find(f"CustomJoint[@name='ankle_{side}']")
             assert joint is not None
-            assert joint.find(f"PhysicalOffsetFrame[@name='ankle_{side}_parent']/socket_parent").text == f"/bodyset/shank_{side}"  # type: ignore[union-attr]
+            assert (
+                joint.find(
+                    f"PhysicalOffsetFrame[@name='ankle_{side}_parent']/socket_parent"
+                ).text
+                == f"/bodyset/shank_{side}"
+            )  # type: ignore[union-attr]
 
             coords = joint.findall(".//Coordinate")
             assert [c.get("name") for c in coords] == [
@@ -148,5 +185,8 @@ class TestAddBilateralCustomJointLimb:
             assert coords[1].find("default_value").text == "0.000000"  # type: ignore[union-attr]
             assert coords[1].find("range").text == "-0.300000 0.300000"  # type: ignore[union-attr]
 
-            axes = [axis.find("axis").text for axis in joint.findall("SpatialTransform/TransformAxis")]  # type: ignore[union-attr]
+            axes = [
+                axis.find("axis").text
+                for axis in joint.findall("SpatialTransform/TransformAxis")
+            ]  # type: ignore[union-attr]
             assert axes == ["0 0 1", "0 0 1"]
