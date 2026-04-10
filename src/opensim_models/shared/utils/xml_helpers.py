@@ -308,7 +308,12 @@ def set_coordinate_default(jointset: ET.Element, coord_name: str, value: float) 
     raise ValueError(f"Coordinate {coord_name!r} not found in jointset")
 
 
+def indent_xml(elem: ET.Element, level: int = 0) -> None:
+    """Add whitespace indentation to an ElementTree in-place."""
+    ET.indent(elem, space="  ", level=level)
+
+
 def serialize_model(root: ET.Element) -> str:
     """Serialize an OpenSim model ElementTree to a formatted XML string."""
-    ET.indent(root, space="  ")
+    indent_xml(root)
     return ET.tostring(root, encoding="unicode", xml_declaration=True)
