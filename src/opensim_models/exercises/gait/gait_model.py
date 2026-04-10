@@ -29,9 +29,6 @@ class GaitModelBuilder(ExerciseModelBuilder):
     with slight hip and knee flexion on the stance leg.
     """
 
-    def __init__(self, config: ExerciseConfig | None = None) -> None:
-        super().__init__(config)
-
     @property
     def exercise_name(self) -> str:
         return "gait"

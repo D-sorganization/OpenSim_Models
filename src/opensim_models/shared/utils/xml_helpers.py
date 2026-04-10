@@ -253,20 +253,16 @@ def add_free_joint(
 ) -> ET.Element:
     """Append a <FreeJoint> (6-DOF) to *jointset* and return it."""
     joint = ET.SubElement(jointset, "FreeJoint", name=name)
-
-    pf = ET.SubElement(joint, "PhysicalOffsetFrame", name=f"{name}_parent")
-    ET.SubElement(pf, "socket_parent").text = f"/bodyset/{parent_body}"
-    ET.SubElement(pf, "translation").text = vec3_str(*location_in_parent)
-    ET.SubElement(pf, "orientation").text = vec3_str(0, 0, 0)
-
-    cf = ET.SubElement(joint, "PhysicalOffsetFrame", name=f"{name}_child")
-    ET.SubElement(cf, "socket_parent").text = f"/bodyset/{child_body}"
-    ET.SubElement(cf, "translation").text = vec3_str(*location_in_child)
-    ET.SubElement(cf, "orientation").text = vec3_str(0, 0, 0)
-
-    ET.SubElement(joint, "socket_parent_frame").text = f"{name}_parent"
-    ET.SubElement(joint, "socket_child_frame").text = f"{name}_child"
-
+    _add_joint_frames(
+        joint,
+        name,
+        parent_body,
+        child_body,
+        location_in_parent,
+        location_in_child,
+        (0, 0, 0),
+        (0, 0, 0),
+    )
     return joint
 
 
@@ -281,20 +277,16 @@ def add_weld_joint(
 ) -> ET.Element:
     """Append a <WeldJoint> (rigid attachment) to *jointset*."""
     joint = ET.SubElement(jointset, "WeldJoint", name=name)
-
-    pf = ET.SubElement(joint, "PhysicalOffsetFrame", name=f"{name}_parent")
-    ET.SubElement(pf, "socket_parent").text = f"/bodyset/{parent_body}"
-    ET.SubElement(pf, "translation").text = vec3_str(*location_in_parent)
-    ET.SubElement(pf, "orientation").text = vec3_str(0, 0, 0)
-
-    cf = ET.SubElement(joint, "PhysicalOffsetFrame", name=f"{name}_child")
-    ET.SubElement(cf, "socket_parent").text = f"/bodyset/{child_body}"
-    ET.SubElement(cf, "translation").text = vec3_str(*location_in_child)
-    ET.SubElement(cf, "orientation").text = vec3_str(0, 0, 0)
-
-    ET.SubElement(joint, "socket_parent_frame").text = f"{name}_parent"
-    ET.SubElement(joint, "socket_child_frame").text = f"{name}_child"
-
+    _add_joint_frames(
+        joint,
+        name,
+        parent_body,
+        child_body,
+        location_in_parent,
+        location_in_child,
+        (0, 0, 0),
+        (0, 0, 0),
+    )
     return joint
 
 

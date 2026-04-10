@@ -75,9 +75,9 @@ class DeadliftModelBuilder(ExerciseModelBuilder):
 
         if abs(hand_y - PLATE_RADIUS) > 0.15:
             logger.warning(
-                "Deadlift initial pose: estimated hand height %.3f m differs "
-                "from bar height %.3f m by %.3f m. Consider adjusting "
-                "DEADLIFT_INITIAL_* angles.",
+                "Deadlift initial pose: estimated hand height %.3f m differs from "
+                "bar height %.3f m by %.3f m. "
+                "Consider adjusting DEADLIFT_INITIAL_* angles.",
                 hand_y,
                 PLATE_RADIUS,
                 abs(hand_y - PLATE_RADIUS),
