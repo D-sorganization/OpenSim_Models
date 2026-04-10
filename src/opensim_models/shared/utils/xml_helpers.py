@@ -11,6 +11,8 @@ from typing import NamedTuple
 
 logger = logging.getLogger(__name__)
 
+ZERO_VEC3: tuple[float, float, float] = (0.0, 0.0, 0.0)
+
 
 class Vec3(NamedTuple):
     """Immutable 3-component vector (x, y, z) for OpenSim XML helpers."""
@@ -260,8 +262,8 @@ def add_free_joint(
         child_body,
         location_in_parent,
         location_in_child,
-        (0, 0, 0),
-        (0, 0, 0),
+        ZERO_VEC3,
+        ZERO_VEC3,
     )
     return joint
 
@@ -284,8 +286,8 @@ def add_weld_joint(
         child_body,
         location_in_parent,
         location_in_child,
-        (0, 0, 0),
-        (0, 0, 0),
+        ZERO_VEC3,
+        ZERO_VEC3,
     )
     return joint
 
