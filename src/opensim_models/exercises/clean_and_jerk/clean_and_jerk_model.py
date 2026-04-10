@@ -50,9 +50,6 @@ class CleanAndJerkModelBuilder(ExerciseModelBuilder):
     (floor to shoulders) and jerk (shoulders to overhead) phases.
     """
 
-    def __init__(self, config: ExerciseConfig | None = None) -> None:
-        super().__init__(config)
-
     @property
     def exercise_name(self) -> str:
         return "clean_and_jerk"

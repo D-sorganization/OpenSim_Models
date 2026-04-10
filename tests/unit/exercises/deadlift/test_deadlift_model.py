@@ -1,9 +1,11 @@
 """Tests for the deadlift model builder."""
 
+import logging
 import xml.etree.ElementTree as ET
 
 import pytest
 
+import opensim_models.exercises.deadlift.deadlift_model as deadlift_model
 from opensim_models.exercises.deadlift.deadlift_model import (
     PLATE_RADIUS,
     DeadliftModelBuilder,
@@ -36,6 +38,19 @@ class TestDeadliftModelBuilder:
         assert "thigh_l" in body_names
         assert "shank_l" in body_names
         assert "foot_l" in body_names
+
+    def test_pose_feasibility_logs_warning_when_bar_height_mismatch(
+        self,
+        caplog: pytest.LogCaptureFixture,
+        monkeypatch: pytest.MonkeyPatch,
+    ):
+        monkeypatch.setattr(deadlift_model, "PLATE_RADIUS", 0.45)
+
+        with caplog.at_level(logging.WARNING, logger=deadlift_model.__name__):
+            DeadliftModelBuilder()._check_pose_feasibility()
+
+        assert "estimated hand height" in caplog.text
+        assert "Consider adjusting DEADLIFT_INITIAL_* angles." in caplog.text
 
 
 class TestBuildDeadliftModel:

@@ -19,7 +19,6 @@ from __future__ import annotations
 
 import logging
 import math
-import warnings
 import xml.etree.ElementTree as ET
 
 from opensim_models.exercises.base import (
@@ -51,9 +50,6 @@ class DeadliftModelBuilder(ExerciseModelBuilder):
     The barbell is welded to both hands and starts on the floor.
     """
 
-    def __init__(self, config: ExerciseConfig | None = None) -> None:
-        super().__init__(config)
-
     @property
     def exercise_name(self) -> str:
         return "deadlift"
@@ -78,11 +74,13 @@ class DeadliftModelBuilder(ExerciseModelBuilder):
         hand_y = torso_top_y - upper_arm - forearm
 
         if abs(hand_y - PLATE_RADIUS) > 0.15:
-            warnings.warn(
-                f"Deadlift initial pose: estimated hand height {hand_y:.3f} m differs from "
-                f"bar height {PLATE_RADIUS:.3f} m by {abs(hand_y - PLATE_RADIUS):.3f} m. "
-                f"Consider adjusting DEADLIFT_INITIAL_* angles.",
-                stacklevel=3,
+            logger.warning(
+                "Deadlift initial pose: estimated hand height %.3f m differs "
+                "from bar height %.3f m by %.3f m. Consider adjusting "
+                "DEADLIFT_INITIAL_* angles.",
+                hand_y,
+                PLATE_RADIUS,
+                abs(hand_y - PLATE_RADIUS),
             )
 
     def attach_barbell(

@@ -318,21 +318,7 @@ def set_coordinate_default(jointset: ET.Element, coord_name: str, value: float) 
 
 def indent_xml(elem: ET.Element, level: int = 0) -> None:
     """Add whitespace indentation to an ElementTree in-place."""
-    indent = "\n" + "  " * level
-    if len(elem):
-        if not elem.text or not elem.text.strip():
-            elem.text = indent + "  "
-        if not elem.tail or not elem.tail.strip():
-            elem.tail = indent
-        for child in elem:
-            indent_xml(child, level + 1)
-        if not child.tail or not child.tail.strip():
-            child.tail = indent
-    else:
-        if level and (not elem.tail or not elem.tail.strip()):
-            elem.tail = indent
-    if level == 0:
-        elem.tail = "\n"
+    ET.indent(elem, space="  ", level=level)
 
 
 def serialize_model(root: ET.Element) -> str:
