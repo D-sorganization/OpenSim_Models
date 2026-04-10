@@ -33,9 +33,6 @@ class SquatModelBuilder(ExerciseModelBuilder):
     point would be shifted ~5 cm inferior.
     """
 
-    def __init__(self, config: ExerciseConfig | None = None) -> None:
-        super().__init__(config)
-
     @property
     def exercise_name(self) -> str:
         return "back_squat"

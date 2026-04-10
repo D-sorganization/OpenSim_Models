@@ -60,9 +60,6 @@ class BenchPressModelBuilder(ExerciseModelBuilder):
     in a supine (face-up) orientation.
     """
 
-    def __init__(self, config: ExerciseConfig | None = None) -> None:
-        super().__init__(config)
-
     @property
     def exercise_name(self) -> str:
         return "bench_press"

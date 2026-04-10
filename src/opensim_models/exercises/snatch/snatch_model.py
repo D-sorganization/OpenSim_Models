@@ -43,9 +43,6 @@ logger = logging.getLogger(__name__)
 class SnatchModelBuilder(ExerciseModelBuilder):
     """Builds a snatch OpenSim model with wide grip."""
 
-    def __init__(self, config: ExerciseConfig | None = None) -> None:
-        super().__init__(config)
-
     @property
     def exercise_name(self) -> str:
         return "snatch"
