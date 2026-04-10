@@ -19,6 +19,10 @@ from opensim_models.optimization.exercise_objectives import (
     ExerciseObjective,
     get_exercise_objective,
 )
+from opensim_models.shared.contracts.preconditions import (
+    require_non_negative,
+    require_positive,
+)
 
 logger = logging.getLogger(__name__)
 
@@ -46,6 +50,15 @@ class TrajectoryConfig:
     constraint_tolerance: float = 1e-4
     weight_tracking: float = 10.0
     weight_effort: float = 1.0
+
+    def __post_init__(self) -> None:
+        require_positive(self.duration, "duration")
+        require_positive(float(self.num_mesh_points), "num_mesh_points")
+        require_positive(float(self.max_iterations), "max_iterations")
+        require_positive(self.convergence_tolerance, "convergence_tolerance")
+        require_positive(self.constraint_tolerance, "constraint_tolerance")
+        require_non_negative(self.weight_tracking, "weight_tracking")
+        require_non_negative(self.weight_effort, "weight_effort")
 
 
 @dataclass

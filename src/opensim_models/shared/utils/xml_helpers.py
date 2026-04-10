@@ -253,20 +253,16 @@ def add_free_joint(
 ) -> ET.Element:
     """Append a <FreeJoint> (6-DOF) to *jointset* and return it."""
     joint = ET.SubElement(jointset, "FreeJoint", name=name)
-
-    pf = ET.SubElement(joint, "PhysicalOffsetFrame", name=f"{name}_parent")
-    ET.SubElement(pf, "socket_parent").text = f"/bodyset/{parent_body}"
-    ET.SubElement(pf, "translation").text = vec3_str(*location_in_parent)
-    ET.SubElement(pf, "orientation").text = vec3_str(0, 0, 0)
-
-    cf = ET.SubElement(joint, "PhysicalOffsetFrame", name=f"{name}_child")
-    ET.SubElement(cf, "socket_parent").text = f"/bodyset/{child_body}"
-    ET.SubElement(cf, "translation").text = vec3_str(*location_in_child)
-    ET.SubElement(cf, "orientation").text = vec3_str(0, 0, 0)
-
-    ET.SubElement(joint, "socket_parent_frame").text = f"{name}_parent"
-    ET.SubElement(joint, "socket_child_frame").text = f"{name}_child"
-
+    _add_joint_frames(
+        joint,
+        name,
+        parent_body,
+        child_body,
+        location_in_parent,
+        location_in_child,
+        (0, 0, 0),
+        (0, 0, 0),
+    )
     return joint
 
 
@@ -281,20 +277,16 @@ def add_weld_joint(
 ) -> ET.Element:
     """Append a <WeldJoint> (rigid attachment) to *jointset*."""
     joint = ET.SubElement(jointset, "WeldJoint", name=name)
-
-    pf = ET.SubElement(joint, "PhysicalOffsetFrame", name=f"{name}_parent")
-    ET.SubElement(pf, "socket_parent").text = f"/bodyset/{parent_body}"
-    ET.SubElement(pf, "translation").text = vec3_str(*location_in_parent)
-    ET.SubElement(pf, "orientation").text = vec3_str(0, 0, 0)
-
-    cf = ET.SubElement(joint, "PhysicalOffsetFrame", name=f"{name}_child")
-    ET.SubElement(cf, "socket_parent").text = f"/bodyset/{child_body}"
-    ET.SubElement(cf, "translation").text = vec3_str(*location_in_child)
-    ET.SubElement(cf, "orientation").text = vec3_str(0, 0, 0)
-
-    ET.SubElement(joint, "socket_parent_frame").text = f"{name}_parent"
-    ET.SubElement(joint, "socket_child_frame").text = f"{name}_child"
-
+    _add_joint_frames(
+        joint,
+        name,
+        parent_body,
+        child_body,
+        location_in_parent,
+        location_in_child,
+        (0, 0, 0),
+        (0, 0, 0),
+    )
     return joint
 
 
@@ -316,26 +308,7 @@ def set_coordinate_default(jointset: ET.Element, coord_name: str, value: float) 
     raise ValueError(f"Coordinate {coord_name!r} not found in jointset")
 
 
-def indent_xml(elem: ET.Element, level: int = 0) -> None:
-    """Add whitespace indentation to an ElementTree in-place."""
-    indent = "\n" + "  " * level
-    if len(elem):
-        if not elem.text or not elem.text.strip():
-            elem.text = indent + "  "
-        if not elem.tail or not elem.tail.strip():
-            elem.tail = indent
-        for child in elem:
-            indent_xml(child, level + 1)
-        if not child.tail or not child.tail.strip():
-            child.tail = indent
-    else:
-        if level and (not elem.tail or not elem.tail.strip()):
-            elem.tail = indent
-    if level == 0:
-        elem.tail = "\n"
-
-
 def serialize_model(root: ET.Element) -> str:
     """Serialize an OpenSim model ElementTree to a formatted XML string."""
-    indent_xml(root)
+    ET.indent(root, space="  ")
     return ET.tostring(root, encoding="unicode", xml_declaration=True)
