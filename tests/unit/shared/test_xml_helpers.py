@@ -114,6 +114,25 @@ class TestAddFreeJoint:
         )
         assert joint.tag == "FreeJoint"
 
+    def test_uses_shared_joint_frames(self):
+        jointset = ET.Element("JointSet")
+        joint = add_free_joint(
+            jointset,
+            name="ground_pelvis",
+            parent_body="ground",
+            child_body="pelvis",
+            location_in_parent=(1, 2, 3),
+            location_in_child=(4, 5, 6),
+        )
+        parent_frame = joint.find("PhysicalOffsetFrame[@name='ground_pelvis_parent']")
+        child_frame = joint.find("PhysicalOffsetFrame[@name='ground_pelvis_child']")
+        assert parent_frame is not None
+        assert child_frame is not None
+        assert parent_frame.findtext("socket_parent") == "/bodyset/ground"
+        assert child_frame.findtext("socket_parent") == "/bodyset/pelvis"
+        assert parent_frame.findtext("orientation") == "0.000000 0.000000 0.000000"
+        assert child_frame.findtext("orientation") == "0.000000 0.000000 0.000000"
+
 
 class TestAddWeldJoint:
     def test_creates_weld_joint(self):
@@ -126,6 +145,24 @@ class TestAddWeldJoint:
             location_in_parent=(0, 1, 0),
         )
         assert joint.tag == "WeldJoint"
+
+    def test_uses_shared_joint_frames(self):
+        jointset = ET.Element("JointSet")
+        joint = add_weld_joint(
+            jointset,
+            name="weld",
+            parent_body="a",
+            child_body="b",
+            location_in_parent=(7, 8, 9),
+        )
+        parent_frame = joint.find("PhysicalOffsetFrame[@name='weld_parent']")
+        child_frame = joint.find("PhysicalOffsetFrame[@name='weld_child']")
+        assert parent_frame is not None
+        assert child_frame is not None
+        assert parent_frame.findtext("socket_parent") == "/bodyset/a"
+        assert child_frame.findtext("socket_parent") == "/bodyset/b"
+        assert parent_frame.findtext("orientation") == "0.000000 0.000000 0.000000"
+        assert child_frame.findtext("orientation") == "0.000000 0.000000 0.000000"
 
 
 class TestIndentXml:
