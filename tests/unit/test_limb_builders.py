@@ -4,6 +4,8 @@ from __future__ import annotations
 
 import xml.etree.ElementTree as ET
 
+import pytest
+
 from opensim_models.shared.body._segment_data import BodyModelSpec
 from opensim_models.shared.body.limb_builders import (
     add_bilateral_ball_joint_limb,
@@ -77,6 +79,57 @@ class TestAddBilateralLimb:
         assert left_joint.find(".//Coordinate").get("name") == "knee_l_flex"  # type: ignore[union-attr]
         assert right_joint.find(".//Coordinate").get("name") == "knee_r_flex"  # type: ignore[union-attr]
 
+    def test_bodies_dict_is_optional(self) -> None:
+        """When ``bodies=None`` the builder still writes to bodyset/jointset."""
+        bodyset = ET.Element("BodySet")
+        jointset = ET.Element("JointSet")
+        spec = BodyModelSpec(total_mass=80.0, height=1.75)
+
+        add_bilateral_limb(
+            bodyset,
+            jointset,
+            spec,
+            seg_name="shank",
+            parent_name="thigh",
+            parent_offset_y=-0.42,
+            parent_lateral_x=0.08,
+            coord_prefix="knee",
+            range_min=-2.5,
+            range_max=0.1,
+            bodies=None,
+        )
+
+        assert len(bodyset.findall("Body")) == 2
+        assert len(jointset.findall("PinJoint")) == 2
+
+    def test_coordinate_range_values_match_inputs(self) -> None:
+        """Happy path: the pin joint's coordinate range must mirror inputs."""
+        bodyset = ET.Element("BodySet")
+        jointset = ET.Element("JointSet")
+        spec = BodyModelSpec(total_mass=80.0, height=1.75)
+
+        add_bilateral_limb(
+            bodyset,
+            jointset,
+            spec,
+            seg_name="shank",
+            parent_name="thigh",
+            parent_offset_y=-0.42,
+            parent_lateral_x=0.08,
+            coord_prefix="knee",
+            range_min=-2.5,
+            range_max=0.1,
+        )
+
+        for side in ("l", "r"):
+            joint = jointset.find(f"PinJoint[@name='knee_{side}']")
+            assert joint is not None
+            range_el = joint.find(".//Coordinate/range")
+            assert range_el is not None
+            lo, hi = (float(x) for x in range_el.text.split())  # type: ignore[union-attr]
+            assert lo == pytest.approx(-2.5)
+            assert hi == pytest.approx(0.1)
+
 
 class TestAddBilateralBallJointLimb:
     """Ball-joint builder should emit three coordinates per side."""
@@ -130,6 +183,56 @@ class TestAddBilateralBallJointLimb:
                 "-0.500000 0.500000",
                 "-0.750000 0.750000",
             ]
+
+    def test_registers_bodies_in_provided_dict(self) -> None:
+        """If a bodies dict is supplied, both sides should appear in it."""
+        bodyset = ET.Element("BodySet")
+        jointset = ET.Element("JointSet")
+        bodies: dict[str, ET.Element] = {}
+        spec = BodyModelSpec(total_mass=75.0, height=1.80)
+
+        add_bilateral_ball_joint_limb(
+            bodyset,
+            jointset,
+            spec,
+            seg_name="upper_arm",
+            parent_name="torso",
+            parent_offset_y=0.33,
+            parent_lateral_x=0.11,
+            coord_prefix="shoulder",
+            coord_suffixes=("flex", "adduct", "rotate"),
+            ranges=(
+                (-1.0, 2.0),
+                (-0.5, 0.5),
+                (-0.75, 0.75),
+            ),
+            bodies=bodies,
+        )
+
+        assert set(bodies) == {"upper_arm_l", "upper_arm_r"}
+
+    def test_mismatched_suffixes_and_ranges_raise(self) -> None:
+        """``zip(..., strict=True)`` should reject length mismatches."""
+        bodyset = ET.Element("BodySet")
+        jointset = ET.Element("JointSet")
+        spec = BodyModelSpec(total_mass=75.0, height=1.80)
+
+        with pytest.raises(ValueError):
+            add_bilateral_ball_joint_limb(
+                bodyset,
+                jointset,
+                spec,
+                seg_name="upper_arm",
+                parent_name="torso",
+                parent_offset_y=0.33,
+                parent_lateral_x=0.11,
+                coord_prefix="shoulder",
+                coord_suffixes=("flex", "adduct", "rotate"),
+                ranges=(  # type: ignore[arg-type]
+                    (-1.0, 2.0),
+                    (-0.5, 0.5),
+                ),
+            )
 
 
 class TestAddBilateralCustomJointLimb:
@@ -190,3 +293,57 @@ class TestAddBilateralCustomJointLimb:
                 for axis in joint.findall("SpatialTransform/TransformAxis")
             ]  # type: ignore[union-attr]
             assert axes == ["0 0 1", "0 0 1"]
+
+    def test_missing_required_range_key_raises(self) -> None:
+        """DbC: a coord_def without ``range_min`` should raise KeyError."""
+        bodyset = ET.Element("BodySet")
+        jointset = ET.Element("JointSet")
+        spec = BodyModelSpec(total_mass=68.0, height=1.72)
+
+        with pytest.raises(KeyError):
+            add_bilateral_custom_joint_limb(
+                bodyset,
+                jointset,
+                spec,
+                seg_name="foot",
+                parent_name="shank",
+                parent_offset_y=-0.39,
+                parent_lateral_x=0.0,
+                coord_prefix="ankle",
+                coord_defs=[
+                    {"suffix": "flex", "range_max": 0.8},
+                ],
+            )
+
+    def test_bilateral_parent_resolution_for_shank(self) -> None:
+        """Children of bilateral parents should resolve to side-qualified names."""
+        bodyset = ET.Element("BodySet")
+        jointset = ET.Element("JointSet")
+        spec = BodyModelSpec(total_mass=68.0, height=1.72)
+
+        add_bilateral_custom_joint_limb(
+            bodyset,
+            jointset,
+            spec,
+            seg_name="foot",
+            parent_name="shank",
+            parent_offset_y=-0.39,
+            parent_lateral_x=0.0,
+            coord_prefix="ankle",
+            coord_defs=[
+                {
+                    "suffix": "flex",
+                    "range_min": -0.3,
+                    "range_max": 0.3,
+                },
+            ],
+        )
+
+        for side in ("l", "r"):
+            joint = jointset.find(f"CustomJoint[@name='ankle_{side}']")
+            assert joint is not None
+            socket = joint.find(
+                f"PhysicalOffsetFrame[@name='ankle_{side}_parent']/socket_parent"
+            )
+            assert socket is not None
+            assert socket.text == f"/bodyset/shank_{side}"
