@@ -9,6 +9,7 @@ from __future__ import annotations
 import logging
 import xml.etree.ElementTree as ET
 
+from opensim_models.shared.contracts.preconditions import require_positive
 from opensim_models.shared.utils.xml_helpers import vec3_str
 
 logger = logging.getLogger(__name__)
@@ -47,9 +48,11 @@ def add_contact_sphere(
     location: tuple[float, float, float],
     radius: float = 0.02,
 ) -> ET.Element:
-    """Add a ContactSphere geometry for foot contact points."""
-    if radius <= 0:
-        raise ValueError(f"Contact sphere radius must be positive, got {radius}")
+    """Add a ContactSphere geometry for foot contact points.
+
+    Rejects non-finite (NaN / +/-inf) and non-positive radii (issue #151).
+    """
+    require_positive(radius, "Contact sphere radius")
     cg_set = model.find("ContactGeometrySet")
     if cg_set is None:
         cg_set = ET.SubElement(model, "ContactGeometrySet")

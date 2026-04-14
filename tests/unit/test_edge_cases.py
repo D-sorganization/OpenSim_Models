@@ -100,7 +100,7 @@ class TestPostconditionEdgeCases:
             ensure_valid_xml("")
 
     def test_ensure_positive_mass_negative(self):
-        with pytest.raises(ValueError, match="not positive"):
+        with pytest.raises(ValueError, match="not a finite positive value"):
             ensure_positive_mass(-1.0, "test_body")
 
     def test_ensure_inertia_single_zero(self):

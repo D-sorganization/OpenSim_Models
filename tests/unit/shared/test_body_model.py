@@ -21,6 +21,16 @@ class TestBodyModelSpec:
         with pytest.raises(ValueError, match="must be positive"):
             BodyModelSpec(height=-1.0)
 
+    @pytest.mark.parametrize("value", [float("nan"), float("inf"), float("-inf")])
+    def test_rejects_non_finite_mass(self, value):
+        with pytest.raises(ValueError, match="non-finite"):
+            BodyModelSpec(total_mass=value)
+
+    @pytest.mark.parametrize("value", [float("nan"), float("inf"), float("-inf")])
+    def test_rejects_non_finite_height(self, value):
+        with pytest.raises(ValueError, match="non-finite"):
+            BodyModelSpec(height=value)
+
     def test_frozen(self):
         spec = BodyModelSpec()
         with pytest.raises(AttributeError):
