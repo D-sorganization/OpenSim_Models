@@ -71,6 +71,14 @@ class TestContactSphere:
                 model, name="bad", body="foot_l", location=(0, 0, 0), radius=0.0
             )
 
+    @pytest.mark.parametrize("radius", [float("nan"), float("inf"), float("-inf")])
+    def test_rejects_non_finite_radius(self, radius):
+        model = ET.Element("Model")
+        with pytest.raises(ValueError, match="non-finite"):
+            add_contact_sphere(
+                model, name="bad", body="foot_l", location=(0, 0, 0), radius=radius
+            )
+
     def test_has_location(self):
         model = ET.Element("Model")
         geom = add_contact_sphere(

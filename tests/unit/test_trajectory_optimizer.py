@@ -115,6 +115,9 @@ class TestInterpolatePhases:
             (-3, 1.0, "num_points"),
             (4, 0.0, "duration"),
             (4, -0.5, "duration"),
+            (4, float("nan"), "non-finite"),
+            (4, float("inf"), "non-finite"),
+            (4, float("-inf"), "non-finite"),
         ],
     )
     def test_rejects_invalid_sampling_arguments(

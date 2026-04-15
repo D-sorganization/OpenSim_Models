@@ -129,8 +129,8 @@ def interpolate_phases(
     """
     if num_points < 2:
         raise ValueError(f"num_points must be >= 2, got {num_points}")
-    if duration <= 0:
-        raise ValueError(f"duration must be > 0, got {duration}")
+    # require_positive rejects NaN / +/-inf as well as non-positive (issue #151).
+    require_positive(duration, "duration")
 
     time = np.linspace(0.0, duration, num_points)
     normalised = time / duration  # [0, 1]

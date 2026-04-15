@@ -66,11 +66,12 @@ def _segment_radius_from_mass(mass: float, length: float) -> float:
         (square vs circle cross-section), which is intentional: the pelvis and
         torso are broader than a cylinder of equal mass and length.  This is a
         deliberate simplification, not a bug.
+
+    Rejects non-finite (NaN / +/-inf) and non-positive values via
+    ``require_positive`` (issue #151).
     """
-    if length <= 0:
-        raise ValueError(f"Segment length must be positive, got {length}")
-    if mass <= 0:
-        raise ValueError(f"Segment mass must be positive, got {mass}")
+    require_positive(length, "Segment length")
+    require_positive(mass, "Segment mass")
     volume = mass / _TISSUE_DENSITY_KG_M3
     return math.sqrt(volume / (math.pi * length))
 
