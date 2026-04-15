@@ -1,0 +1,207 @@
+{
+  "repository": "OpenSim_Models",
+  "latest_run_date": "2026-04-14",
+  "latest_overall_grade": "C",
+  "latest_overall_score": 75,
+  "runs": [
+    {
+      "repository": "OpenSim_Models",
+      "run_date": "2026-04-14",
+      "run_time_utc": "2026-04-15T00:07:51.613017+00:00",
+      "sync_status": "blocked",
+      "sync_notes": "fetch failed: fatal: unable to access 'https://github.com/D-sorganization/OpenSim_Models.git/': schannel: AcquireCredentialsHandle failed: SEC_E_NO_CREDENTIALS (0x8009030e) - No credentials are available in the security package",
+      "overall_grade": "C",
+      "overall_score": 75,
+      "category_grades": [
+        {
+          "name": "A. Architecture and Boundaries",
+          "grade": "C",
+          "score": 79,
+          "description": "Assesses source organization, package boundaries, and separation of first-party concerns.",
+          "evidence": [
+            "125 tracked first-party files",
+            "48 code files under source-like directories",
+            "src/opensim_models/__init__.py",
+            "src/opensim_models/__main__.py",
+            "src/opensim_models/exercises/__init__.py",
+            "src/opensim_models/exercises/base.py"
+          ]
+        },
+        {
+          "name": "B. Build and Dependency Management",
+          "grade": "C",
+          "score": 73,
+          "description": "Checks whether build and dependency declarations are explicit and reproducible.",
+          "evidence": [
+            "Dockerfile",
+            "pyproject.toml"
+          ]
+        },
+        {
+          "name": "C. Configuration and Environment Hygiene",
+          "grade": "C",
+          "score": 79,
+          "description": "Checks committed environment/tool configuration and local setup clarity.",
+          "evidence": [
+            ".github/ISSUE_TEMPLATE/bug_report.yml",
+            ".github/ISSUE_TEMPLATE/feature_request.yml",
+            ".github/dependabot.yml",
+            ".github/workflows/ci-standard.yml",
+            ".pre-commit-config.yaml",
+            "pyproject.toml",
+            "rust_core/Cargo.toml"
+          ]
+        },
+        {
+          "name": "D. Contracts, Types, and Domain Modeling",
+          "grade": "C",
+          "score": 71,
+          "description": "Evaluates Design by Contract signals: validation, types, assertions, and explicit invariants.",
+          "evidence": [
+            "src/opensim_models/__main__.py",
+            "src/opensim_models/exercises/base.py",
+            "src/opensim_models/optimization/_types.py",
+            "src/opensim_models/optimization/exercise_objectives.py",
+            "src/opensim_models/optimization/trajectory_optimizer.py",
+            "src/opensim_models/shared/barbell/barbell_model.py",
+            "src/opensim_models/shared/body/_segment_data.py",
+            "src/opensim_models/shared/contracts/postconditions.py"
+          ]
+        },
+        {
+          "name": "E. Reliability and Error Handling",
+          "grade": "C",
+          "score": 77,
+          "description": "Reviews tests plus explicit validation, exception, and failure-path handling.",
+          "evidence": [
+            "SPEC.md",
+            "conftest.py",
+            "tests/__init__.py",
+            "tests/integration/__init__.py",
+            "rust_core/src/dynamics.rs",
+            "rust_core/src/interpolation.rs",
+            "rust_core/src/kinematics.rs",
+            "src/opensim_models/optimization/_types.py"
+          ]
+        },
+        {
+          "name": "F. Function, Module Size, and SRP",
+          "grade": "B",
+          "score": 88,
+          "description": "Evaluates coarse function/module size and single responsibility risk using static size signals.",
+          "evidence": []
+        },
+        {
+          "name": "G. Testing Discipline and TDD",
+          "grade": "B",
+          "score": 85,
+          "description": "Evaluates automated test presence and TDD support; commit history was not used to prove TDD workflow.",
+          "evidence": [
+            "44 test-like files for 98 code files",
+            "SPEC.md",
+            "conftest.py",
+            "tests/__init__.py",
+            "tests/integration/__init__.py",
+            "tests/integration/test_all_exercises_build.py",
+            "tests/integration/test_gait_integration.py"
+          ]
+        },
+        {
+          "name": "H. CI/CD and Release Safety",
+          "grade": "F",
+          "score": 57,
+          "description": "Checks workflow files and release automation gates.",
+          "evidence": [
+            ".github/workflows/ci-standard.yml"
+          ]
+        },
+        {
+          "name": "I. Code Style and Static Analysis",
+          "grade": "D",
+          "score": 68,
+          "description": "Looks for formatters, linters, type-checker configuration, and style enforcement.",
+          "evidence": [
+            ".github/ISSUE_TEMPLATE/bug_report.yml",
+            ".github/ISSUE_TEMPLATE/feature_request.yml",
+            ".github/dependabot.yml",
+            ".github/workflows/ci-standard.yml",
+            ".pre-commit-config.yaml",
+            "pyproject.toml",
+            "rust_core/Cargo.toml"
+          ]
+        },
+        {
+          "name": "J. API Design and Encapsulation",
+          "grade": "C",
+          "score": 74,
+          "description": "Evaluates API surface and Law of Demeter risk from organization and oversized modules.",
+          "evidence": [
+            "src/opensim_models/__init__.py",
+            "src/opensim_models/__main__.py",
+            "src/opensim_models/exercises/__init__.py",
+            "src/opensim_models/exercises/base.py",
+            "src/opensim_models/exercises/bench_press/__init__.py",
+            "src/opensim_models/exercises/bench_press/bench_press_model.py"
+          ]
+        },
+        {
+          "name": "K. Data Handling and Persistence",
+          "grade": "C",
+          "score": 70,
+          "description": "Checks schema, migration, serialization, and persistence evidence.",
+          "evidence": [
+            "No direct evidence found in tracked first-party files."
+          ]
+        },
+        {
+          "name": "L. Observability and Logging",
+          "grade": "C",
+          "score": 72,
+          "description": "Checks logging, diagnostics, and operational visibility signals.",
+          "evidence": [
+            "examples/generate_all_models.py",
+            "scripts/setup_dev.py",
+            "src/opensim_models/__main__.py",
+            "src/opensim_models/exercises/base.py",
+            "src/opensim_models/exercises/bench_press/bench_press_model.py",
+            "src/opensim_models/exercises/clean_and_jerk/clean_and_jerk_model.py",
+            "src/opensim_models/exercises/deadlift/deadlift_model.py",
+            "src/opensim_models/exercises/gait/gait_model.py"
+          ]
+        },
+        {
+          "name": "M. Maintainability, DRY, DbC, LoD",
+          "grade": "B",
+          "score": 82,
+          "description": "Explicitly evaluates DRY, Design by Contract, Law of Demeter, and maintainability signals.",
+          "evidence": [
+            "src/opensim_models/__main__.py",
+            "src/opensim_models/exercises/base.py",
+            "src/opensim_models/optimization/_types.py",
+            "src/opensim_models/optimization/exercise_objectives.py"
+          ]
+        },
+        {
+          "name": "N. Scalability and Operational Readiness",
+          "grade": "D",
+          "score": 69,
+          "description": "Checks deploy/build readiness and scaling signals from CI, config, and project structure.",
+          "evidence": [
+            ".github/workflows/ci-standard.yml",
+            "Dockerfile",
+            "pyproject.toml"
+          ]
+        }
+      ],
+      "key_risks": [
+        "No high-priority actionable findings from static assessment."
+      ],
+      "prioritized_recommendations": [],
+      "coverage_notes": [
+        "Reviewed tracked first-party files from git ls-files, excluding cache, build, vendor, virtualenv, and generated output directories.",
+        "Reviewed 125 tracked files, including 98 code files, 44 test-like files, 1 CI files, 2 build/dependency files, and 15 documentation files.",
+        "This is a read-only static assessment. TDD history and full Law of Demeter semantics cannot be proven without commit-by-commit workflow review and deeper call-graph analysis."
+      ]
+    }
+  ]
+}
