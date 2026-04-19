@@ -149,7 +149,7 @@ def interpolate_phases(
     )
 
 
-def _build_solver_dict(config: TrajectoryConfig) -> dict:
+def _build_solver_dict(config: TrajectoryConfig) -> dict[str, object]:
     """Return the MocoCasADiSolver sub-dict for a Moco study."""
     return {
         "type": "MocoCasADiSolver",
@@ -164,7 +164,7 @@ def _build_problem_dict(
     config: TrajectoryConfig,
     objective: ExerciseObjective,
     guess: TrajectoryResult,
-) -> dict:
+) -> dict[str, object]:
     """Return the problem definition sub-dict for a Moco study."""
     return {
         "exercise": objective.name,
@@ -177,7 +177,7 @@ def _build_problem_dict(
     }
 
 
-def create_moco_study(config: TrajectoryConfig) -> dict:
+def create_moco_study(config: TrajectoryConfig) -> dict[str, object]:
     """Build a dict describing a Moco trajectory optimization problem.
 
     This does **not** require the OpenSim Python bindings; it returns a
