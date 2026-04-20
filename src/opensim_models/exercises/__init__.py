@@ -4,19 +4,19 @@ from __future__ import annotations
 
 from collections.abc import Callable
 
-from opensim_models.exercises.bench_press.bench_press_model import (
+from .bench_press.bench_press_model import (
     build_bench_press_model,
 )
-from opensim_models.exercises.clean_and_jerk.clean_and_jerk_model import (
+from .clean_and_jerk.clean_and_jerk_model import (
     build_clean_and_jerk_model,
 )
-from opensim_models.exercises.deadlift.deadlift_model import build_deadlift_model
-from opensim_models.exercises.gait.gait_model import build_gait_model
-from opensim_models.exercises.sit_to_stand.sit_to_stand_model import (
+from .deadlift.deadlift_model import build_deadlift_model
+from .gait.gait_model import build_gait_model
+from .sit_to_stand.sit_to_stand_model import (
     build_sit_to_stand_model,
 )
-from opensim_models.exercises.snatch.snatch_model import build_snatch_model
-from opensim_models.exercises.squat.squat_model import build_squat_model
+from .snatch.snatch_model import build_snatch_model
+from .squat.squat_model import build_squat_model
 
 # Single authoritative registry of all supported exercises.
 # Keys are the CLI exercise names; values are convenience build functions.
