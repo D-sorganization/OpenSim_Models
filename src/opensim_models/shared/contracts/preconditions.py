@@ -8,6 +8,7 @@ accept invalid geometry or physics parameters.
 from __future__ import annotations
 
 import logging
+import math
 
 import numpy as np
 from numpy.typing import ArrayLike
@@ -41,6 +42,10 @@ def require_unit_vector(vec: ArrayLike, name: str, tol: float = 1e-6) -> None:
 
 def require_finite(arr: ArrayLike, name: str) -> None:
     """Require all elements of *arr* to be finite (no NaN/Inf)."""
+    if isinstance(arr, (int, float)):
+        if not math.isfinite(arr):
+            raise ValueError(f"{name} contains non-finite values")
+        return
     a = np.asarray(arr, dtype=float)
     if not np.all(np.isfinite(a)):
         raise ValueError(f"{name} contains non-finite values")
