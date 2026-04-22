@@ -18,14 +18,18 @@ logger = logging.getLogger(__name__)
 
 def require_positive(value: float, name: str) -> None:
     """Require *value* to be strictly positive."""
-    require_finite(value, name)
+    # ⚡ Bolt Optimization: Inline math.isfinite to avoid function call overhead
+    if not math.isfinite(value):
+        raise ValueError(f"{name} contains non-finite values")
     if value <= 0:
         raise ValueError(f"{name} must be positive, got {value}")
 
 
 def require_non_negative(value: float, name: str) -> None:
     """Require *value* >= 0."""
-    require_finite(value, name)
+    # ⚡ Bolt Optimization: Inline math.isfinite to avoid function call overhead
+    if not math.isfinite(value):
+        raise ValueError(f"{name} contains non-finite values")
     if value < 0:
         raise ValueError(f"{name} must be non-negative, got {value}")
 
