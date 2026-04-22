@@ -86,7 +86,7 @@ def test_ci_workflow_has_no_conflict_markers() -> None:
 
 def test_ci_workflow_is_valid_yaml() -> None:
     """CI workflow file must be parseable as YAML."""
-    import yaml  # noqa: PLC0415
+    yaml = pytest.importorskip("yaml")
 
     text = _CI_WORKFLOW.read_text(encoding="utf-8")
     result = yaml.safe_load(text)
