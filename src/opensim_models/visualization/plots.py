@@ -182,7 +182,7 @@ def plot_phase_diagram(
     if not coord_list:
         raise ValueError(f"Exercise '{objective.name}' has no joint targets in phases")
 
-    cmap = matplotlib.colormaps["Set2"]
+    cmap = cast(Any, matplotlib).colormaps["Set2"]
     colors = cmap(np.linspace(0, 1, max(len(coord_list), 1)))
 
     with plt.rc_context(_STYLE):
