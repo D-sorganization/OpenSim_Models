@@ -126,6 +126,7 @@ CLI or by direct builder calls and are not treated as maintained source files.
 
 | Date | Version | Notes |
 | --- | --- | --- |
+| 2026-04-22 | 1.0.4 | Declared `pyyaml` in the dev extra so YAML-parsing workflow regression tests run in clean CI installs (issue #176). |
 | 2026-04-11 | 1.0.3 | Split `rust_core/src/lib.rs` into focused submodules (`dynamics`, `kinematics`, `interpolation`) to stay under the monolith threshold; public PyO3 API and behaviour unchanged (issue #127). |
 | 2026-04-11 | 1.0.2 | Expanded `tests/unit/test_trajectory_optimizer.py` and `tests/unit/test_limb_builders.py` with additional happy-path, edge-case, and DbC coverage for every public entry point (issue #130). |
 | 2026-04-09 | 1.0.1 | Replaced handwritten XML indentation with `xml.etree.ElementTree.indent`, standardized deadlift feasibility warnings on repo logging, and removed redundant builder constructors while preserving constructor coverage in tests. |
