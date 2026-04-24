@@ -184,12 +184,9 @@ def parallel_axis_shift(
     tuple of (Ixx', Iyy', Izz') about the new origin.
     """
     require_positive(mass, "mass")
-    # ⚡ Bolt Optimization: Avoid numpy overhead for 3-vector displacement.
-    # What: Extract components directly and compute d_sq manually instead of using np.asarray and np.dot.
-    # Why: parallel_axis_shift is a hot path for geometry/inertia calculations.
-    # Impact: Reduces overhead by ~5.8x for list inputs and ~2.7x for numpy arrays.
-    dx, dy, dz = float(displacement[0]), float(displacement[1]), float(displacement[2])
-    d_sq = dx * dx + dy * dy + dz * dz
+    d = np.asarray(displacement, dtype=float)
+    dx, dy, dz = d[0], d[1], d[2]
+    d_sq = float(np.dot(d, d))
 
     ixx = inertia[0] + mass * (d_sq - dx * dx)
     iyy = inertia[1] + mass * (d_sq - dy * dy)
