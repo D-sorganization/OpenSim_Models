@@ -12,3 +12,7 @@
 ## 2024-06-12 - Avoid array conversion overhead for simple list/tuple 3D vector norms
 **Learning:** For typical 3-element Python inputs (`list`, `tuple`) and even `np.ndarray`, calculating magnitudes or norms using `np.linalg.norm(np.asarray(x))` creates significant object conversion overhead relative to the calculation itself in hot paths like `require_unit_vector`.
 **Action:** Use native Python `math.hypot(x[0], x[1], x[2])` for operations on fixed-size small vectors whenever possible for major latency savings (up to 10x faster for standard Python lists/tuples). Use type fast-paths.
+
+## 2024-06-13 - Native Python Math vs NumPy for Fixed Small Arrays
+**Learning:** For small fixed-size 3D vector operations (like calculating the square of magnitudes during parallel axis shifts), using `numpy.asarray` and `numpy.dot` introduces significant object conversion overhead (up to ~7x slower for list/tuple inputs, and ~3x slower for existing `numpy` arrays).
+**Action:** When working with typical 3-element Python coordinate vectors or displacements, unpack the elements, cast directly to `float`, and compute using native Python scalar arithmetic (`d_sq = dx*dx + dy*dy + dz*dz`) instead of using `numpy` helper methods.
