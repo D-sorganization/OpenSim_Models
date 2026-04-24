@@ -1,0 +1,11 @@
+--- .github/workflows/ci-standard.yml
++++ .github/workflows/ci-standard.yml
+@@ -16,7 +16,7 @@
+
+ jobs:
+   pick-runner:
+-    runs-on: d-sorg-fleet
++    runs-on: ubuntu-latest
+     timeout-minutes: 2
+     outputs:
+       runner: ${{ steps.check.outputs.runner }}
