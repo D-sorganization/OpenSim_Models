@@ -21,4 +21,6 @@
 
 ## 2026-04-25 - Numpy Array Creation Overhead
 **Learning:** In performance-critical functions that construct small, fixed-size matrices (like 3x3 rotation matrices), passing nested Python lists to `np.array()` (e.g., `np.array([[1, 0, 0], [0, c, -s], ...])`) introduces severe object allocation and type inference overhead inside numpy.
-**Action:** Pre-allocate the array using `np.zeros((3, 3), dtype=float)` and assign the non-zero elements explicitly to reduce function overhead by 40-45%.
+**Action:** Pre-allocate the array using `np.zeros((3, 3), dtype=float)` and assign the non-zero elements explicitly to reduce function overhead by 40-45%.## 2024-04-26 - Unrolling loops in hot path validators
+**Learning:** In OpenSim model generators, postcondition checks (like `ensure_positive_definite_inertia`) are called heavily in inner loops. Using python loops over tuples (`for label, val in [("Ixx", ixx)...]`) creates significant allocation overhead (lists, tuples) and function call overhead (`_is_finite_positive`).
+**Action:** Inline checks and unroll small loops manually for validation functions that live on the hot path to avoid list/tuple allocations.
