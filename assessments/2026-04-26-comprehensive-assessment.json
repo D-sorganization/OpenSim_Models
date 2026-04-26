@@ -1,0 +1,291 @@
+{
+  "repository": "D-sorganization/OpenSim_Models",
+  "branch": "issue-151-finite-contracts",
+  "head": "2a13ae0a73c9e7dd8a11606bb205f2689c9f3e73",
+  "date": "2026-04-26",
+  "overall_score": 70.0,
+  "criteria": [
+    {
+      "id": "A",
+      "name": "Project Organization",
+      "weight": 0.05,
+      "score": 7.0,
+      "weighted": 0.35,
+      "grade": "C"
+    },
+    {
+      "id": "B",
+      "name": "Documentation",
+      "weight": 0.08,
+      "score": 8.0,
+      "weighted": 0.64,
+      "grade": "B"
+    },
+    {
+      "id": "C",
+      "name": "Code Quality",
+      "weight": 0.12,
+      "score": 8.0,
+      "weighted": 0.96,
+      "grade": "B"
+    },
+    {
+      "id": "D",
+      "name": "Testing",
+      "weight": 0.1,
+      "score": 6.0,
+      "weighted": 0.6,
+      "grade": "D"
+    },
+    {
+      "id": "E",
+      "name": "CI/CD",
+      "weight": 0.07,
+      "score": 5.0,
+      "weighted": 0.35,
+      "grade": "D"
+    },
+    {
+      "id": "F",
+      "name": "Security",
+      "weight": 0.1,
+      "score": 7.0,
+      "weighted": 0.7,
+      "grade": "C"
+    },
+    {
+      "id": "G",
+      "name": "Dependencies",
+      "weight": 0.08,
+      "score": 7.0,
+      "weighted": 0.56,
+      "grade": "C"
+    },
+    {
+      "id": "H",
+      "name": "Performance",
+      "weight": 0.1,
+      "score": 6.0,
+      "weighted": 0.6,
+      "grade": "D"
+    },
+    {
+      "id": "I",
+      "name": "Accessibility",
+      "weight": 0.06,
+      "score": 5.0,
+      "weighted": 0.3,
+      "grade": "D"
+    },
+    {
+      "id": "J",
+      "name": "Internationalization",
+      "weight": 0.07,
+      "score": 3.0,
+      "weighted": 0.21,
+      "grade": "F"
+    },
+    {
+      "id": "K",
+      "name": "Observability",
+      "weight": 0.07,
+      "score": 5.0,
+      "weighted": 0.35,
+      "grade": "D"
+    },
+    {
+      "id": "L",
+      "name": "Maintainability",
+      "weight": 0.08,
+      "score": 7.0,
+      "weighted": 0.56,
+      "grade": "C"
+    },
+    {
+      "id": "M",
+      "name": "Data Handling",
+      "weight": 0.05,
+      "score": 6.0,
+      "weighted": 0.3,
+      "grade": "D"
+    },
+    {
+      "id": "N",
+      "name": "API/Interface Design",
+      "weight": 0.04,
+      "score": 7.0,
+      "weighted": 0.28,
+      "grade": "C"
+    },
+    {
+      "id": "O",
+      "name": "Agentic Usability",
+      "weight": 0.03,
+      "score": 8.0,
+      "weighted": 0.24,
+      "grade": "B"
+    }
+  ],
+  "findings": {
+    "P0": [
+      {
+        "id": "P0-D001",
+        "title": "test_hypothesis.py fails collection with ImportError",
+        "file": "tests/unit/test_hypothesis.py",
+        "line": 1,
+        "criterion": "D"
+      },
+      {
+        "id": "P0-E001",
+        "title": "CI pass rate critically low at 65%",
+        "file": ".github/workflows/ci-standard.yml",
+        "line": null,
+        "criterion": "E"
+      },
+      {
+        "id": "P0-A001",
+        "title": "Files exceed 300-line guideline",
+        "file": "src/opensim_models/shared/utils/xml_helpers.py",
+        "line": null,
+        "criterion": "A"
+      }
+    ],
+    "P1": [
+      {
+        "id": "P1-H001",
+        "title": "Empty benchmarks directory",
+        "file": ".benchmarks/",
+        "line": null,
+        "criterion": "H"
+      },
+      {
+        "id": "P1-G001",
+        "title": "numpy upper bound may be overly restrictive",
+        "file": "pyproject.toml",
+        "line": 21,
+        "criterion": "G"
+      },
+      {
+        "id": "P1-F001",
+        "title": "Multiple CVEs ignored in CI pip-audit",
+        "file": ".github/workflows/ci-standard.yml",
+        "line": 75,
+        "criterion": "F"
+      },
+      {
+        "id": "P1-L001",
+        "title": "preconditions.py duplicated across robotics repos",
+        "file": "src/opensim_models/shared/contracts/preconditions.py",
+        "line": null,
+        "criterion": "L"
+      },
+      {
+        "id": "P1-J001",
+        "title": "No i18n framework",
+        "file": "src/",
+        "line": null,
+        "criterion": "J"
+      },
+      {
+        "id": "P1-K001",
+        "title": "No metrics or telemetry system",
+        "file": "src/",
+        "line": null,
+        "criterion": "K"
+      },
+      {
+        "id": "P1-E002",
+        "title": "Rust core not built in CI",
+        "file": "rust_core/",
+        "line": null,
+        "criterion": "E"
+      },
+      {
+        "id": "P1-E003",
+        "title": "pip-audit ignores multiple CVEs",
+        "file": ".github/workflows/ci-standard.yml",
+        "line": 75,
+        "criterion": "E"
+      },
+      {
+        "id": "P1-I001",
+        "title": "No accessibility considerations for visualizations",
+        "file": "src/opensim_models/visualization/plots.py",
+        "line": null,
+        "criterion": "I"
+      },
+      {
+        "id": "P1-D002",
+        "title": "Test coverage gap - empty benchmarks",
+        "file": ".benchmarks/",
+        "line": null,
+        "criterion": "D"
+      }
+    ],
+    "P2": [
+      {
+        "id": "P2-C001",
+        "title": "Limited typing coverage",
+        "file": "src/",
+        "line": null,
+        "criterion": "C"
+      },
+      {
+        "id": "P2-C002",
+        "title": "bench_press_model.py approaches size limit",
+        "file": "src/opensim_models/exercises/bench_press/bench_press_model.py",
+        "line": null,
+        "criterion": "C"
+      },
+      {
+        "id": "P2-H002",
+        "title": "Dockerfile training stage is placeholder",
+        "file": "Dockerfile",
+        "line": 35,
+        "criterion": "H"
+      },
+      {
+        "id": "P2-A002",
+        "title": ".coverage file tracked in repository",
+        "file": ".coverage",
+        "line": null,
+        "criterion": "A"
+      },
+      {
+        "id": "P2-A003",
+        "title": "Stale root files in .gitignore",
+        "file": ".gitignore",
+        "line": 27,
+        "criterion": "A"
+      },
+      {
+        "id": "P2-L002",
+        "title": "Limited type annotations",
+        "file": "src/",
+        "line": null,
+        "criterion": "L"
+      },
+      {
+        "id": "P2-M001",
+        "title": "No data validation schema",
+        "file": "src/opensim_models/shared/utils/xml_helpers.py",
+        "line": null,
+        "criterion": "M"
+      },
+      {
+        "id": "P2-N001",
+        "title": "Limited package exports",
+        "file": "src/opensim_models/__init__.py",
+        "line": null,
+        "criterion": "N"
+      },
+      {
+        "id": "P2-O001",
+        "title": "No agent-specific test commands",
+        "file": "Makefile",
+        "line": null,
+        "criterion": "O"
+      }
+    ]
+  }
+}
