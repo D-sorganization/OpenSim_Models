@@ -131,3 +131,36 @@ CLI or by direct builder calls and are not treated as maintained source files.
 | 2026-04-11 | 1.0.2 | Expanded `tests/unit/test_trajectory_optimizer.py` and `tests/unit/test_limb_builders.py` with additional happy-path, edge-case, and DbC coverage for every public entry point (issue #130). |
 | 2026-04-09 | 1.0.1 | Replaced handwritten XML indentation with `xml.etree.ElementTree.indent`, standardized deadlift feasibility warnings on repo logging, and removed redundant builder constructors while preserving constructor coverage in tests. |
 | 2026-04-05 | 1.0.0 | Initial root specification for the maintained OpenSim_Models package and CLI surface. |
+
+## 10. Internationalisation
+
+### Current Scope (Explicit)
+
+OpenSim_Models is **English-only**. All user-facing strings — log messages,
+exception messages, and CLI output — are in English. This is a deliberate
+choice, not an accidental omission.
+
+**Rationale:**
+- The primary audience is biomechanics researchers who read English as the
+  standard scientific lingua franca.
+- The package surface is a model-generation library, not a consumer-facing
+  application; translation is out of scope for the current release cycle.
+- Keeping strings centralised in a single module (`_messages.py`) means
+  i18n can be added later (e.g. via `gettext` or `babel`) without touching
+  logic files.
+
+### String Management
+
+All user-visible strings are sourced from
+`src/opensim_models/_messages.py`. Hardcoded strings in other modules
+are considered a regression and should be refactored into `_messages.py`.
+
+### Future Milestone
+
+If the CLI or documentation expands to non-researcher audiences,
+consider:
+1. Adding `babel` or `gettext` as an optional dependency.
+2. Extracting `_messages.py` into `.po` / `.mo` files per locale.
+3. Documenting the locale-aware formatting decision in `CONTRIBUTING.md`.
+
+Until then, `_messages.py` remains a simple Python constants module.
