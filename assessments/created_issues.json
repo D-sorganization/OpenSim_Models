@@ -1,0 +1,112 @@
+[
+  {
+    "url": "https://github.com/D-sorganization/OpenSim_Models/issues/199",
+    "title": "[P0] [D] test_hypothesis.py fails collection with ImportError",
+    "priority": "P0"
+  },
+  {
+    "url": "https://github.com/D-sorganization/OpenSim_Models/issues/200",
+    "title": "[P0] [E] CI pass rate critically low at 65%",
+    "priority": "P0"
+  },
+  {
+    "url": "https://github.com/D-sorganization/OpenSim_Models/issues/201",
+    "title": "[P0] [A] Files exceed 300-line guideline",
+    "priority": "P0"
+  },
+  {
+    "url": "https://github.com/D-sorganization/OpenSim_Models/issues/202",
+    "title": "[P1] [H] Empty benchmarks directory",
+    "priority": "P1"
+  },
+  {
+    "url": "https://github.com/D-sorganization/OpenSim_Models/issues/203",
+    "title": "[P1] [G] numpy upper bound may be overly restrictive",
+    "priority": "P1"
+  },
+  {
+    "url": "https://github.com/D-sorganization/OpenSim_Models/issues/204",
+    "title": "[P1] [F] Multiple CVEs ignored in CI pip-audit",
+    "priority": "P1"
+  },
+  {
+    "url": "https://github.com/D-sorganization/OpenSim_Models/issues/205",
+    "title": "[P1] [L] preconditions.py duplicated across robotics repos",
+    "priority": "P1"
+  },
+  {
+    "url": "https://github.com/D-sorganization/OpenSim_Models/issues/206",
+    "title": "[P1] [J] No i18n framework",
+    "priority": "P1"
+  },
+  {
+    "url": "https://github.com/D-sorganization/OpenSim_Models/issues/207",
+    "title": "[P1] [K] No metrics or telemetry system",
+    "priority": "P1"
+  },
+  {
+    "url": "https://github.com/D-sorganization/OpenSim_Models/issues/208",
+    "title": "[P1] [E] Rust core not built in CI",
+    "priority": "P1"
+  },
+  {
+    "url": "https://github.com/D-sorganization/OpenSim_Models/issues/209",
+    "title": "[P1] [E] pip-audit ignores multiple CVEs",
+    "priority": "P1"
+  },
+  {
+    "url": "https://github.com/D-sorganization/OpenSim_Models/issues/210",
+    "title": "[P1] [I] No accessibility considerations for visualizations",
+    "priority": "P1"
+  },
+  {
+    "url": "https://github.com/D-sorganization/OpenSim_Models/issues/211",
+    "title": "[P1] [D] Test coverage gap - empty benchmarks",
+    "priority": "P1"
+  },
+  {
+    "url": "https://github.com/D-sorganization/OpenSim_Models/issues/212",
+    "title": "[P2] [C] Limited typing coverage",
+    "priority": "P2"
+  },
+  {
+    "url": "https://github.com/D-sorganization/OpenSim_Models/issues/213",
+    "title": "[P2] [C] bench_press_model.py approaches size limit",
+    "priority": "P2"
+  },
+  {
+    "url": "https://github.com/D-sorganization/OpenSim_Models/issues/214",
+    "title": "[P2] [H] Dockerfile training stage is placeholder",
+    "priority": "P2"
+  },
+  {
+    "url": "https://github.com/D-sorganization/OpenSim_Models/issues/215",
+    "title": "[P2] [A] .coverage file tracked in repository",
+    "priority": "P2"
+  },
+  {
+    "url": "https://github.com/D-sorganization/OpenSim_Models/issues/216",
+    "title": "[P2] [A] Stale root files in .gitignore",
+    "priority": "P2"
+  },
+  {
+    "url": "https://github.com/D-sorganization/OpenSim_Models/issues/217",
+    "title": "[P2] [L] Limited type annotations",
+    "priority": "P2"
+  },
+  {
+    "url": "https://github.com/D-sorganization/OpenSim_Models/issues/218",
+    "title": "[P2] [M] No data validation schema",
+    "priority": "P2"
+  },
+  {
+    "url": "https://github.com/D-sorganization/OpenSim_Models/issues/219",
+    "title": "[P2] [N] Limited package exports",
+    "priority": "P2"
+  },
+  {
+    "url": "https://github.com/D-sorganization/OpenSim_Models/issues/220",
+    "title": "[P2] [O] No agent-specific test commands",
+    "priority": "P2"
+  }
+]
