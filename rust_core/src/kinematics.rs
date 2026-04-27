@@ -61,7 +61,7 @@ pub fn com_batch<'py>(
         }
     }
 
-    Ok(result.into_pyarray(py).into())
+    Ok(result.into_pyarray_bound(py).into())
 }
 
 // ---------------------------------------------------------------------------
