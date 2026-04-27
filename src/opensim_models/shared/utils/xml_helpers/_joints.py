@@ -1,0 +1,250 @@
+"""Joint element creation helpers for OpenSim .osim files."""
+
+from __future__ import annotations
+
+import xml.etree.ElementTree as ET
+
+from opensim_models.shared.utils.xml_helpers._formatting import ZERO_VEC3, vec3_str
+
+
+def _add_joint_frames(
+    joint: ET.Element,
+    name: str,
+    parent_body: str,
+    child_body: str,
+    location_in_parent: tuple[float, float, float],
+    location_in_child: tuple[float, float, float],
+    orientation_in_parent: tuple[float, float, float],
+    orientation_in_child: tuple[float, float, float],
+) -> None:
+    """Append parent and child PhysicalOffsetFrame elements to a joint."""
+    pf = ET.SubElement(joint, "PhysicalOffsetFrame", name=f"{name}_parent")
+    ET.SubElement(pf, "socket_parent").text = f"/bodyset/{parent_body}"
+    ET.SubElement(pf, "translation").text = vec3_str(*location_in_parent)
+    ET.SubElement(pf, "orientation").text = vec3_str(*orientation_in_parent)
+
+    cf = ET.SubElement(joint, "PhysicalOffsetFrame", name=f"{name}_child")
+    ET.SubElement(cf, "socket_parent").text = f"/bodyset/{child_body}"
+    ET.SubElement(cf, "translation").text = vec3_str(*location_in_child)
+    ET.SubElement(cf, "orientation").text = vec3_str(*orientation_in_child)
+
+    ET.SubElement(joint, "socket_parent_frame").text = f"{name}_parent"
+    ET.SubElement(joint, "socket_child_frame").text = f"{name}_child"
+
+
+def _add_coordinate_set(
+    joint: ET.Element,
+    coordinates: list[dict[str, float | str]],
+) -> None:
+    """Append a <coordinates> element with Coordinate children to a joint."""
+    coord_set = ET.SubElement(joint, "coordinates")
+    for c in coordinates:
+        coord = ET.SubElement(coord_set, "Coordinate", name=str(c["name"]))
+        ET.SubElement(coord, "default_value").text = f"{float(c['default_value']):.6f}"
+        ET.SubElement(
+            coord, "range"
+        ).text = f"{float(c['range_min']):.6f} {float(c['range_max']):.6f}"
+
+
+def add_pin_joint(
+    jointset: ET.Element,
+    *,
+    name: str,
+    parent_body: str,
+    child_body: str,
+    location_in_parent: tuple[float, float, float],
+    location_in_child: tuple[float, float, float],
+    orientation_in_parent: tuple[float, float, float] = (0, 0, 0),
+    orientation_in_child: tuple[float, float, float] = (0, 0, 0),
+    coord_name: str,
+    default_value: float = 0.0,
+    range_min: float = -1.5708,
+    range_max: float = 1.5708,
+) -> ET.Element:
+    """Append a <PinJoint> to *jointset* and return it."""
+    joint = ET.SubElement(jointset, "PinJoint", name=name)
+
+    # Parent frame
+    pf = ET.SubElement(joint, "PhysicalOffsetFrame", name=f"{name}_parent")
+    ET.SubElement(pf, "socket_parent").text = f"/bodyset/{parent_body}"
+    ET.SubElement(pf, "translation").text = vec3_str(*location_in_parent)
+    ET.SubElement(pf, "orientation").text = vec3_str(*orientation_in_parent)
+
+    # Child frame
+    cf = ET.SubElement(joint, "PhysicalOffsetFrame", name=f"{name}_child")
+    ET.SubElement(cf, "socket_parent").text = f"/bodyset/{child_body}"
+    ET.SubElement(cf, "translation").text = vec3_str(*location_in_child)
+    ET.SubElement(cf, "orientation").text = vec3_str(*orientation_in_child)
+
+    ET.SubElement(joint, "socket_parent_frame").text = f"{name}_parent"
+    ET.SubElement(joint, "socket_child_frame").text = f"{name}_child"
+
+    # Coordinate
+    coords = ET.SubElement(joint, "coordinates")
+    coord = ET.SubElement(coords, "Coordinate", name=coord_name)
+    ET.SubElement(coord, "default_value").text = f"{default_value:.6f}"
+    ET.SubElement(coord, "range").text = f"{range_min:.6f} {range_max:.6f}"
+
+    return joint
+
+
+def add_ball_joint(
+    jointset: ET.Element,
+    *,
+    name: str,
+    parent_body: str,
+    child_body: str,
+    location_in_parent: tuple[float, float, float],
+    location_in_child: tuple[float, float, float],
+    orientation_in_parent: tuple[float, float, float] = (0, 0, 0),
+    orientation_in_child: tuple[float, float, float] = (0, 0, 0),
+    coordinates: list[dict[str, float | str]],
+) -> ET.Element:
+    """Append a <BallJoint> (3-DOF rotation) to *jointset* and return it.
+
+    *coordinates* is a list of 3 dicts, each with keys:
+      - ``name`` (str): coordinate name
+      - ``default_value`` (float): initial value in radians
+      - ``range_min`` (float): lower bound in radians
+      - ``range_max`` (float): upper bound in radians
+    """
+    if len(coordinates) != 3:
+        raise ValueError(
+            f"BallJoint requires exactly 3 coordinates, got {len(coordinates)}"
+        )
+
+    joint = ET.SubElement(jointset, "BallJoint", name=name)
+    _add_joint_frames(
+        joint,
+        name,
+        parent_body,
+        child_body,
+        location_in_parent,
+        location_in_child,
+        orientation_in_parent,
+        orientation_in_child,
+    )
+    _add_coordinate_set(joint, coordinates)
+    return joint
+
+
+def _add_spatial_transform(
+    joint: ET.Element,
+    coordinates: list[dict[str, float | str]],
+) -> None:
+    """Append a <SpatialTransform> with TransformAxis elements to a CustomJoint."""
+    spatial = ET.SubElement(joint, "SpatialTransform")
+    rotation_axes = ["rotation1", "rotation2", "rotation3"]
+    translation_axes = ["translation1", "translation2", "translation3"]
+
+    for i, c in enumerate(coordinates):
+        axis_name = rotation_axes[i] if i < 3 else translation_axes[i - 3]
+        ta = ET.SubElement(spatial, "TransformAxis", name=axis_name)
+        ET.SubElement(ta, "coordinates").text = str(c["name"])
+        ET.SubElement(ta, "axis").text = str(c.get("axis", "0 0 1"))
+
+
+def add_custom_joint(
+    jointset: ET.Element,
+    *,
+    name: str,
+    parent_body: str,
+    child_body: str,
+    location_in_parent: tuple[float, float, float],
+    location_in_child: tuple[float, float, float],
+    orientation_in_parent: tuple[float, float, float] = (0, 0, 0),
+    orientation_in_child: tuple[float, float, float] = (0, 0, 0),
+    coordinates: list[dict[str, float | str]],
+) -> ET.Element:
+    """Append a <CustomJoint> (N-DOF) to *jointset* and return it.
+
+    *coordinates* is a list of dicts (1 or more), each with keys:
+      - ``name`` (str): coordinate name
+      - ``default_value`` (float): initial value in radians
+      - ``range_min`` (float): lower bound in radians
+      - ``range_max`` (float): upper bound in radians
+      - ``axis`` (str, optional): rotation axis, e.g. "1 0 0" (defaults to "0 0 1")
+    """
+    if len(coordinates) < 1:
+        raise ValueError("CustomJoint requires at least 1 coordinate")
+
+    joint = ET.SubElement(jointset, "CustomJoint", name=name)
+    _add_joint_frames(
+        joint,
+        name,
+        parent_body,
+        child_body,
+        location_in_parent,
+        location_in_child,
+        orientation_in_parent,
+        orientation_in_child,
+    )
+    _add_coordinate_set(joint, coordinates)
+    _add_spatial_transform(joint, coordinates)
+    return joint
+
+
+def add_free_joint(
+    jointset: ET.Element,
+    *,
+    name: str,
+    parent_body: str,
+    child_body: str,
+    location_in_parent: tuple[float, float, float] = (0, 0, 0),
+    location_in_child: tuple[float, float, float] = (0, 0, 0),
+) -> ET.Element:
+    """Append a <FreeJoint> (6-DOF) to *jointset* and return it."""
+    joint = ET.SubElement(jointset, "FreeJoint", name=name)
+    _add_joint_frames(
+        joint,
+        name,
+        parent_body,
+        child_body,
+        location_in_parent,
+        location_in_child,
+        ZERO_VEC3,
+        ZERO_VEC3,
+    )
+    return joint
+
+
+def add_weld_joint(
+    jointset: ET.Element,
+    *,
+    name: str,
+    parent_body: str,
+    child_body: str,
+    location_in_parent: tuple[float, float, float],
+    location_in_child: tuple[float, float, float] = (0, 0, 0),
+) -> ET.Element:
+    """Append a <WeldJoint> (rigid attachment) to *jointset*."""
+    joint = ET.SubElement(jointset, "WeldJoint", name=name)
+    _add_joint_frames(
+        joint,
+        name,
+        parent_body,
+        child_body,
+        location_in_parent,
+        location_in_child,
+        ZERO_VEC3,
+        ZERO_VEC3,
+    )
+    return joint
+
+
+def set_coordinate_default(jointset: ET.Element, coord_name: str, value: float) -> None:
+    """Set the default_value for a named Coordinate in the JointSet.
+
+    Searches all joints for a Coordinate element whose 'name' attribute matches
+    *coord_name* and updates its default_value text.
+
+    Raises:
+        ValueError: If *coord_name* is not found in any joint in the JointSet.
+    """
+    for coord in jointset.iter("Coordinate"):
+        if coord.get("name") == coord_name:
+            dv = coord.find("default_value")
+            if dv is not None:
+                dv.text = f"{value:.6f}"
+            return
+    raise ValueError(f"Coordinate {coord_name!r} not found in jointset")
