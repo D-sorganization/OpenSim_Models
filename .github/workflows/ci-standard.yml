@@ -22,7 +22,9 @@ permissions:
 jobs:
   pick-runner:
     runs-on: d-sorg-fleet
-    timeout-minutes: 2
+    timeout-minutes: 5
+    # Fail fast — if runner selection fails, nothing downstream should run.
+    continue-on-error: false
     outputs:
       runner: ${{ steps.check.outputs.runner }}
     steps:
@@ -33,11 +35,18 @@ jobs:
         run: "ONLINE=$(gh api /orgs/${{ github.repository_owner }}/actions/runners \\\n  --jq '[.runners[] | select(.status == \"online\") | select(.labels[].name == \"d-sorg-fleet\")] | length' \\\n  2>/dev/null || echo \"0\")\nif [[ \"$ONLINE\" -gt 0 ]]; then\n  echo \"runner=d-sorg-fleet\" >> $GITHUB_OUTPUT\n  echo \"Self-hosted runner online — routing locally\"\nelse\n  echo \"runner=ubuntu-latest\" >> $GITHUB_OUTPUT\n  echo \"No self-hosted runner — using GitHub-hosted\"\nfi"
   quality-gate:
     runs-on: ${{ needs.pick-runner.outputs.runner }}
-    timeout-minutes: 15
+    timeout-minutes: 20
     steps:
       - uses: actions/checkout@v6
         with:
           fetch-depth: 0
+      - name: Verify clean working tree
+        run: |
+          if [[ -n "$(git status --porcelain)" ]]; then
+            echo "::error::Working tree is not clean. Staged or unstaged changes detected."
+            git status --short
+            exit 1
+          fi
       - name: Set up Python venv
         run: |
           for PYTHON in python3.11 python3.12 python3.10 python3; do
@@ -97,8 +106,9 @@ jobs:
       - pick-runner
       - quality-gate
     runs-on: ${{ needs.pick-runner.outputs.runner }}
-    timeout-minutes: 15
+    timeout-minutes: 25
     strategy:
+      fail-fast: false
       matrix:
         python: ["3.10", "3.11", "3.12"]
     steps:
