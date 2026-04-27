@@ -5,7 +5,6 @@ from __future__ import annotations
 import xml.etree.ElementTree as ET
 from typing import NamedTuple
 
-
 ZERO_VEC3: tuple[float, float, float] = (0.0, 0.0, 0.0)
 
 
