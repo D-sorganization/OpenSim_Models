@@ -8,6 +8,20 @@ import sys
 from pathlib import Path
 
 from opensim_models.exercises import EXERCISE_BUILDERS
+from opensim_models._messages import (
+    CLI_DESCRIPTION,
+    CLI_EXERCISE_HELP,
+    CLI_OUTPUT_HELP,
+    CLI_MASS_HELP,
+    CLI_HEIGHT_HELP,
+    CLI_PLATES_HELP,
+    CLI_VERBOSE_HELP,
+    ERR_MASS_POSITIVE,
+    ERR_HEIGHT_POSITIVE,
+    ERR_PLATES_NONNEGATIVE,
+    LOG_WROTE_FILE,
+    LOG_GENERATED_FILE,
+)
 
 logger = logging.getLogger(__name__)
 
@@ -17,37 +31,37 @@ _BUILDERS = EXERCISE_BUILDERS
 def _build_parser() -> argparse.ArgumentParser:
     parser = argparse.ArgumentParser(
         prog="opensim_models",
-        description="Generate OpenSim .osim models for barbell exercises.",
+        description=CLI_DESCRIPTION,
     )
     parser.add_argument(
         "exercise",
         choices=sorted(_BUILDERS),
-        help="Exercise to generate a model for.",
+        help=CLI_EXERCISE_HELP,
     )
     parser.add_argument(
         "--output",
         "-o",
         type=Path,
         default=None,
-        help="Output file path (default: <exercise>.osim in current directory).",
+        help=CLI_OUTPUT_HELP,
     )
     parser.add_argument(
-        "--mass", type=float, default=80.0, help="Body mass in kg (default: 80)."
+        "--mass", type=float, default=80.0, help=CLI_MASS_HELP
     )
     parser.add_argument(
         "--height",
         type=float,
         default=1.75,
-        help="Body height in meters (default: 1.75).",
+        help=CLI_HEIGHT_HELP,
     )
     parser.add_argument(
         "--plates",
         type=float,
         default=60.0,
-        help="Plate mass per side in kg (default: 60).",
+        help=CLI_PLATES_HELP,
     )
     parser.add_argument(
-        "--verbose", "-v", action="store_true", help="Enable debug logging."
+        "--verbose", "-v", action="store_true", help=CLI_VERBOSE_HELP
     )
     return parser
 
@@ -58,11 +72,11 @@ def main(argv: list[str] | None = None) -> None:
 
     # DbC: validate numeric arguments before constructing any model objects
     if args.mass <= 0:
-        sys.exit(f"--mass must be positive, got {args.mass}")
+        sys.exit(ERR_MASS_POSITIVE.format(value=args.mass))
     if args.height <= 0:
-        sys.exit(f"--height must be positive, got {args.height}")
+        sys.exit(ERR_HEIGHT_POSITIVE.format(value=args.height))
     if args.plates < 0:
-        sys.exit(f"--plates must be non-negative, got {args.plates}")
+        sys.exit(ERR_PLATES_NONNEGATIVE.format(value=args.plates))
 
     logging.basicConfig(
         level=logging.DEBUG if args.verbose else logging.WARNING,
@@ -83,8 +97,8 @@ def main(argv: list[str] | None = None) -> None:
 
     output_path = args.output or Path(f"{args.exercise}.osim")
     output_path.write_text(xml_str, encoding="utf-8")
-    logger.info("Wrote %s", output_path)
-    logger.info("Generated %s (%d bytes)", output_path, len(xml_str))
+    logger.info(LOG_WROTE_FILE, output_path)
+    logger.info(LOG_GENERATED_FILE, output_path, len(xml_str))
 
 
 if __name__ == "__main__":
