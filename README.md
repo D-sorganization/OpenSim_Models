@@ -40,6 +40,39 @@ with open("squat.osim", "w") as f:
   - Each exercise inherits from `ExerciseModelBuilder` (base class)
   - Customizes barbell attachment and initial pose
 
+## Testing
+
+Agent-specific test commands for CI and local development:
+
+```bash
+# Run all unit tests (fast, no OpenSim required)
+python3 -m pytest tests/unit/ -m unit -v
+
+# Run integration tests (requires OpenSim package)
+python3 -m pytest tests/integration/ -m integration -v
+
+# Run parity/compliance tests across all exercises
+python3 -m pytest tests/parity/ -v
+
+# Run hypothesis property-based tests
+python3 -m pytest tests/unit/test_hypothesis.py -v
+
+# Run benchmark tests
+python3 -m pytest tests/unit/test_benchmarks.py -v
+
+# Run edge-case tests
+python3 -m pytest tests/unit/test_edge_cases.py -v
+
+# Run slow tests
+python3 -m pytest tests/ -m slow -v
+
+# Run with coverage
+python3 -m pytest tests/ --cov=src --cov-report=html --cov-fail-under=80
+
+# Run without parallel execution (for debugging)
+python3 -m pytest tests/ -p no:xdist -v
+```
+
 ## Design Principles
 
 - **TDD** — Tests written alongside models; CI enforces 80% coverage
