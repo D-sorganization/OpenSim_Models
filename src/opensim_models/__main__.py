@@ -7,21 +7,21 @@ import logging
 import sys
 from pathlib import Path
 
-from opensim_models.exercises import EXERCISE_BUILDERS
 from opensim_models._messages import (
     CLI_DESCRIPTION,
     CLI_EXERCISE_HELP,
-    CLI_OUTPUT_HELP,
-    CLI_MASS_HELP,
     CLI_HEIGHT_HELP,
+    CLI_MASS_HELP,
+    CLI_OUTPUT_HELP,
     CLI_PLATES_HELP,
     CLI_VERBOSE_HELP,
-    ERR_MASS_POSITIVE,
     ERR_HEIGHT_POSITIVE,
+    ERR_MASS_POSITIVE,
     ERR_PLATES_NONNEGATIVE,
-    LOG_WROTE_FILE,
     LOG_GENERATED_FILE,
+    LOG_WROTE_FILE,
 )
+from opensim_models.exercises import EXERCISE_BUILDERS
 
 logger = logging.getLogger(__name__)
 
@@ -45,9 +45,7 @@ def _build_parser() -> argparse.ArgumentParser:
         default=None,
         help=CLI_OUTPUT_HELP,
     )
-    parser.add_argument(
-        "--mass", type=float, default=80.0, help=CLI_MASS_HELP
-    )
+    parser.add_argument("--mass", type=float, default=80.0, help=CLI_MASS_HELP)
     parser.add_argument(
         "--height",
         type=float,
@@ -60,9 +58,7 @@ def _build_parser() -> argparse.ArgumentParser:
         default=60.0,
         help=CLI_PLATES_HELP,
     )
-    parser.add_argument(
-        "--verbose", "-v", action="store_true", help=CLI_VERBOSE_HELP
-    )
+    parser.add_argument("--verbose", "-v", action="store_true", help=CLI_VERBOSE_HELP)
     return parser
 
 
