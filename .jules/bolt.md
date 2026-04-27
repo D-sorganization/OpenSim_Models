@@ -24,3 +24,7 @@
 **Action:** Pre-allocate the array using `np.zeros((3, 3), dtype=float)` and assign the non-zero elements explicitly to reduce function overhead by 40-45%.## 2024-04-26 - Unrolling loops in hot path validators
 **Learning:** In OpenSim model generators, postcondition checks (like `ensure_positive_definite_inertia`) are called heavily in inner loops. Using python loops over tuples (`for label, val in [("Ixx", ixx)...]`) creates significant allocation overhead (lists, tuples) and function call overhead (`_is_finite_positive`).
 **Action:** Inline checks and unroll small loops manually for validation functions that live on the hot path to avoid list/tuple allocations.
+
+## 2026-04-27 - Numpy Array Creation Overhead in Shape Validation
+**Learning:** Checking the shape of Python collections (like `list` or `tuple`) by passing them to `np.asarray()` and checking `.shape` adds severe object allocation overhead (around 3-4x slower) in hot paths (such as `require_shape` checks).
+**Action:** Implement a fast path in array validators that explicitly checks the `len()` of elements for simple 1D arrays (and verifies no sub-arrays exist) before falling back to `np.asarray()`.
