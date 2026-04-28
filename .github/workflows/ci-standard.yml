@@ -111,10 +111,26 @@ jobs:
           bandit -r src/ -ll -ii --format txt
 
     needs: pick-runner
+  rust-gate:
+    needs:
+      - pick-runner
+      - quality-gate
+    runs-on: ${{ needs.pick-runner.outputs.runner }}
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v6
+      - name: Install Rust toolchain
+        uses: dtolnay/rust-toolchain@stable
+      - name: cargo build
+        run: cargo build --manifest-path rust_core/Cargo.toml
+      - name: cargo test
+        run: cargo test --manifest-path rust_core/Cargo.toml
+
   tests:
     needs:
       - pick-runner
       - quality-gate
+      - rust-gate
     runs-on: ${{ needs.pick-runner.outputs.runner }}
     timeout-minutes: 25
     strategy:
