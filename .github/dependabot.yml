@@ -19,3 +19,14 @@ updates:
       - "ci"
     commit-message:
       prefix: "chore(ci)"
+
+  - package-ecosystem: "cargo"
+    directory: "/rust_core"
+    schedule:
+      interval: "weekly"
+    open-pull-requests-limit: 5
+    labels:
+      - "dependencies"
+      - "rust"
+    commit-message:
+      prefix: "chore(deps)"
