@@ -1,4 +1,4 @@
-# spec-check.yml — Specification Freshness Enforcement
+# spec-check.yml ï¿½ Specification Freshness Enforcement
 name: Spec Check
 
 on:
@@ -12,15 +12,29 @@ permissions:
 jobs:
   spec-freshness:
     name: Verify SPEC.md freshness
-    runs-on: ubuntu-latest
+    runs-on: d-sorg-fleet
     if: ${{ !contains(github.event.pull_request.labels.*.name, 'spec-exempt') }}
     timeout-minutes: 5
 
     steps:
-      - name: Checkout
-        uses: actions/checkout@v4
-        with:
-          fetch-depth: 0
+      - name: Checkout repository without external actions
+        shell: bash
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set -euo pipefail
+          auth_header="$(printf 'x-access-token:%s' "$GH_TOKEN" | base64 | tr -d '\n')"
+          git init "$GITHUB_WORKSPACE"
+          cd "$GITHUB_WORKSPACE"
+          if git remote get-url origin >/dev/null 2>&1; then
+            git remote set-url origin "https://github.com/${GITHUB_REPOSITORY}.git"
+          else
+            git remote add origin "https://github.com/${GITHUB_REPOSITORY}.git"
+          fi
+          git -c "http.https://github.com/.extraheader=AUTHORIZATION: basic ${auth_header}" fetch --depth=1 origin "+refs/heads/${GITHUB_BASE_REF}:refs/remotes/origin/${GITHUB_BASE_REF}"
+          git -c "http.https://github.com/.extraheader=AUTHORIZATION: basic ${auth_header}" fetch --depth=1 origin "$GITHUB_SHA"
+          git checkout --force FETCH_HEAD
+          git clean -ffdx
 
       - name: Check if source files changed without SPEC.md update
         id: check
