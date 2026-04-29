@@ -157,9 +157,12 @@ jobs:
             rustup toolchain install stable --profile minimal
             rustup default stable
           elif ! command -v cargo >/dev/null 2>&1; then
-            echo "rustup or cargo is required on the local fleet runner"
-            exit 1
+            echo "Installing rustup..."
+            curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh -s -- -y --profile minimal --default-toolchain stable
+            source $HOME/.cargo/env
           fi
+          # Ensure cargo is on PATH if just installed
+          export PATH="$HOME/.cargo/bin:$PATH"
           rustc --version
           cargo --version
       - name: cargo build
