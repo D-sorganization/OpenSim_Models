@@ -32,14 +32,28 @@ jobs:
         id: check
         env:
           GH_TOKEN: ${{ secrets.RUNNER_CHECK_TOKEN }}
-        run: "ONLINE=$(gh api /orgs/${{ github.repository_owner }}/actions/runners \\\n  --jq '[.runners[] | select(.status == \"online\") | select(.labels[].name == \"d-sorg-fleet\")] | length' \\\n  2>/dev/null || echo \"0\")\nif [[ \"$ONLINE\" -gt 0 ]]; then\n  echo \"runner=d-sorg-fleet\" >> $GITHUB_OUTPUT\n  echo \"Self-hosted runner online — routing locally\"\nelse\n  echo \"runner=ubuntu-latest\" >> $GITHUB_OUTPUT\n  echo \"No self-hosted runner — using GitHub-hosted\"\nfi"
+        run: "ONLINE=$(gh api /orgs/${{ github.repository_owner }}/actions/runners \\\n  --jq '[.runners[] | select(.status == \"online\") | select(.labels[].name == \"d-sorg-fleet\")] | length' \\\n  2>/dev/null || echo \"0\")\nif [[ \"$ONLINE\" -gt 0 ]]; then\n  echo \"runner=d-sorg-fleet\" >> $GITHUB_OUTPUT\n  echo \"Self-hosted runner online — routing locally\"\nelse\n  echo \"runner=d-sorg-fleet\" >> $GITHUB_OUTPUT\n  echo \"No self-hosted runner — using local self-hosted\"\nfi"
   quality-gate:
     runs-on: ${{ needs.pick-runner.outputs.runner }}
     timeout-minutes: 20
     steps:
-      - uses: actions/checkout@v4
-        with:
-          fetch-depth: 0
+      - name: Checkout repository without external actions
+        shell: bash
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set -euo pipefail
+          auth_header="$(printf 'x-access-token:%s' "$GH_TOKEN" | base64 | tr -d '\n')"
+          git init "$GITHUB_WORKSPACE"
+          cd "$GITHUB_WORKSPACE"
+          if git remote get-url origin >/dev/null 2>&1; then
+            git remote set-url origin "https://github.com/${GITHUB_REPOSITORY}.git"
+          else
+            git remote add origin "https://github.com/${GITHUB_REPOSITORY}.git"
+          fi
+          git -c "http.https://github.com/.extraheader=AUTHORIZATION: basic ${auth_header}" fetch --depth=1 origin "$GITHUB_SHA"
+          git checkout --force FETCH_HEAD
+          git clean -ffdx
       - name: Verify clean working tree
         run: |
           if [[ -n "$(git status --porcelain)" ]]; then
@@ -118,9 +132,39 @@ jobs:
     runs-on: ${{ needs.pick-runner.outputs.runner }}
     timeout-minutes: 15
     steps:
-      - uses: actions/checkout@v4
+      - name: Checkout repository without external actions
+        shell: bash
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set -euo pipefail
+          auth_header="$(printf 'x-access-token:%s' "$GH_TOKEN" | base64 | tr -d '\n')"
+          git init "$GITHUB_WORKSPACE"
+          cd "$GITHUB_WORKSPACE"
+          if git remote get-url origin >/dev/null 2>&1; then
+            git remote set-url origin "https://github.com/${GITHUB_REPOSITORY}.git"
+          else
+            git remote add origin "https://github.com/${GITHUB_REPOSITORY}.git"
+          fi
+          git -c "http.https://github.com/.extraheader=AUTHORIZATION: basic ${auth_header}" fetch --depth=1 origin "$GITHUB_SHA"
+          git checkout --force FETCH_HEAD
+          git clean -ffdx
       - name: Install Rust toolchain
-        uses: dtolnay/rust-toolchain@stable
+        shell: bash
+        run: |
+          set -euo pipefail
+          if command -v rustup >/dev/null 2>&1; then
+            rustup toolchain install stable --profile minimal
+            rustup default stable
+          elif ! command -v cargo >/dev/null 2>&1; then
+            echo "Installing rustup..."
+            curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh -s -- -y --profile minimal --default-toolchain stable
+            source $HOME/.cargo/env
+          fi
+          # Ensure cargo is on PATH if just installed
+          export PATH="$HOME/.cargo/bin:$PATH"
+          rustc --version
+          cargo --version
       - name: cargo build
         run: cargo build --manifest-path rust_core/Cargo.toml
       - name: cargo test
@@ -138,7 +182,23 @@ jobs:
       matrix:
         python: ["3.10", "3.11", "3.12"]
     steps:
-      - uses: actions/checkout@v4
+      - name: Checkout repository without external actions
+        shell: bash
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set -euo pipefail
+          auth_header="$(printf 'x-access-token:%s' "$GH_TOKEN" | base64 | tr -d '\n')"
+          git init "$GITHUB_WORKSPACE"
+          cd "$GITHUB_WORKSPACE"
+          if git remote get-url origin >/dev/null 2>&1; then
+            git remote set-url origin "https://github.com/${GITHUB_REPOSITORY}.git"
+          else
+            git remote add origin "https://github.com/${GITHUB_REPOSITORY}.git"
+          fi
+          git -c "http.https://github.com/.extraheader=AUTHORIZATION: basic ${auth_header}" fetch --depth=1 origin "$GITHUB_SHA"
+          git checkout --force FETCH_HEAD
+          git clean -ffdx
       - name: Set up Python venv
         run: |
           PYTHON="python${{ matrix.python }}"
