@@ -20,7 +20,13 @@ venv/
 .DS_Store
 Thumbs.db
 .hypothesis/
+
+# Benchmark results: ignore contents, keep directory with .gitkeep
 .benchmarks/
+!.benchmarks/
+.benchmarks/*
+!.benchmarks/.gitkeep
+
 *.osim
 
 # Stale root files (one-off scripts / debug artifacts)
