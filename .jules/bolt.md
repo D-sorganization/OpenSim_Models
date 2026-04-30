@@ -31,3 +31,7 @@
 ## 2026-04-29 - Mathematical Operator Overhead in Hot Paths
 **Learning:** In frequently called geometry construction functions, the Python exponentiation operator (`**2`) is measurably slower than simple multiplication (`x * x`).
 **Action:** When working on geometry, inertia, or vector calculations in hot paths, expand squares into simple multiplications. Do NOT precalculate fractional constants (e.g. `1.0 / 12.0` to `0.08333333333333333`) because the Python AST compiler already performs constant folding at compile-time (and doing so manually hurts code readability without any performance gain).
+
+## 2024-04-30 - Fast path for constant formatted strings in hot paths
+**Learning:** In a codebase generating large structured text (like OpenSim XML configurations), formatting small float-based primitives repeatedly introduces severe bottlenecks. Zero vectors (`(0.0, 0.0, 0.0)`) are extremely common. Python's f-string formatting handles these by parsing the float format specifier over and over again.
+**Action:** When working with frequently called formatting helpers for strings that are heavily skewed toward one or two constant values (e.g., zero translations/rotations), implement a fast path that checks for the exact values and returns a static string literal to avoid f-string overhead entirely.
