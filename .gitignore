@@ -40,3 +40,5 @@ assessments/2026-04-26-OpenSim_Models-assessment.json
 # GAAI runtime state (local only)
 .gaai/project/contexts/backlog/.delivery-locks/
 .gaai/project/contexts/backlog/.delivery-logs/
+profile_stats
+profile_stats2
