@@ -1,5 +1,9 @@
 # CLAUDE.md -- OpenSim_Models
 
+## Branch Policy
+
+All work on `main` branch. PRs target `main`.
+
 ## What This Is
 
 Python library for generating OpenSim (.osim) musculoskeletal models of classical
