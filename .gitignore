@@ -37,8 +37,10 @@ os_issues.json
 patch.diff
 assessments/2026-04-26-OpenSim_Models-assessment.json
 
+profile_stats
+profile_stats2
+
 # GAAI runtime state (local only)
 .gaai/project/contexts/backlog/.delivery-locks/
 .gaai/project/contexts/backlog/.delivery-logs/
-profile_stats
-profile_stats2
+rust_core/target/
