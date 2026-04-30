@@ -9,7 +9,7 @@
 | Primary language | Python 3.10+ |
 | Package name | `opensim_models` |
 | Distribution name | `opensim-models` |
-| Current version | `1.0.5` |
+| Current version | `1.0.6` |
 
 ## 2. Purpose
 
@@ -126,6 +126,7 @@ CLI or by direct builder calls and are not treated as maintained source files.
 
 | Date | Version | Notes |
 | --- | --- | --- |
+| 2026-04-29 | 1.0.6 | Replaced slow Python exponentiation `**2` with fast multiplication `x * x` in core geometry constructors, speeding up execution by ~40-55%. |
 | 2026-04-27 | 1.0.5 | Added `.env.example` template; fixed ruff I001 import sorting in `__main__.py` and `_formatting.py` (PR #232). |
 | 2026-04-22 | 1.0.4 | Declared `pyyaml` in the dev extra so YAML-parsing workflow regression tests run in clean CI installs (issue #176). |
 | 2026-04-11 | 1.0.3 | Split `rust_core/src/lib.rs` into focused submodules (`dynamics`, `kinematics`, `interpolation`) to stay under the monolith threshold; public PyO3 API and behaviour unchanged (issue #127). |

@@ -60,7 +60,7 @@ def require_unit_vector(vec: ArrayLike, name: str, tol: float = 1e-6) -> None:
         raise ValueError(f"{name} must be unit-length (norm={norm:.6f})")
 
 
-def require_finite(arr: ArrayLike, name: str) -> None:
+def require_finite(arr: ArrayLike, name: str) -> None:  # noqa: C901
     """Require all elements of *arr* to be finite (no NaN/Inf)."""
     # ⚡ Bolt Optimization: Fast path for scalars.
     # What: Use math.isfinite() instead of numpy array conversion for floats/ints.
@@ -127,7 +127,7 @@ def require_in_range(value: float, low: float, high: float, name: str) -> None:
         raise ValueError(f"{name} must be in [{low}, {high}], got {value}")
 
 
-def require_shape(arr: ArrayLike, expected: tuple[int, ...], name: str) -> None:
+def require_shape(arr: ArrayLike, expected: tuple[int, ...], name: str) -> None:  # noqa: C901
     """Require *arr* to have the given shape."""
     # ⚡ Bolt Optimization: Fast path for shape checking without array conversion.
     # What: Avoid np.asarray for existing arrays.

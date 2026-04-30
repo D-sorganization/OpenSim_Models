@@ -28,3 +28,6 @@
 ## 2026-04-27 - Numpy Array Creation Overhead in Shape Validation
 **Learning:** Checking the shape of Python collections (like `list` or `tuple`) by passing them to `np.asarray()` and checking `.shape` adds severe object allocation overhead (around 3-4x slower) in hot paths (such as `require_shape` checks).
 **Action:** Implement a fast path in array validators that explicitly checks the `len()` of elements for simple 1D arrays (and verifies no sub-arrays exist) before falling back to `np.asarray()`.
+## 2026-04-29 - Mathematical Operator Overhead in Hot Paths
+**Learning:** In frequently called geometry construction functions, the Python exponentiation operator (`**2`) is measurably slower than simple multiplication (`x * x`).
+**Action:** When working on geometry, inertia, or vector calculations in hot paths, expand squares into simple multiplications. Do NOT precalculate fractional constants (e.g. `1.0 / 12.0` to `0.08333333333333333`) because the Python AST compiler already performs constant folding at compile-time (and doing so manually hurts code readability without any performance gain).
