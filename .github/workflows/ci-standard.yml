@@ -165,6 +165,7 @@ jobs:
             source $HOME/.cargo/env
           fi
           # Ensure cargo is on PATH if just installed
+          echo "$HOME/.cargo/bin" >> $GITHUB_PATH
           export PATH="$HOME/.cargo/bin:$PATH"
           rustc --version
           cargo --version
