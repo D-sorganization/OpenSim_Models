@@ -9,7 +9,7 @@
 | Primary language | Python 3.10+ |
 | Package name | `opensim_models` |
 | Distribution name | `opensim-models` |
-| Current version | `1.0.6` |
+| Current version | `1.0.8` |
 
 ## 2. Purpose
 
@@ -126,8 +126,9 @@ CLI or by direct builder calls and are not treated as maintained source files.
 
 | Date | Version | Notes |
 | --- | --- | --- |
+| 2026-05-01 | 1.0.8 | Added fast-paths for strictly zero vectors in `vec3_str` and `vec6_str` OpenSim XML generation utilities to return pre-formatted zero literals, bypassing interpolation overhead for common default poses. |
 | 2026-04-30 | 1.0.7 | Swapped f-strings for `%` formatting in `vec3_str`/`vec6_str` to reduce XML formatting overhead; pinned `ndarray` to `0.16` in `rust_core/Cargo.toml` to resolve version mismatch with `numpy 0.22` (PR #245). |
-| 2026-04-29 | 1.0.6 | Replaced slow Python exponentiation `**2` with fast multiplication `x * x` in core geometry constructors, speeding up execution by ~40-55%. |
+| 2026-04-29 | 1.0.8 | Replaced slow Python exponentiation `**2` with fast multiplication `x * x` in core geometry constructors, speeding up execution by ~40-55%. |
 | 2026-04-27 | 1.0.5 | Added `.env.example` template; fixed ruff I001 import sorting in `__main__.py` and `_formatting.py` (PR #232). |
 | 2026-04-22 | 1.0.4 | Declared `pyyaml` in the dev extra so YAML-parsing workflow regression tests run in clean CI installs (issue #176). |
 | 2026-04-11 | 1.0.3 | Split `rust_core/src/lib.rs` into focused submodules (`dynamics`, `kinematics`, `interpolation`) to stay under the monolith threshold; public PyO3 API and behaviour unchanged (issue #127). |

@@ -44,8 +44,12 @@ def vec6_str(rotation: Vec3, translation: Vec3) -> str:
     """
     # ⚡ Bolt Optimization: Fast-path for zero vectors.
     if (
-        rotation.x == 0.0 and rotation.y == 0.0 and rotation.z == 0.0 and
-        translation.x == 0.0 and translation.y == 0.0 and translation.z == 0.0
+        rotation.x == 0.0
+        and rotation.y == 0.0
+        and rotation.z == 0.0
+        and translation.x == 0.0
+        and translation.y == 0.0
+        and translation.z == 0.0
     ):
         return "0.000000 0.000000 0.000000 0.000000 0.000000 0.000000"
 
