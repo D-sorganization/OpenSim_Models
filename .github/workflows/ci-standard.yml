@@ -127,6 +127,17 @@ jobs:
           bandit -r src/ -ll -ii --format txt
 
     needs: pick-runner
+
+  quality-gate-compat:
+    name: quality-gate
+    needs:
+      - pick-runner
+      - quality-gate
+    runs-on: ${{ needs.pick-runner.outputs.runner }}
+    timeout-minutes: 5
+    steps:
+      - run: echo "Compatibility context for branch ruleset."
+
   rust-gate:
     name: Rust Gate
     needs:
@@ -239,3 +250,13 @@ jobs:
         with:
           name: coverage-${{ matrix.python }}
           path: coverage.xml
+
+  tests-311-compat:
+    name: tests (3.11)
+    needs:
+      - pick-runner
+      - tests
+    runs-on: ${{ needs.pick-runner.outputs.runner }}
+    timeout-minutes: 5
+    steps:
+      - run: echo "Compatibility context for branch ruleset."
