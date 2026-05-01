@@ -39,3 +39,6 @@
 ## 2026-04-30 - String Formatting Overhead in Hot Paths
 **Learning:** In very hot paths like OpenSim XML vector formatting (`vec3_str`, `vec6_str`), standard f-strings (`f"{x:.6f} {y:.6f}"`) incur significant parsing overhead compared to old-style `%` formatting (`"%.6f %.6f" % (x, y)`), likely due to the number of individual format components being resolved at runtime. `%f` formatting was benchmarked to be ~40% faster.
 **Action:** When formatting basic numbers into strings in loops executed thousands of times (like model serialization), prefer `%` formatting over f-strings and add a `# noqa: UP031` comment to bypass Ruff's default preference.
+## 2026-05-01 - Fast-path for zero vectors in XML formatting
+**Learning:** In hot paths generating large XML structures (like OpenSim models), formatting constant string values introduces measurable overhead. Zero transformations (`0.0, 0.0, 0.0`) are extremely common for default translations and rotations. Checking exact values and returning a static string literal avoids formatting overhead entirely.
+**Action:** When working with formatting functions that heavily process zero or identity vectors, implement a fast-path condition to return static literals for those common cases.
