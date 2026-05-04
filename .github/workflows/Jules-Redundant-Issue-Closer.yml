@@ -59,7 +59,7 @@ jobs:
           owner: ${{ github.repository_owner }}
 
       - name: Checkout Repository_Management (for scripts)
-        uses: actions/checkout@v4
+        uses: actions/checkout@v6
         with:
           repository: D-sorganization/Repository_Management
           ref: main
