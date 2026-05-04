@@ -3,7 +3,7 @@
 //! Parallel batch center-of-mass (COM) computation across segment positions.
 
 use ndarray::Array2;
-use numpy::{IntoPyArray, PyArray2, PyReadonlyArray1, PyReadonlyArray2};
+use numpy::{IntoPyArrayBound, PyArray2, PyReadonlyArray1, PyReadonlyArray2};
 use pyo3::prelude::*;
 use rayon::prelude::*;
 
@@ -61,7 +61,7 @@ pub fn com_batch<'py>(
         }
     }
 
-    Ok(result.into_pyarray(py).into())
+    Ok(result.into_pyarray_bound(py).into())
 }
 
 // ---------------------------------------------------------------------------
