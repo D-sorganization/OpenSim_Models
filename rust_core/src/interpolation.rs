@@ -2,8 +2,8 @@
 //!
 //! Parallel linear interpolation of waypoint values over a normalised time grid.
 
-use ndarray::{Array1, Array2, Axis};
-use numpy::{IntoPyArray, PyArray2, PyReadonlyArray1, PyReadonlyArray2};
+use ndarray::{Array1, Array2};
+use numpy::{IntoPyArrayBound, PyArray2, PyReadonlyArray1, PyReadonlyArray2};
 use pyo3::prelude::*;
 use rayon::prelude::*;
 
@@ -53,7 +53,7 @@ pub fn interpolate_phases_rs<'py>(
     let columns: Vec<Array1<f64>> = (0..n_coords)
         .into_par_iter()
         .map(|c| {
-            let col = wv.index_axis(ndarray::Axis(1), c);
+            let col = wv.index_axis(numpy::ndarray::Axis(1), c);
             let mut out = Array1::<f64>::zeros(num_points);
             for k in 0..num_points {
                 let t = k as f64 * dt;
