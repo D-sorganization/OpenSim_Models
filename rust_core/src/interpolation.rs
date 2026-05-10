@@ -3,7 +3,7 @@
 //! Parallel linear interpolation of waypoint values over a normalised time grid.
 
 use ndarray::{Array1, Array2};
-use numpy::{IntoPyArrayBound, PyArray2, PyReadonlyArray1, PyReadonlyArray2};
+use numpy::{IntoPyArray, PyArray2, PyReadonlyArray1, PyReadonlyArray2};
 use pyo3::prelude::*;
 use rayon::prelude::*;
 
@@ -81,7 +81,7 @@ pub fn interpolate_phases_rs<'py>(
         result.column_mut(c).assign(col);
     }
 
-    Ok(result.into_pyarray_bound(py).into())
+    Ok(result.into_pyarray(py).into())
 }
 
 // ---------------------------------------------------------------------------
