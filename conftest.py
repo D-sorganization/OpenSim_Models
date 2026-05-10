@@ -1,10 +1,31 @@
-"""Root conftest for pytest -- shared fixtures across all test modules."""
+"""Root conftest for pytest -- shared fixtures across all test modules.
+
+Per Fleet Testing Standards §5, set thread-safety and headless env vars
+before any heavy import. See:
+https://github.com/D-sorganization/Repository_Management/blob/main/docs/FLEET_TESTING_STANDARDS.md
+"""
 
 from __future__ import annotations
 
-import xml.etree.ElementTree as ET
+import os
 
-import pytest
+# C-extension thread safety. Many "xdist worker crashed" failures
+# come from MKL/OpenBLAS forking under xdist. Pin to single-threaded
+# for tests; production code can re-thread itself if it needs to.
+os.environ.setdefault("OMP_NUM_THREADS", "1")
+os.environ.setdefault("OPENBLAS_NUM_THREADS", "1")
+os.environ.setdefault("MKL_NUM_THREADS", "1")
+os.environ.setdefault("NUMEXPR_NUM_THREADS", "1")
+
+# matplotlib headless backend, set before any matplotlib import.
+os.environ.setdefault("MPLBACKEND", "Agg")
+
+# Qt headless backend, for repos that import PyQt/PySide indirectly.
+os.environ.setdefault("QT_QPA_PLATFORM", "offscreen")
+
+import xml.etree.ElementTree as ET  # noqa: E402
+
+import pytest  # noqa: E402
 
 from opensim_models.exercises.base import ExerciseConfig
 from opensim_models.shared.barbell import BarbellSpec
