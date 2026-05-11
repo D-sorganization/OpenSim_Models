@@ -1,0 +1,23 @@
+schema: model_pack/v1
+repo: OpenSim_Models
+package: opensim_models
+engine: opensim
+engine_version: ">=4.4"
+anthropometrics: winter_2009
+format: osim
+models_root: src/opensim_models/exercises
+exercises:
+  - id: squat
+    path: src/opensim_models/exercises/squat
+  - id: deadlift
+    path: src/opensim_models/exercises/deadlift
+  - id: bench_press
+    path: src/opensim_models/exercises/bench_press
+  - id: snatch
+    path: src/opensim_models/exercises/snatch
+  - id: clean_and_jerk
+    path: src/opensim_models/exercises/clean_and_jerk
+  - id: gait
+    path: src/opensim_models/exercises/gait
+  - id: sit_to_stand
+    path: src/opensim_models/exercises/sit_to_stand

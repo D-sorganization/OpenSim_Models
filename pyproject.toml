@@ -20,6 +20,7 @@ classifiers = [
 dependencies = [
     "numpy>=1.26.4,<3.0.0",
     "matplotlib>=3.7.0",
+    "pyyaml>=6.0.0",
 ]
 
 [project.optional-dependencies]
@@ -42,6 +43,9 @@ dev = [
 [project.scripts]
 opensim-models = "opensim_models.__main__:main"
 
+[project.entry-points."biomech.model_pack"]
+opensim_models = "opensim_models.model_pack"
+
 [project.urls]
 Homepage = "https://github.com/D-sorganization/OpenSim_Models"
 Repository = "https://github.com/D-sorganization/OpenSim_Models"
@@ -52,6 +56,18 @@ build-backend = "hatchling.build"
 
 [tool.hatch.build.targets.wheel]
 packages = ["src/opensim_models"]
+
+[tool.hatch.build.targets.wheel.force-include]
+"model_pack.yaml" = "opensim_models/model_pack.yaml"
+
+[tool.hatch.build.targets.sdist]
+include = [
+    "src/opensim_models",
+    "model_pack.yaml",
+    "README.md",
+    "LICENSE",
+    "pyproject.toml",
+]
 
 [tool.ruff]
 line-length = 88
