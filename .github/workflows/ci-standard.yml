@@ -260,3 +260,86 @@ jobs:
     timeout-minutes: 5
     steps:
       - run: echo "Compatibility context for branch ruleset."
+
+  model-pack-smoke:
+    name: Model-Pack API Smoke (UpstreamDrift #5179)
+    needs:
+      - pick-runner
+      - tests
+    runs-on: ${{ needs.pick-runner.outputs.runner }}
+    timeout-minutes: 10
+    steps:
+      - name: Checkout repository without external actions
+        shell: bash
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set -euo pipefail
+          auth_header="$(printf 'x-access-token:%s' "$GH_TOKEN" | base64 | tr -d '\n')"
+          git init "$GITHUB_WORKSPACE"
+          cd "$GITHUB_WORKSPACE"
+          if git remote get-url origin >/dev/null 2>&1; then
+            git remote set-url origin "https://github.com/${GITHUB_REPOSITORY}.git"
+          else
+            git remote add origin "https://github.com/${GITHUB_REPOSITORY}.git"
+          fi
+          git -c "http.https://github.com/.extraheader=AUTHORIZATION: basic ${auth_header}" fetch --depth=1 origin "$GITHUB_SHA"
+          git checkout --force FETCH_HEAD
+          git clean -ffdx
+      - name: Set up Python venv
+        run: |
+          for PYTHON in python3.11 python3.12 python3.10 python3; do
+            if command -v "$PYTHON" &>/dev/null; then
+              echo "Using $PYTHON ($($PYTHON --version))"
+              "$PYTHON" -m venv "$RUNNER_TEMP/ci-venv"
+              "$RUNNER_TEMP/ci-venv/bin/pip" install --upgrade pip setuptools wheel --quiet
+              echo "$RUNNER_TEMP/ci-venv/bin" >> $GITHUB_PATH
+              exit 0
+            fi
+          done
+          echo "No Python3 found on PATH" && exit 1
+      - name: Install package
+        run: pip install -e ".[dev]"
+      - name: opensim-models console script is installed
+        run: |
+          which opensim-models
+          opensim-models --list-exercises
+      - name: Model-pack entry-point API resolves
+        run: |
+          python -c "
+          from opensim_models.model_pack import manifest, resolve, list_exercises
+          data = manifest()
+          assert data['schema'] == 'model_pack/v1'
+          assert data['engine'] == 'opensim'
+          assert data['engine_version'] == '>=4.4'
+          assert data['format'] == 'osim'
+          assert data['anthropometrics'] == 'winter_2009'
+          ids = set(list_exercises())
+          assert ids == {
+              'squat', 'deadlift', 'bench_press', 'snatch',
+              'clean_and_jerk', 'gait', 'sit_to_stand',
+          }, ids
+          root = resolve()
+          assert root.is_dir(), root
+          for name in ids:
+              assert (root / name).is_dir(), name
+          print('model_pack API OK')
+          "
+      - name: Per-exercise CLI export smoke
+        run: |
+          set -euo pipefail
+          mkdir -p artifacts/osim
+          for ex in squat deadlift bench_press snatch clean_and_jerk gait sit_to_stand; do
+            python -m opensim_models --exercise "$ex" --export "artifacts/osim/${ex}.osim"
+            test -s "artifacts/osim/${ex}.osim"
+          done
+      - name: Model-pack pytest lane
+        run: |
+          python -m pytest tests/test_model_pack.py -v --tb=short
+
+      - name: Upload generated .osim files
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: model-pack-osim
+          path: artifacts/osim/*.osim

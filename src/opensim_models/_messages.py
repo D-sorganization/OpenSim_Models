@@ -16,6 +16,8 @@ CLI_MASS_HELP = "Body mass in kg (default: 80)."
 CLI_HEIGHT_HELP = "Body height in meters (default: 1.75)."
 CLI_PLATES_HELP = "Plate mass per side in kg (default: 60)."
 CLI_VERBOSE_HELP = "Enable debug logging."
+CLI_EXPORT_HELP = "Export the generated .osim file to this path (alias of --output)."
+CLI_LIST_EXERCISES_HELP = "Print the list of declared exercise IDs and exit."
 
 # CLI validation errors
 ERR_MASS_POSITIVE = "--mass must be positive, got {value}"
@@ -35,3 +37,10 @@ ERR_JOINT_NOT_FOUND = "Joint '{name}' not found in positions dict"
 ERR_NO_JOINTS_TO_PLOT = "No joints to plot: positions dict is empty"
 ERR_NO_JOINT_TARGETS = "Exercise '{name}' has no joint targets in phases"
 ERR_DEADLIFT_FEASIBILITY = "Feasibility check failed for deadlift with mass={mass}, height={height}, plates={plates}"
+
+# Model-pack manifest errors
+ERR_MANIFEST_MISSING = "model_pack.yaml not found (searched: {paths})"
+ERR_MODELS_ROOT_MISSING = "models_root directory does not exist: {path}"
+ERR_EXERCISE_REQUIRED = (
+    "an exercise must be specified via the positional argument or --exercise"
+)

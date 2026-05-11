@@ -80,6 +80,30 @@ python3 -m pytest tests/ -p no:xdist -v
 - **DRY** — Shared base class, shared barbell/body models, shared XML helpers
 - **Law of Demeter** — Exercise builders interact only with public APIs of shared components
 
+## Used by UpstreamDrift
+
+This package exposes a `model_pack/v1` manifest (`model_pack.yaml`) and a
+`biomech.model_pack` entry point so that
+[UpstreamDrift](https://github.com/D-sorganization/UpstreamDrift) can
+discover and load OpenSim models without hard-coding paths. See umbrella
+issue [UpstreamDrift#5179](https://github.com/D-sorganization/UpstreamDrift/issues/5179).
+The OpenSim dashboard tracked in
+[UpstreamDrift#5181](https://github.com/D-sorganization/UpstreamDrift/issues/5181)
+depends on this integration.
+
+Public API (under `opensim_models.model_pack`):
+
+- `manifest()` — parsed `model_pack.yaml` as a dict.
+- `resolve()` — absolute path to the exercises directory.
+- `list_exercises()` — list of declared exercise IDs.
+
+Launcher contract:
+
+```bash
+opensim-models --list-exercises
+python -m opensim_models --exercise gait --export /tmp/gait.osim
+```
+
 ## License
 
 MIT
