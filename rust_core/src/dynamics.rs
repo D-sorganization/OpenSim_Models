@@ -101,7 +101,7 @@ pub fn inverse_dynamics_batch<'py>(
         result.row_mut(i).assign(row);
     }
 
-    Ok(result.into_pyarray(py).into())
+    Ok(result.into_pyarray_bound(py).into())
 }
 
 // ---------------------------------------------------------------------------
