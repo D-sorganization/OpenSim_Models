@@ -46,3 +46,7 @@
 ## 2026-05-01 - Type Checking Overhead in Preconditions
 **Learning:** Checking types using `isinstance(vec, (list, tuple))` introduces measurable overhead compared to explicit exact type checking (`type(vec) is list or type(vec) is tuple`) due to Python's MRO and subclass hierarchy resolution. In heavily hit precondition checks like `require_unit_vector`, avoiding `isinstance` yields a ~30% improvement in type checking speed.
 **Action:** When performing type-checks in performance-critical execution paths to route behavior for basic Python types (like `list` or `tuple`), prefer exact checking with `type(x) is T` rather than `isinstance(x, T)`.
+
+## 2026-05-11 - PyO3 numpy `into_pyarray` vs `into_pyarray_bound`
+**Learning:** PyO3 `0.21` and `0.22` enforce the new Bound lifetimes and `into_pyarray_bound` over `into_pyarray` when translating ndarray types to Python. Using the deprecated functions on rust_core causes CI failures on strict checks like `cargo doc`.
+**Action:** Always use `into_pyarray_bound` instead of `into_pyarray` for PyO3 0.21+ compatibility.

@@ -81,7 +81,7 @@ pub fn interpolate_phases_rs<'py>(
         result.column_mut(c).assign(col);
     }
 
-    Ok(result.into_pyarray(py).into())
+    Ok(result.into_pyarray_bound(py).into())
 }
 
 // ---------------------------------------------------------------------------
