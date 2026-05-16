@@ -31,8 +31,8 @@ jobs:
           else
             git remote add origin "https://github.com/${GITHUB_REPOSITORY}.git"
           fi
-          git -c "http.https://github.com/.extraheader=AUTHORIZATION: basic ${auth_header}" fetch origin "+refs/heads/${GITHUB_BASE_REF}:refs/remotes/origin/${GITHUB_BASE_REF}"
-          git -c "http.https://github.com/.extraheader=AUTHORIZATION: basic ${auth_header}" fetch origin "$GITHUB_SHA"
+          git -c "http.https://github.com/.extraheader=AUTHORIZATION: basic ${auth_header}" fetch origin "+refs/heads/${GITHUB_BASE_REF}:refs/remotes/origin/${GITHUB_BASE_REF}" --no-tags --depth=10000
+          git -c "http.https://github.com/.extraheader=AUTHORIZATION: basic ${auth_header}" fetch origin "$GITHUB_SHA" --no-tags --depth=10000
           git checkout --force FETCH_HEAD
           git clean -ffdx
 
@@ -40,7 +40,7 @@ jobs:
         id: check
         shell: bash
         run: |
-          CHANGED_FILES=$(git diff --name-only origin/${{ github.base_ref }}...HEAD)
+          MERGE_BASE=$(git merge-base origin/${{ github.base_ref }} HEAD 2>/dev/null || echo origin/${{ github.base_ref }})`n          CHANGED_FILES=$(git diff --name-only "$MERGE_BASE"...HEAD 2>/dev/null || git diff --name-only origin/${{ github.base_ref }}..HEAD)
           SOURCE_CHANGED=false
           SPEC_CHANGED=false
           while IFS= read -r file; do
