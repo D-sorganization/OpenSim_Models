@@ -143,7 +143,6 @@ jobs:
     name: Rust Gate
     needs:
       - pick-runner
-      - quality-gate
     runs-on: ${{ needs.pick-runner.outputs.runner }}
     timeout-minutes: 15
     steps:
@@ -189,7 +188,6 @@ jobs:
     name: Tests (Python ${{ matrix.python }})
     needs:
       - pick-runner
-      - quality-gate
       - rust-gate
     runs-on: ${{ needs.pick-runner.outputs.runner }}
     timeout-minutes: 25
