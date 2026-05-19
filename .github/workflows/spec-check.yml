@@ -9,6 +9,10 @@ permissions:
   contents: read
   pull-requests: write
 
+concurrency:
+  group: spec-check-${{ github.event.pull_request.number }}
+  cancel-in-progress: true
+
 jobs:
   spec-freshness:
     name: Verify SPEC.md freshness
@@ -40,7 +44,8 @@ jobs:
         id: check
         shell: bash
         run: |
-          MERGE_BASE=$(git merge-base origin/${{ github.base_ref }} HEAD 2>/dev/null || echo origin/${{ github.base_ref }})`n          CHANGED_FILES=$(git diff --name-only "$MERGE_BASE"...HEAD 2>/dev/null || git diff --name-only origin/${{ github.base_ref }}..HEAD)
+          MERGE_BASE=$(git merge-base origin/${{ github.base_ref }} HEAD 2>/dev/null || echo origin/${{ github.base_ref }})
+          CHANGED_FILES=$(git diff --name-only "$MERGE_BASE"...HEAD 2>/dev/null || git diff --name-only origin/${{ github.base_ref }}..HEAD)
           SOURCE_CHANGED=false
           SPEC_CHANGED=false
           while IFS= read -r file; do
