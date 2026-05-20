@@ -170,3 +170,6 @@ consider:
 
 Until then, `_messages.py` remains a simple Python constants module.
 <!-- Updated: 2026-05-01T06:00:00 -->
+## 2026-05-20 - Optimization of Precondition Validation
+
+Optimized validation checking for 3D vectors in `preconditions.py` (`require_shape`) using explicit unrolled loops and `type(...) is ...` to reduce execution time overhead.
