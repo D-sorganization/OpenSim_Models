@@ -50,3 +50,7 @@
 ## 2026-05-11 - PyO3 numpy `into_pyarray` vs `into_pyarray_bound`
 **Learning:** PyO3 `0.21` and `0.22` enforce the new Bound lifetimes and `into_pyarray_bound` over `into_pyarray` when translating ndarray types to Python. Using the deprecated functions on rust_core causes CI failures on strict checks like `cargo doc`.
 **Action:** Always use `into_pyarray_bound` instead of `into_pyarray` for PyO3 0.21+ compatibility.
+
+## 2024-05-18 - Exact type checking with `is` vs `in`
+**Learning:** Checking for standard Python sequence types in high-frequency validation hot paths using `type(x) in (list, tuple, np.ndarray)` is significantly slower than unrolling and using exact identity checks `tx = type(x); if tx is list or tx is tuple or tx is np.ndarray:`. Additionally, unrolling element validation loops for known, common vector sizes (like length 3) avoids loop overhead and significantly improves performance.
+**Action:** When creating fast paths for specific types (especially for small, fixed-size structures like 3-vectors), unroll loops and use exact identity checks (`is`) on `type(obj)` rather than `in` or `isinstance` for maximum performance in hot paths.
