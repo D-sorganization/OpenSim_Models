@@ -138,7 +138,8 @@ def require_shape(arr: ArrayLike, expected: tuple[int, ...], name: str) -> None:
     # What: Avoid np.asarray for existing arrays.
     # Why: require_shape is a frequent precondition check.
     # Impact: Reduces overhead by ~1.1x for existing numpy arrays without risking regressions.
-    if type(arr) is np.ndarray:
+    arr_type = type(arr)
+    if arr_type is np.ndarray:
         if arr.shape != expected:
             raise ValueError(f"{name} must have shape {expected}, got {arr.shape}")
         return
@@ -147,20 +148,31 @@ def require_shape(arr: ArrayLike, expected: tuple[int, ...], name: str) -> None:
     # What: Check lengths directly for strictly 1D arrays before falling back to np.asarray
     # Why: np.asarray creates significant object allocation overhead in hot paths
     # Impact: Reduces overhead by ~2x for standard python list/tuple inputs (for 1D arrays)
-    if type(arr) is list or type(arr) is tuple:
+    if arr_type is list or arr_type is tuple:
         try:
             if len(expected) == 1:
                 if len(arr) != expected[0]:
                     pass  # Fall through to np.asarray for precise error message
                 else:
                     # ensure strictly 1D (avoid ragged like [1, [2]])
-                    valid_1d = True
-                    for x in arr:
-                        if type(x) in (list, tuple, np.ndarray):
-                            valid_1d = False
-                            break
-                    if valid_1d:
-                        return
+                    # ⚡ Bolt Optimization: Unroll loop for common 3-vector case and avoid 'in' operator overhead.
+                    if expected[0] == 3:
+                        tx0, tx1, tx2 = type(arr[0]), type(arr[1]), type(arr[2])
+                        if not (
+                            tx0 is list or tx0 is tuple or tx0 is np.ndarray or
+                            tx1 is list or tx1 is tuple or tx1 is np.ndarray or
+                            tx2 is list or tx2 is tuple or tx2 is np.ndarray
+                        ):
+                            return
+                    else:
+                        valid_1d = True
+                        for x in arr:
+                            tx = type(x)
+                            if tx is list or tx is tuple or tx is np.ndarray:
+                                valid_1d = False
+                                break
+                        if valid_1d:
+                            return
         except TypeError:
             pass
 
