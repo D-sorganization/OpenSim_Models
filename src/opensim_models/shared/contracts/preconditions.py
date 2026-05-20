@@ -9,6 +9,8 @@ from __future__ import annotations
 
 import logging
 import math
+from collections.abc import Sequence
+from typing import cast
 
 import numpy as np
 from numpy.typing import ArrayLike
@@ -140,8 +142,9 @@ def require_shape(arr: ArrayLike, expected: tuple[int, ...], name: str) -> None:
     # Impact: Reduces overhead by ~1.1x for existing numpy arrays without risking regressions.
     arr_type = type(arr)
     if arr_type is np.ndarray:
-        if arr.shape != expected:
-            raise ValueError(f"{name} must have shape {expected}, got {arr.shape}")
+        ndarray = cast(np.ndarray, arr)
+        if ndarray.shape != expected:
+            raise ValueError(f"{name} must have shape {expected}, got {ndarray.shape}")
         return
 
     # ⚡ Bolt Optimization: Fast path for list and tuple shapes avoiding np.asarray overhead
@@ -149,24 +152,35 @@ def require_shape(arr: ArrayLike, expected: tuple[int, ...], name: str) -> None:
     # Why: np.asarray creates significant object allocation overhead in hot paths
     # Impact: Reduces overhead by ~2x for standard python list/tuple inputs (for 1D arrays)
     if arr_type is list or arr_type is tuple:
+        sequence = cast(Sequence[object], arr)
         try:
             if len(expected) == 1:
-                if len(arr) != expected[0]:
+                if len(sequence) != expected[0]:
                     pass  # Fall through to np.asarray for precise error message
                 else:
                     # ensure strictly 1D (avoid ragged like [1, [2]])
                     # ⚡ Bolt Optimization: Unroll loop for common 3-vector case and avoid 'in' operator overhead.
                     if expected[0] == 3:
-                        tx0, tx1, tx2 = type(arr[0]), type(arr[1]), type(arr[2])
+                        tx0, tx1, tx2 = (
+                            type(sequence[0]),
+                            type(sequence[1]),
+                            type(sequence[2]),
+                        )
                         if not (
-                            tx0 is list or tx0 is tuple or tx0 is np.ndarray or
-                            tx1 is list or tx1 is tuple or tx1 is np.ndarray or
-                            tx2 is list or tx2 is tuple or tx2 is np.ndarray
+                            tx0 is list
+                            or tx0 is tuple
+                            or tx0 is np.ndarray
+                            or tx1 is list
+                            or tx1 is tuple
+                            or tx1 is np.ndarray
+                            or tx2 is list
+                            or tx2 is tuple
+                            or tx2 is np.ndarray
                         ):
                             return
                     else:
                         valid_1d = True
-                        for x in arr:
+                        for x in sequence:
                             tx = type(x)
                             if tx is list or tx is tuple or tx is np.ndarray:
                                 valid_1d = False
