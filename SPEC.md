@@ -126,6 +126,7 @@ CLI or by direct builder calls and are not treated as maintained source files.
 
 | Date | Version | Notes |
 | --- | --- | --- |
+| 2026-05-22 | 1.0.11 | Removed redundant ElementTree re-parsing during postcondition XML coordinate validation in `base.py` to significantly improve model generation speed. |
 | 2026-05-20 | 1.0.10 | Optimized validation checking for 3D vectors in `preconditions.py` (`require_shape`) using explicit unrolled loops and `type(...) is ...` to reduce execution time overhead. |
 | 2026-05-11 | 1.0.9 | Replaced `isinstance` with exact type checking `type(x) is list or type(x) is tuple` in `require_unit_vector` to eliminate MRO resolution overhead in standard validation paths. |
 | 2026-05-01 | 1.0.8 | Added fast-paths for strictly zero vectors in `vec3_str` and `vec6_str` OpenSim XML generation utilities to return pre-formatted zero literals, bypassing interpolation overhead for common default poses. |
@@ -170,4 +171,4 @@ consider:
 3. Documenting the locale-aware formatting decision in `CONTRIBUTING.md`.
 
 Until then, `_messages.py` remains a simple Python constants module.
-<!-- Updated: 2026-05-20T06:00:00 -->
+<!-- Updated: 2026-05-22T06:00:00 -->
