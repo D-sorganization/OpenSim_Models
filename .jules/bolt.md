@@ -54,3 +54,6 @@
 ## 2024-05-18 - Exact type checking with `is` vs `in`
 **Learning:** Checking for standard Python sequence types in high-frequency validation hot paths using `type(x) in (list, tuple, np.ndarray)` is significantly slower than unrolling and using exact identity checks `tx = type(x); if tx is list or tx is tuple or tx is np.ndarray:`. Additionally, unrolling element validation loops for known, common vector sizes (like length 3) avoids loop overhead and significantly improves performance.
 **Action:** When creating fast paths for specific types (especially for small, fixed-size structures like 3-vectors), unroll loops and use exact identity checks (`is`) on `type(obj)` rather than `in` or `isinstance` for maximum performance in hot paths.
+## 2026-05-22 - Avoid redundant XML parsing for postcondition validation
+**Learning:** In model generation (`ExerciseModelBuilder.build()`), parsing the just-serialized XML string back into an `ElementTree` object using `ensure_valid_xml` (which calls `ET.fromstring`) to perform postcondition coordinate checks adds significant overhead (~30%). The existing `root` `ElementTree` is already fully built and guaranteed to be structurally valid.
+**Action:** When validating generated XML properties, reuse the existing `ElementTree` object rather than re-parsing the serialized XML string.

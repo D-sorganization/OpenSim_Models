@@ -29,7 +29,6 @@ from opensim_models.shared.body import (
 )
 from opensim_models.shared.contracts.postconditions import (
     ensure_coordinates_within_bounds,
-    ensure_valid_xml,
 )
 from opensim_models.shared.utils.contact_helpers import (
     add_contact_half_space,
@@ -269,11 +268,14 @@ class ExerciseModelBuilder(ABC):
         self._add_ground_contact(model)
         self._post_contact_hook(model)
 
-        xml_str = serialize_model(root)
+        # Postconditions: coordinate defaults within bounds
+        # ⚡ Bolt Optimization: Reuse existing ElementTree for validation.
+        # What: Pass `root` directly to `ensure_coordinates_within_bounds` and remove `ensure_valid_xml` parsing.
+        # Why: Parsing the just-serialized `xml_str` back into an ElementTree is redundant and adds significant overhead to model generation.
+        # Impact: Reduces batch model generation time by avoiding redundant XML string parsing.
+        ensure_coordinates_within_bounds(root)
 
-        # Postconditions: well-formed XML and coordinate defaults within bounds
-        parsed = ensure_valid_xml(xml_str)
-        ensure_coordinates_within_bounds(parsed)
+        xml_str = serialize_model(root)
 
         logger.info("%s model built successfully", self.exercise_name)
         return xml_str
