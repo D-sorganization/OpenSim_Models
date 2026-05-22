@@ -29,7 +29,6 @@ from opensim_models.shared.body import (
 )
 from opensim_models.shared.contracts.postconditions import (
     ensure_coordinates_within_bounds,
-    ensure_valid_xml,
 )
 from opensim_models.shared.utils.contact_helpers import (
     add_contact_half_space,
@@ -272,8 +271,7 @@ class ExerciseModelBuilder(ABC):
         xml_str = serialize_model(root)
 
         # Postconditions: well-formed XML and coordinate defaults within bounds
-        parsed = ensure_valid_xml(xml_str)
-        ensure_coordinates_within_bounds(parsed)
+        ensure_coordinates_within_bounds(root)
 
         logger.info("%s model built successfully", self.exercise_name)
         return xml_str

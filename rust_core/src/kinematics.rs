@@ -118,8 +118,7 @@ mod tests {
     #[test]
     fn test_com_weighted_average() {
         // seg0 at (0,0,0) mass=2, seg1 at (6,0,0) mass=1 -> COM = (2,0,0)
-        let pos =
-            Array2::from_shape_vec((1, 6), vec![0.0, 0.0, 0.0, 6.0, 0.0, 0.0]).unwrap();
+        let pos = Array2::from_shape_vec((1, 6), vec![0.0, 0.0, 0.0, 6.0, 0.0, 0.0]).unwrap();
         let masses = Array1::from_vec(vec![2.0, 1.0]);
         let result = com_pure(&pos, &masses);
         assert!((result[[0, 0]] - 2.0).abs() < 1e-12);
