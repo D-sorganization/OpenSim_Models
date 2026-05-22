@@ -68,7 +68,7 @@ jobs:
           fi
       - name: Set up Python venv
         run: |
-          for PYTHON in python3.11 python3.12 python3.10 python3; do
+          for PYTHON in python3.11 python3.12 python3.10 python; do
             if command -v "$PYTHON" &>/dev/null; then
               echo "Using $PYTHON ($($PYTHON --version))"
               "$PYTHON" -m venv "$RUNNER_TEMP/ci-venv"
@@ -79,7 +79,6 @@ jobs:
           done
           echo "No Python3 found on PATH" && exit 1
       - run: pip install ruff==0.14.10 mypy==1.13.0 bandit==1.7.7
-
       - name: Lint
         run: ruff check src scripts tests
 
@@ -226,8 +225,8 @@ jobs:
         run: |
           PYTHON="python${{ matrix.python }}"
           if ! command -v "$PYTHON" &>/dev/null; then
-            echo "WARNING: $PYTHON not found, falling back to python3"
-            PYTHON=python3
+            echo "WARNING: $PYTHON not found, falling back to python"
+            PYTHON=python
           fi
           echo "Using $PYTHON ($($PYTHON --version))"
           "$PYTHON" -m venv "$RUNNER_TEMP/ci-venv"
@@ -239,7 +238,7 @@ jobs:
 
       - name: Run Test Suite
         run: |
-          python3 -m pytest \
+          python -m pytest \
             -n auto \
             --timeout=60 \
             --timeout-method=thread \
@@ -299,7 +298,7 @@ jobs:
           git clean -ffdx
       - name: Set up Python venv
         run: |
-          for PYTHON in python3.11 python3.12 python3.10 python3; do
+          for PYTHON in python3.11 python3.12 python3.10 python; do
             if command -v "$PYTHON" &>/dev/null; then
               echo "Using $PYTHON ($($PYTHON --version))"
               "$PYTHON" -m venv "$RUNNER_TEMP/ci-venv"
