@@ -87,9 +87,7 @@ pub fn inverse_dynamics_batch<'py>(
         .map(|i| {
             let mut tau = Array1::<f64>::zeros(n_dof);
             for j in 0..n_dof {
-                tau[j] = inr[j] * acc[[i, j]]
-                    + dmp[j] * vel[[i, j]]
-                    + grv[j] * pos[[i, j]].sin();
+                tau[j] = inr[j] * acc[[i, j]] + dmp[j] * vel[[i, j]] + grv[j] * pos[[i, j]].sin();
             }
             tau
         })
@@ -175,7 +173,14 @@ mod tests {
         // Verify parallel batch produces correct results across multiple frames
         let pos = Array2::from_shape_vec(
             (3, 2),
-            vec![0.0, 0.0, std::f64::consts::FRAC_PI_2, 0.0, 0.0, std::f64::consts::FRAC_PI_2],
+            vec![
+                0.0,
+                0.0,
+                std::f64::consts::FRAC_PI_2,
+                0.0,
+                0.0,
+                std::f64::consts::FRAC_PI_2,
+            ],
         )
         .unwrap();
         let vel = Array2::<f64>::zeros((3, 2));
