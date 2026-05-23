@@ -7,6 +7,7 @@ from opensim_models.shared.utils.xml_helpers._bodies import add_body
 from opensim_models.shared.utils.xml_helpers._formatting import (
     ZERO_VEC3,
     Vec3,
+    float_str,
     indent_xml,
     serialize_model,
     vec3_str,
@@ -30,6 +31,7 @@ __all__ = [
     "add_free_joint",
     "add_pin_joint",
     "add_weld_joint",
+    "float_str",
     "indent_xml",
     "serialize_model",
     "set_coordinate_default",

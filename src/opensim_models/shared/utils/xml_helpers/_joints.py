@@ -4,7 +4,11 @@ from __future__ import annotations
 
 import xml.etree.ElementTree as ET
 
-from opensim_models.shared.utils.xml_helpers._formatting import ZERO_VEC3, vec3_str
+from opensim_models.shared.utils.xml_helpers._formatting import (
+    ZERO_VEC3,
+    float_str,
+    vec3_str,
+)
 
 
 def _add_joint_frames(
@@ -40,10 +44,14 @@ def _add_coordinate_set(
     coord_set = ET.SubElement(joint, "coordinates")
     for c in coordinates:
         coord = ET.SubElement(coord_set, "Coordinate", name=str(c["name"]))
-        ET.SubElement(coord, "default_value").text = f"{float(c['default_value']):.6f}"
+        ET.SubElement(coord, "default_value").text = float_str(
+            float(c["default_value"])
+        )
         ET.SubElement(
             coord, "range"
-        ).text = f"{float(c['range_min']):.6f} {float(c['range_max']):.6f}"
+        ).text = (
+            f"{float_str(float(c['range_min']))} {float_str(float(c['range_max']))}"
+        )
 
 
 def add_pin_joint(
@@ -82,8 +90,10 @@ def add_pin_joint(
     # Coordinate
     coords = ET.SubElement(joint, "coordinates")
     coord = ET.SubElement(coords, "Coordinate", name=coord_name)
-    ET.SubElement(coord, "default_value").text = f"{default_value:.6f}"
-    ET.SubElement(coord, "range").text = f"{range_min:.6f} {range_max:.6f}"
+    ET.SubElement(coord, "default_value").text = float_str(default_value)
+    ET.SubElement(
+        coord, "range"
+    ).text = f"{float_str(range_min)} {float_str(range_max)}"
 
     return joint
 
@@ -245,6 +255,6 @@ def set_coordinate_default(jointset: ET.Element, coord_name: str, value: float) 
         if coord.get("name") == coord_name:
             dv = coord.find("default_value")
             if dv is not None:
-                dv.text = f"{value:.6f}"
+                dv.text = float_str(value)
             return
     raise ValueError(f"Coordinate {coord_name!r} not found in jointset")

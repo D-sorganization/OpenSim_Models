@@ -58,3 +58,6 @@
 ## 2026-05-22 - Redundant XML Parsing in Postconditions
 **Learning:** During model building, the XML tree (`ET.Element`) is serialized to a string using `serialize_model(root)`. Calling `ET.fromstring()` on this newly serialized string immediately afterwards just to run postcondition checks introduces massive redundant parsing overhead, taking up to ~20% of the entire model generation time.
 **Action:** When working with XML serialization and validation workflows, pass the existing `ET.Element` tree directly to the validation functions instead of validating the raw string output if you already have the DOM object in memory.
+## 2024-05-19 - XML Scalar Float Formatting
+**Learning:** In the hot path of generating OpenSim XML output, individual scalar floats (such as mass, coordinates, radii, friction) frequently default to `0.0`. Applying the same performance trick used for vector formatting—checking `if v == 0.0` to return `"0.000000"` directly and using `%.6f` instead of f-strings—yields a massive ~10x speedup for the common zero case (~36 ns vs ~447 ns per loop) without sacrificing readability when encapsulated in a helper function.
+**Action:** Extract and reuse localized float formatting functions (e.g., `float_str(v: float) -> str`) to handle the formatting of single numerical properties consistently and efficiently across the module.

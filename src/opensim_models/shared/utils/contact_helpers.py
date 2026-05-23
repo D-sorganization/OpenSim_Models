@@ -10,7 +10,7 @@ import logging
 import xml.etree.ElementTree as ET
 
 from opensim_models.shared.contracts.preconditions import require_positive
-from opensim_models.shared.utils.xml_helpers import vec3_str
+from opensim_models.shared.utils.xml_helpers import float_str, vec3_str
 
 logger = logging.getLogger(__name__)
 
@@ -59,7 +59,7 @@ def add_contact_sphere(
     geom = ET.SubElement(cg_set, "ContactSphere", name=name)
     ET.SubElement(geom, "socket_frame").text = f"/bodyset/{body}"
     ET.SubElement(geom, "location").text = vec3_str(*location)
-    ET.SubElement(geom, "radius").text = f"{radius:.6f}"
+    ET.SubElement(geom, "radius").text = float_str(radius)
     return geom
 
 
@@ -82,9 +82,9 @@ def add_hunt_crossley_force(
     force = ET.SubElement(force_set, "HuntCrossleyForce", name=name)
     ET.SubElement(force, "contact_geometry_1").text = contact_geometry_1
     ET.SubElement(force, "contact_geometry_2").text = contact_geometry_2
-    ET.SubElement(force, "stiffness").text = f"{stiffness:.1f}"
-    ET.SubElement(force, "dissipation").text = f"{dissipation:.6f}"
-    ET.SubElement(force, "static_friction").text = f"{static_friction:.6f}"
-    ET.SubElement(force, "dynamic_friction").text = f"{dynamic_friction:.6f}"
-    ET.SubElement(force, "viscous_friction").text = f"{viscous_friction:.6f}"
+    ET.SubElement(force, "stiffness").text = "%.1f" % stiffness  # noqa: UP031
+    ET.SubElement(force, "dissipation").text = float_str(dissipation)
+    ET.SubElement(force, "static_friction").text = float_str(static_friction)
+    ET.SubElement(force, "dynamic_friction").text = float_str(dynamic_friction)
+    ET.SubElement(force, "viscous_friction").text = float_str(viscous_friction)
     return force
