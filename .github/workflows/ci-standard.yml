@@ -185,9 +185,13 @@ jobs:
           rustc --version
           cargo --version
       - name: cargo build
-        run: cargo build --manifest-path rust_core/Cargo.toml
+        run: |
+          export PATH="$HOME/.cargo/bin:$PATH"
+          cargo build --manifest-path rust_core/Cargo.toml
       - name: cargo test
-        run: cargo test --manifest-path rust_core/Cargo.toml
+        run: |
+          export PATH="$HOME/.cargo/bin:$PATH"
+          cargo test --manifest-path rust_core/Cargo.toml
 
   tests:
     name: Tests (Python ${{ matrix.python }})
