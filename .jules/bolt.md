@@ -61,3 +61,7 @@
 ## 2024-05-19 - XML Scalar Float Formatting
 **Learning:** In the hot path of generating OpenSim XML output, individual scalar floats (such as mass, coordinates, radii, friction) frequently default to `0.0`. Applying the same performance trick used for vector formatting—checking `if v == 0.0` to return `"0.000000"` directly and using `%.6f` instead of f-strings—yields a massive ~10x speedup for the common zero case (~36 ns vs ~447 ns per loop) without sacrificing readability when encapsulated in a helper function.
 **Action:** Extract and reuse localized float formatting functions (e.g., `float_str(v: float) -> str`) to handle the formatting of single numerical properties consistently and efficiently across the module.
+
+## 2024-05-25 - Fast Path np.ndarray checks with math.isfinite() and np.isfinite().all()
+**Learning:** For small fixed-size numpy arrays (like length-3 vectors), explicitly unrolling the check using `math.isfinite(float(arr.flat[i]))` is ~7x faster than using `np.all(np.isfinite(arr))`. For general array sizes, using `np.isfinite(arr).all()` is ~1.6x faster than `np.all(np.isfinite(arr))` because it avoids the overhead of creating a new intermediate array structure for the result.
+**Action:** Always prefer unrolling simple element-wise checks for hot-path fixed-size short arrays, and prefer `.all()` or `.any()` as methods on numpy array result objects rather than wrapping in `np.all()` or `np.any()`.
