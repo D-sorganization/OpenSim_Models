@@ -126,6 +126,7 @@ CLI or by direct builder calls and are not treated as maintained source files.
 
 | Date | Version | Notes |
 | --- | --- | --- |
+| 2026-05-28 | 1.0.14 | Replaced `isinstance` with exact type checks (`type(x) is float`) in the scalar fast-path of `require_finite` to avoid MRO overhead, maintaining `isinstance` as a fallback. |
 | 2026-05-25 | 1.0.13 | Optimized `require_finite` validation function in `preconditions.py` using `.all()` and unrolled `math.isfinite` checks, improving performance by up to 7x for hot-path spatial vectors. |
 | 2026-05-23 | 1.0.12 | Replaced inline f-string formatting with a `float_str` helper for scalar XML attributes, speeding up common 0.0 values by ~10x via literal return strings. |
 | 2026-05-22 | 1.0.11 | Optimized `build` method in `base.py` to bypass redundant XML string parsing, reducing model generation time by ~20%. |
