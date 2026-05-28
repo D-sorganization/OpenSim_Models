@@ -75,7 +75,7 @@ def require_finite(arr: ArrayLike, name: str) -> None:  # noqa: C901
     # Impact: Reduces scalar require_finite validation time by ~45-50%.
     arr_type = type(arr)
     if arr_type is float or arr_type is int or isinstance(arr, (float, int)):
-        if not math.isfinite(arr):
+        if not math.isfinite(cast(float, arr)):
             raise ValueError(f"{name} contains non-finite values")
         return
 
