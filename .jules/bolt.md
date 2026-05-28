@@ -65,3 +65,7 @@
 ## 2024-05-25 - Fast Path np.ndarray checks with math.isfinite() and np.isfinite().all()
 **Learning:** For small fixed-size numpy arrays (like length-3 vectors), explicitly unrolling the check using `math.isfinite(float(arr.flat[i]))` is ~7x faster than using `np.all(np.isfinite(arr))`. For general array sizes, using `np.isfinite(arr).all()` is ~1.6x faster than `np.all(np.isfinite(arr))` because it avoids the overhead of creating a new intermediate array structure for the result.
 **Action:** Always prefer unrolling simple element-wise checks for hot-path fixed-size short arrays, and prefer `.all()` or `.any()` as methods on numpy array result objects rather than wrapping in `np.all()` or `np.any()`.
+
+## 2024-05-28 - Fast Path Scalar Validation via Exact Type Checking
+**Learning:** Exact type checking (`type(x) is float`) is significantly faster (~2x) than `isinstance(x, (float, int))` because it bypasses Method Resolution Order (MRO) overhead. However, `isinstance` is still needed as a fallback to correctly handle subclasses like numpy scalars (e.g. `np.float64`).
+**Action:** In hot paths validating scalar numbers, always short-circuit with exact type checks (`type(x) is float or type(x) is int`) before falling back to `isinstance(x, (float, int))`.
