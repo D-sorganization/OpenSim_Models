@@ -24,8 +24,20 @@ def add_body(
     body = ET.SubElement(bodyset, "Body", name=name)
     ET.SubElement(body, "mass").text = float_str(mass)
     ET.SubElement(body, "mass_center").text = vec3_str(*mass_center)
-    ET.SubElement(body, "inertia").text = (
-        f"{float_str(inertia_xx)} {float_str(inertia_yy)} {float_str(inertia_zz)} "
-        f"{float_str(inertia_xy)} {float_str(inertia_xz)} {float_str(inertia_yz)}"
-    )
+
+    # ⚡ Bolt Optimization: Fast-path for diagonal inertia matrices.
+    # What: Check if cross terms are zero and use f-strings with pre-formatted zeros.
+    # Why: Inertia matrices are almost always diagonal in rigid body models.
+    # Impact: Avoids evaluating cross-terms using `float_str`, reducing overhead during model generation.
+    if inertia_xy == 0.0 and inertia_xz == 0.0 and inertia_yz == 0.0:
+        ET.SubElement(body, "inertia").text = (
+            f"{float_str(inertia_xx)} {float_str(inertia_yy)} {float_str(inertia_zz)} "
+            "0.000000 0.000000 0.000000"
+        )
+    else:
+        ET.SubElement(body, "inertia").text = (
+            f"{float_str(inertia_xx)} {float_str(inertia_yy)} {float_str(inertia_zz)} "
+            f"{float_str(inertia_xy)} {float_str(inertia_xz)} {float_str(inertia_yz)}"
+        )
+
     return body

@@ -69,3 +69,7 @@
 ## 2024-05-28 - Fast Path Scalar Validation via Exact Type Checking
 **Learning:** Exact type checking (`type(x) is float`) is significantly faster (~2x) than `isinstance(x, (float, int))` because it bypasses Method Resolution Order (MRO) overhead. However, `isinstance` is still needed as a fallback to correctly handle subclasses like numpy scalars (e.g. `np.float64`).
 **Action:** In hot paths validating scalar numbers, always short-circuit with exact type checks (`type(x) is float or type(x) is int`) before falling back to `isinstance(x, (float, int))`.
+
+## 2026-05-31 - Fast path for diagonal inertia matrices in XML generation
+**Learning:** OpenSim Body inertia formatting often deals with diagonal matrices where the cross-terms (`ixy`, `ixz`, `iyz`) are strictly `0.0`. Standard string formatting loops or f-strings unnecessarily parse and format these zeros.
+**Action:** In `add_body` or similar helpers generating inertia strings, add a fast path that checks `if inertia_xy == 0.0 and inertia_xz == 0.0 and inertia_yz == 0.0:` to return a partially pre-compiled string (e.g. `"... 0.000000 0.000000 0.000000"`). This bypasses formatting overhead for the cross-terms, yielding a measurable speedup.
