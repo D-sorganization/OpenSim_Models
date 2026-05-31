@@ -222,12 +222,20 @@ jobs:
           git -c "http.https://github.com/.extraheader=AUTHORIZATION: basic ${auth_header}" fetch --depth=1 origin "$GITHUB_SHA"
           git checkout --force FETCH_HEAD
           git clean -ffdx
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: ${{ matrix.python }}
       - name: Set up Python venv
         run: |
           PYTHON="python${{ matrix.python }}"
           if ! command -v "$PYTHON" &>/dev/null; then
-            echo "WARNING: $PYTHON not found, falling back to python"
-            PYTHON=python
+            echo "WARNING: $PYTHON not found, falling back to python3 then python"
+            if command -v python3 &>/dev/null; then
+              PYTHON=python3
+            else
+              PYTHON=python
+            fi
           fi
           echo "Using $PYTHON ($($PYTHON --version))"
           "$PYTHON" -m venv "$RUNNER_TEMP/ci-venv"

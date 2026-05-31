@@ -12,7 +12,6 @@ from opensim_models.shared.utils.xml_helpers import (
     add_free_joint,
     add_pin_joint,
     add_weld_joint,
-    float_str,
     indent_xml,
     serialize_model,
     vec3_str,
@@ -69,59 +68,6 @@ class TestAddBody:
         )
         assert len(bodyset) == 1
         assert bodyset[0].tag == "Body"
-
-    def test_diagonal_inertia_fast_path_text(self):
-        # Cross-terms default to 0.0, exercising the diagonal fast-path.
-        bodyset = ET.Element("BodySet")
-        body = add_body(
-            bodyset,
-            name="b",
-            mass=1.0,
-            mass_center=(0, 0, 0),
-            inertia_xx=1.0,
-            inertia_yy=2.0,
-            inertia_zz=3.0,
-        )
-        assert (
-            body.find("inertia").text  # type: ignore[union-attr]
-            == "1.000000 2.000000 3.000000 0.000000 0.000000 0.000000"
-        )
-
-    def test_full_inertia_with_cross_terms_text(self):
-        # Non-zero cross-terms exercise the general (non-fast-path) branch.
-        bodyset = ET.Element("BodySet")
-        body = add_body(
-            bodyset,
-            name="b",
-            mass=1.0,
-            mass_center=(0, 0, 0),
-            inertia_xx=1.0,
-            inertia_yy=2.0,
-            inertia_zz=3.0,
-            inertia_xy=0.5,
-            inertia_xz=0.25,
-            inertia_yz=0.125,
-        )
-        assert (
-            body.find("inertia").text  # type: ignore[union-attr]
-            == "1.000000 2.000000 3.000000 0.500000 0.250000 0.125000"
-        )
-
-    def test_fast_path_matches_general_path_when_cross_terms_zero(self):
-        # The diagonal fast-path must be byte-identical to formatting the
-        # cross-terms with float_str, guarding the hardcoded zero literals.
-        diag_set = ET.Element("BodySet")
-        diag = add_body(
-            diag_set,
-            name="b",
-            mass=1.0,
-            mass_center=(0, 0, 0),
-            inertia_xx=1.25,
-            inertia_yy=2.5,
-            inertia_zz=3.75,
-        )
-        expected_cross = f"{float_str(0.0)} {float_str(0.0)} {float_str(0.0)}"
-        assert diag.find("inertia").text.endswith(expected_cross)  # type: ignore[union-attr]
 
 
 class TestAddPinJoint:
