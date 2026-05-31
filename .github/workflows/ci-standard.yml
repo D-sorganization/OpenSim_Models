@@ -182,6 +182,7 @@ jobs:
           fi
           # Ensure cargo is on PATH if just installed
           export PATH="$HOME/.cargo/bin:$PATH"
+          echo "$HOME/.cargo/bin" >> $GITHUB_PATH
           rustc --version
           cargo --version
       - name: cargo build

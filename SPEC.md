@@ -175,4 +175,4 @@ consider:
 3. Documenting the locale-aware formatting decision in `CONTRIBUTING.md`.
 
 Until then, `_messages.py` remains a simple Python constants module.
-<!-- Updated: 2026-05-31T05:26:32 -->
+<!-- Updated: 2026-05-31T05:38:55 -->
