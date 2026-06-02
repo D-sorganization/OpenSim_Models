@@ -49,7 +49,7 @@ def require_unit_vector(vec: ArrayLike, name: str, tol: float = 1e-6) -> None:
         # Impact: ~30% faster type checking for basic validation.
         vec_type = type(vec)
         if vec_type is np.ndarray and vec.shape == (3,):  # type: ignore[attr-defined, union-attr]
-            norm = math.hypot(vec.item(0), vec.item(1), vec.item(2))  # type: ignore[attr-defined]
+            norm = math.hypot(vec.item(0), vec.item(1), vec.item(2))  # type: ignore[attr-defined, union-attr]
         elif (vec_type is list or vec_type is tuple) and len(vec) == 3:  # type: ignore[arg-type]
             norm = math.hypot(vec[0], vec[1], vec[2])  # type: ignore[index, arg-type]
         else:
