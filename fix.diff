@@ -1,0 +1,37 @@
+diff --git a/src/opensim_models/shared/contracts/preconditions.py b/src/opensim_models/shared/contracts/preconditions.py
+index 7c5447e..23fa7f2 100644
+--- a/src/opensim_models/shared/contracts/preconditions.py
++++ b/src/opensim_models/shared/contracts/preconditions.py
+@@ -177,16 +177,22 @@
+                             type(sequence[1]),
+                             type(sequence[2]),
+                         )
+-                        if not (
+-                            tx0 is list
+-                            or tx0 is tuple
+-                            or tx0 is np.ndarray
+-                            or tx1 is list
+-                            or tx1 is tuple
+-                            or tx1 is np.ndarray
+-                            or tx2 is list
+-                            or tx2 is tuple
+-                            or tx2 is np.ndarray
++                        if (
++                            (tx0 is float or tx0 is int)
++                            and (tx1 is float or tx1 is int)
++                            and (tx2 is float or tx2 is int)
+                         ):
+                             return
++                        elif not (
++                            tx0 is list
++                            or tx0 is tuple
++                            or tx0 is np.ndarray
++                            or tx1 is list
++                            or tx1 is tuple
++                            or tx1 is np.ndarray
++                            or tx2 is list
++                            or tx2 is tuple
++                            or tx2 is np.ndarray
++                        ):
++                            return
+                     else:

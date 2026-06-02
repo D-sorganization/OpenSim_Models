@@ -73,3 +73,7 @@
 ## 2026-05-31 - Fast path for diagonal inertia matrices in XML generation
 **Learning:** OpenSim Body inertia formatting often deals with diagonal matrices where the cross-terms (`ixy`, `ixz`, `iyz`) are strictly `0.0`. Standard string formatting loops or f-strings unnecessarily parse and format these zeros.
 **Action:** In `add_body` or similar helpers generating inertia strings, add a fast path that checks `if inertia_xy == 0.0 and inertia_xz == 0.0 and inertia_yz == 0.0:` to return a partially pre-compiled string (e.g. `"... 0.000000 0.000000 0.000000"`). This bypasses formatting overhead for the cross-terms, yielding a measurable speedup.
+
+## 2024-05-19 - Exact Type Checking overhead and Native Numpy Array items
+**Learning:** For small NumPy arrays (like 3-vectors), `float(arr.flat[i])` or `float(arr[i])` is slower than using `arr.item(i)`, which retrieves the native Python scalar directly. Also, when checking sequence types in Python hot paths (like `require_shape`), a positive check (`tx is float or tx is int`) is both faster and safer than a negative exclusion list (`not (tx is list or tx is tuple or ...)`).
+**Action:** When extracting scalar values from small NumPy arrays in hot paths, use `arr.item(i)` instead of indexing and casting with `float()`. Use explicit positive inclusion lists (e.g., `is float or is int`) instead of negative exclusion lists for type validation in hot paths.

@@ -48,20 +48,20 @@ def require_unit_vector(vec: ArrayLike, name: str, tol: float = 1e-6) -> None:
         # Why: Exact type checking avoids the overhead of checking MRO and subclass hierarchies in hot paths.
         # Impact: ~30% faster type checking for basic validation.
         vec_type = type(vec)
-        if ((vec_type is list or vec_type is tuple) and len(vec) == 3) or (  # type: ignore[arg-type]
-            vec_type is np.ndarray and vec.shape == (3,)  # type: ignore[attr-defined, union-attr]
-        ):
-            norm = math.hypot(float(vec[0]), float(vec[1]), float(vec[2]))  # type: ignore[index, arg-type]
+        if vec_type is np.ndarray and vec.shape == (3,):  # type: ignore[attr-defined, union-attr]
+            norm = math.hypot(vec.item(0), vec.item(1), vec.item(2))  # type: ignore[attr-defined, union-attr]
+        elif (vec_type is list or vec_type is tuple) and len(vec) == 3:  # type: ignore[arg-type]
+            norm = math.hypot(vec[0], vec[1], vec[2])  # type: ignore[index, arg-type]
         else:
             arr = np.asarray(vec, dtype=float)
             if arr.shape != (3,):
                 raise ValueError(f"{name} must be a 3-vector, got shape {arr.shape}")
-            norm = math.hypot(float(arr[0]), float(arr[1]), float(arr[2]))
+            norm = math.hypot(arr.item(0), arr.item(1), arr.item(2))
     except (TypeError, ValueError, IndexError, KeyError) as e:
         arr = np.asarray(vec, dtype=float)
         if arr.shape != (3,):
             raise ValueError(f"{name} must be a 3-vector, got shape {arr.shape}") from e
-        norm = math.hypot(float(arr[0]), float(arr[1]), float(arr[2]))
+        norm = math.hypot(arr.item(0), arr.item(1), arr.item(2))
 
     if abs(norm - 1.0) > tol:
         raise ValueError(f"{name} must be unit-length (norm={norm:.6f})")
@@ -112,11 +112,10 @@ def require_finite(arr: ArrayLike, name: str) -> None:  # noqa: C901
             return
 
         if arr.size == 3:
-            flat_arr = arr.flat
             if not (
-                math.isfinite(float(flat_arr[0]))
-                and math.isfinite(float(flat_arr[1]))
-                and math.isfinite(float(flat_arr[2]))
+                math.isfinite(arr.item(0))
+                and math.isfinite(arr.item(1))
+                and math.isfinite(arr.item(2))
             ):
                 raise ValueError(f"{name} contains non-finite values")
             return
@@ -178,7 +177,11 @@ def require_shape(arr: ArrayLike, expected: tuple[int, ...], name: str) -> None:
                             type(sequence[1]),
                             type(sequence[2]),
                         )
-                        if not (
+                        if (
+                            (tx0 is float or tx0 is int)
+                            and (tx1 is float or tx1 is int)
+                            and (tx2 is float or tx2 is int)
+                        ) or not (
                             tx0 is list
                             or tx0 is tuple
                             or tx0 is np.ndarray
