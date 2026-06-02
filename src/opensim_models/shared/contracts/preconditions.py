@@ -181,9 +181,7 @@ def require_shape(arr: ArrayLike, expected: tuple[int, ...], name: str) -> None:
                             (tx0 is float or tx0 is int)
                             and (tx1 is float or tx1 is int)
                             and (tx2 is float or tx2 is int)
-                        ):
-                            return
-                        elif not (
+                        ) or not (
                             tx0 is list
                             or tx0 is tuple
                             or tx0 is np.ndarray
