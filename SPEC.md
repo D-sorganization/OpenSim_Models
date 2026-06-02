@@ -9,7 +9,7 @@
 | Primary language | Python 3.10+ |
 | Package name | `opensim_models` |
 | Distribution name | `opensim-models` |
-| Current version | `1.0.15` |
+| Current version | `1.0.16` |
 
 ## 2. Purpose
 
@@ -126,6 +126,7 @@ CLI or by direct builder calls and are not treated as maintained source files.
 
 | Date | Version | Notes |
 | --- | --- | --- |
+| 2026-06-02 | 1.0.16 | Optimized precondition check hot-paths (`require_shape`, `require_finite`, `require_unit_vector`) by utilizing `arr.item()` for fast scalar retrieval from numpy arrays and replacing negative exclusion lists with positive exact type-checking inclusions.
 | 2026-05-31 | 1.0.15 | Added fast-paths for diagonal inertia matrices in XML generation to avoid unnecessary string formatting overhead for zero off-diagonal elements. |
 | 2026-05-28 | 1.0.14 | Replaced `isinstance` with exact type checks (`type(x) is float`) in the scalar fast-path of `require_finite` to avoid MRO overhead, maintaining `isinstance` as a fallback. |
 | 2026-05-25 | 1.0.13 | Optimized `require_finite` validation function in `preconditions.py` using `.all()` and unrolled `math.isfinite` checks, improving performance by up to 7x for hot-path spatial vectors. |
@@ -175,4 +176,4 @@ consider:
 3. Documenting the locale-aware formatting decision in `CONTRIBUTING.md`.
 
 Until then, `_messages.py` remains a simple Python constants module.
-<!-- Updated: 2026-05-31T05:38:55 -->
+<!-- Updated: 2026-06-02T06:00:00 -->
