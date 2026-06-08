@@ -222,17 +222,48 @@ jobs:
           git -c "http.https://github.com/.extraheader=AUTHORIZATION: basic ${auth_header}" fetch --depth=1 origin "$GITHUB_SHA"
           git checkout --force FETCH_HEAD
           git clean -ffdx
+      # Provision the exact matrix interpreter. The self-hosted runner fleet is
+      # heterogeneous -- some hosts have python3.10/3.12 but not python3.11 --
+      # so we cannot rely on the requested version already being on PATH. Before
+      # this step the venv setup hard-coded `python${{ matrix.python }}` with a
+      # fallback to a bare `python`; on a runner missing both, that exited 127
+      # ("command not found") and produced no coverage.xml. setup-python fetches
+      # a prebuilt CPython for the requested version so the matrix is honoured.
+      - name: Set up Python ${{ matrix.python }}
+        uses: actions/setup-python@v5
+        with:
+          python-version: ${{ matrix.python }}
       - name: Set up Python venv
         run: |
-          PYTHON="python${{ matrix.python }}"
-          if ! command -v "$PYTHON" &>/dev/null; then
-            echo "WARNING: $PYTHON not found, falling back to python"
-            PYTHON=python
+          set -euo pipefail
+          WANT="${{ matrix.python }}"
+          # Resolve an interpreter that actually matches the matrix version.
+          # setup-python (above) puts the requested version on PATH; we still
+          # probe candidates and verify the resolved version so we never
+          # silently test the wrong minor version and fail loudly otherwise.
+          PYTHON=""
+          for CAND in "python${WANT}" python3 python; do
+            command -v "$CAND" >/dev/null 2>&1 || continue
+            VER="$("$CAND" -c 'import sys; print(f"{sys.version_info.major}.{sys.version_info.minor}")')"
+            if [ "$VER" = "$WANT" ]; then
+              PYTHON="$CAND"
+              break
+            fi
+          done
+          if [ -z "$PYTHON" ]; then
+            echo "::error::Python ${WANT} is not available on this runner ($(hostname)) even after setup-python."
+            echo "Available interpreters:"
+            for CAND in python3.10 python3.11 python3.12 python3 python; do
+              if command -v "$CAND" >/dev/null 2>&1; then
+                echo "  - $CAND -> $("$CAND" --version 2>&1)"
+              fi
+            done
+            exit 1
           fi
-          echo "Using $PYTHON ($($PYTHON --version))"
+          echo "Using $PYTHON ($("$PYTHON" --version))"
           "$PYTHON" -m venv "$RUNNER_TEMP/ci-venv"
           "$RUNNER_TEMP/ci-venv/bin/pip" install --upgrade pip setuptools wheel --quiet
-          echo "$RUNNER_TEMP/ci-venv/bin" >> $GITHUB_PATH
+          echo "$RUNNER_TEMP/ci-venv/bin" >> "$GITHUB_PATH"
 
       - name: Install Dependencies
         run: pip install -e ".[dev]"
