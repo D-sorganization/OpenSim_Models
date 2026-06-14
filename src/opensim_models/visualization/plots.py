@@ -60,7 +60,7 @@ def _draw_trajectory_panels(
 ) -> Figure:
     """Render one subplot per joint and return the Figure."""
     n_joints = len(joint_names)
-    with plt.rc_context(_STYLE):
+    with plt.rc_context(cast(Any, _STYLE)):
         fig, axes = plt.subplots(n_joints, 1, figsize=(10, 2.5 * n_joints), sharex=True)
         if n_joints == 1:
             axes = [axes]
@@ -185,7 +185,7 @@ def plot_phase_diagram(
     cmap = cast(Any, matplotlib).colormaps["Set2"]
     colors = cmap(np.linspace(0, 1, max(len(coord_list), 1)))
 
-    with plt.rc_context(_STYLE):
+    with plt.rc_context(cast(Any, _STYLE)):
         fig, ax = plt.subplots(figsize=(12, 6))
         _draw_coord_traces(ax, objective, coord_list, colors)
         _annotate_phase_names(ax, objective)

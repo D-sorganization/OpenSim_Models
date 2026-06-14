@@ -9,7 +9,7 @@
 | Primary language  | Python 3.10+                                        |
 | Package name      | `opensim_models`                                    |
 | Distribution name | `opensim-models`                                    |
-| Current version   | `1.0.18`                                            |
+| Current version   | `1.0.19`                                            |
 
 ## 2. Purpose
 
@@ -128,6 +128,7 @@ CLI or by direct builder calls and are not treated as maintained source files.
 
 | Date       | Version | Notes                                                                                                                                                                                                                                                        |
 | ---------- | ------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| 2026-06-14 | 1.0.19  | Cast Matplotlib `rc_context` style dictionaries at the call boundary so CI type checking accepts the intentionally constrained visualization defaults without changing plotting behavior.                                                                    |
 | 2026-06-14 | 1.0.18  | Removed undeclared pytest-asyncio configuration from the strict pytest contract so CI jobs do not fail before collection.                                                                                                                                    |
 | 2026-06-14 | 1.0.17  | Batched XML coordinate updates in `set_coordinate_defaults`, reducing redundant $O(N^2)$ traversal overhead during initial pose setup.                                                                                                                       |
 | 2026-06-02 | 1.0.16  | Optimized precondition check hot-paths (`require_shape`, `require_finite`, `require_unit_vector`) by utilizing `arr.item()` for fast scalar retrieval from numpy arrays and replacing negative exclusion lists with positive exact type-checking inclusions. |
