@@ -20,6 +20,7 @@ from opensim_models.shared.utils.xml_helpers._joints import (
     add_pin_joint,
     add_weld_joint,
     set_coordinate_default,
+    set_coordinate_defaults,
 )
 
 __all__ = [
@@ -35,6 +36,7 @@ __all__ = [
     "indent_xml",
     "serialize_model",
     "set_coordinate_default",
+    "set_coordinate_defaults",
     "vec3_str",
     "vec6_str",
 ]

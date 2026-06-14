@@ -19,7 +19,7 @@ import xml.etree.ElementTree as ET
 from opensim_models.exercises.base import ExerciseConfig, ExerciseModelBuilder
 from opensim_models.shared.utils.xml_helpers import (
     add_weld_joint,
-    set_coordinate_default,
+    set_coordinate_defaults,
 )
 
 logger = logging.getLogger(__name__)
@@ -70,13 +70,15 @@ class SquatModelBuilder(ExerciseModelBuilder):
         hip_flex = 0.0873  # ~5 degrees
         knee_flex = -0.0873  # ~5 degrees
         hip_rotate = 0.1745  # ~10° external rotation for squat stance
+        defaults = {}
         for side in ("l", "r"):
-            set_coordinate_default(jointset, f"hip_{side}_flex", hip_flex)
-            set_coordinate_default(jointset, f"hip_{side}_adduct", 0.0)
-            set_coordinate_default(jointset, f"hip_{side}_rotate", hip_rotate)
-            set_coordinate_default(jointset, f"knee_{side}_flex", knee_flex)
-            set_coordinate_default(jointset, f"ankle_{side}_flex", 0.0)
-            set_coordinate_default(jointset, f"ankle_{side}_inversion", 0.0)
+            defaults[f"hip_{side}_flex"] = hip_flex
+            defaults[f"hip_{side}_adduct"] = 0.0
+            defaults[f"hip_{side}_rotate"] = hip_rotate
+            defaults[f"knee_{side}_flex"] = knee_flex
+            defaults[f"ankle_{side}_flex"] = 0.0
+            defaults[f"ankle_{side}_inversion"] = 0.0
+        set_coordinate_defaults(jointset, defaults)
 
 
 def build_squat_model(

@@ -35,7 +35,7 @@ from opensim_models.exercises.base import (
 from opensim_models.exercises.constants import (
     _SNATCH_GRIP_HALF_WIDTH,
 )
-from opensim_models.shared.utils.xml_helpers import set_coordinate_default
+from opensim_models.shared.utils.xml_helpers import set_coordinate_defaults
 
 logger = logging.getLogger(__name__)
 
@@ -67,9 +67,11 @@ class SnatchModelBuilder(ExerciseModelBuilder):
         """
         set_floor_pull_initial_pose(jointset)
         shoulder_abduct = -0.3491  # ~-20° abduction for wide grip
+        defaults = {}
         for side in ("l", "r"):
-            set_coordinate_default(jointset, f"shoulder_{side}_adduct", shoulder_abduct)
-            set_coordinate_default(jointset, f"shoulder_{side}_rotate", 0.0)
+            defaults[f"shoulder_{side}_adduct"] = shoulder_abduct
+            defaults[f"shoulder_{side}_rotate"] = 0.0
+        set_coordinate_defaults(jointset, defaults)
 
 
 def build_snatch_model(
