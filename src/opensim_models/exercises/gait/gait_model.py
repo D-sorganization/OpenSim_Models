@@ -17,7 +17,7 @@ import logging
 import xml.etree.ElementTree as ET
 
 from opensim_models.exercises.base import ExerciseConfig, ExerciseModelBuilder
-from opensim_models.shared.utils.xml_helpers import set_coordinate_default
+from opensim_models.shared.utils.xml_helpers import set_coordinate_defaults
 
 logger = logging.getLogger(__name__)
 
@@ -52,20 +52,22 @@ class GaitModelBuilder(ExerciseModelBuilder):
         (moderate hip flexion, knee flexion).
         """
         # Stance leg (right): slight flexion
-        set_coordinate_default(jointset, "hip_r_flex", 0.0873)  # ~5 deg extension
-        set_coordinate_default(jointset, "hip_r_adduct", 0.0)
-        set_coordinate_default(jointset, "hip_r_rotate", 0.0)
-        set_coordinate_default(jointset, "knee_r_flex", -0.0873)  # ~5 deg flexion
-        set_coordinate_default(jointset, "ankle_r_flex", 0.0)
-        set_coordinate_default(jointset, "ankle_r_inversion", 0.0)
-
-        # Swing leg (left): moderate flexion
-        set_coordinate_default(jointset, "hip_l_flex", 0.3491)  # ~20 deg
-        set_coordinate_default(jointset, "hip_l_adduct", 0.0)
-        set_coordinate_default(jointset, "hip_l_rotate", 0.0)
-        set_coordinate_default(jointset, "knee_l_flex", -0.5236)  # ~30 deg
-        set_coordinate_default(jointset, "ankle_l_flex", 0.0873)  # ~5 deg dorsiflexion
-        set_coordinate_default(jointset, "ankle_l_inversion", 0.0)
+        defaults = {
+            "hip_r_flex": 0.0873,  # ~5 deg extension
+            "hip_r_adduct": 0.0,
+            "hip_r_rotate": 0.0,
+            "knee_r_flex": -0.0873,  # ~5 deg flexion
+            "ankle_r_flex": 0.0,
+            "ankle_r_inversion": 0.0,
+            # Swing leg (left): moderate flexion
+            "hip_l_flex": 0.3491,  # ~20 deg
+            "hip_l_adduct": 0.0,
+            "hip_l_rotate": 0.0,
+            "knee_l_flex": -0.5236,  # ~30 deg
+            "ankle_l_flex": 0.0873,  # ~5 deg dorsiflexion
+            "ankle_l_inversion": 0.0,
+        }
+        set_coordinate_defaults(jointset, defaults)
 
 
 def build_gait_model(

@@ -258,3 +258,36 @@ def set_coordinate_default(jointset: ET.Element, coord_name: str, value: float) 
                 dv.text = float_str(value)
             return
     raise ValueError(f"Coordinate {coord_name!r} not found in jointset")
+
+
+def set_coordinate_defaults(jointset: ET.Element, defaults: dict[str, float]) -> None:
+    """Set the default_values for multiple named Coordinates in the JointSet.
+
+    Iterates through the jointset once, updating all coordinates that match
+    keys in the *defaults* dictionary.
+
+    Raises:
+        ValueError: If any coordinate in *defaults* is not found in the JointSet.
+    """
+    # ⚡ Bolt Optimization: Batch setting coordinate defaults.
+    # What: Iterate through the jointset once, updating all matching coordinates.
+    # Why: ElementTree.iter() creates a new generator and traverses the entire XML subtree.
+    #      Calling set_coordinate_default multiple times for the same jointset causes O(N^2) overhead.
+    # Impact: Reduces XML traversal overhead significantly when setting multiple defaults.
+    found_count = 0
+    target_count = len(defaults)
+
+    for coord in jointset.iter("Coordinate"):
+        name = coord.get("name")
+        if name in defaults:
+            dv = coord.find("default_value")
+            if dv is not None:
+                dv.text = float_str(defaults[name])  # type: ignore
+            found_count += 1
+            if found_count == target_count:
+                break
+
+    if found_count < target_count:
+        found_names = {c.get("name") for c in jointset.iter("Coordinate")}
+        missing = set(defaults.keys()) - found_names
+        raise ValueError(f"Coordinates {missing} not found in jointset")

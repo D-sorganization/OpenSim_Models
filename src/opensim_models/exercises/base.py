@@ -37,7 +37,7 @@ from opensim_models.shared.utils.contact_helpers import (
 from opensim_models.shared.utils.xml_helpers import (
     add_weld_joint,
     serialize_model,
-    set_coordinate_default,
+    set_coordinate_defaults,
 )
 
 logger = logging.getLogger(__name__)
@@ -59,12 +59,14 @@ def set_floor_pull_initial_pose(jointset: ET.Element) -> None:
     DRY: extracted from three identical loops in deadlift, snatch, and
     clean_and_jerk set_initial_pose methods.
     """
+    defaults = {}
     for side in ("l", "r"):
-        set_coordinate_default(jointset, f"hip_{side}_flex", _FLOOR_PULL_HIP_ANGLE)
-        set_coordinate_default(jointset, f"hip_{side}_adduct", 0.0)
-        set_coordinate_default(jointset, f"hip_{side}_rotate", 0.0)
-        set_coordinate_default(jointset, f"knee_{side}_flex", _FLOOR_PULL_KNEE_ANGLE)
-    set_coordinate_default(jointset, "lumbar_flex", _FLOOR_PULL_LUMBAR_ANGLE)
+        defaults[f"hip_{side}_flex"] = _FLOOR_PULL_HIP_ANGLE
+        defaults[f"hip_{side}_adduct"] = 0.0
+        defaults[f"hip_{side}_rotate"] = 0.0
+        defaults[f"knee_{side}_flex"] = _FLOOR_PULL_KNEE_ANGLE
+    defaults["lumbar_flex"] = _FLOOR_PULL_LUMBAR_ANGLE
+    set_coordinate_defaults(jointset, defaults)
 
 
 def attach_barbell_to_hands(

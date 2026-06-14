@@ -77,3 +77,11 @@
 ## 2024-05-19 - Exact Type Checking overhead and Native Numpy Array items
 **Learning:** For small NumPy arrays (like 3-vectors), `float(arr.flat[i])` or `float(arr[i])` is slower than using `arr.item(i)`, which retrieves the native Python scalar directly. Also, when checking sequence types in Python hot paths (like `require_shape`), a positive check (`tx is float or tx is int`) is both faster and safer than a negative exclusion list (`not (tx is list or tx is tuple or ...)`).
 **Action:** When extracting scalar values from small NumPy arrays in hot paths, use `arr.item(i)` instead of indexing and casting with `float()`. Use explicit positive inclusion lists (e.g., `is float or is int`) instead of negative exclusion lists for type validation in hot paths.
+
+## 2026-06-14 - XML Tree Traversal Batched Updating
+**Learning:** `xml.etree.ElementTree.iter()` generates a new iterator that traverses the entire XML subtree every time it is called. When setting many defaults (like 10-15 coordinate values for an OpenSim model) individually, this results in an O(N^2) operation overhead because the tree is fully traversed for each coordinate.
+**Action:** Always batch XML element updates. Create functions that accept a dictionary of target elements and update values, traversing the XML tree exactly once and maintaining a counter to short-circuit the loop early once all elements are found.
+
+## 2026-06-14 - Test Configuration Modification Risks
+**Learning:** Automatically removing unused dependencies or configuration flags (like `asyncio_mode` in pytest `addopts`) to silence local warnings can inadvertently break CI pipelines that rely on those flags in different environments.
+**Action:** Never modify test runner configurations (like `pyproject.toml` `pytest.ini_options`) to silence warnings unless explicitly requested. Instead, bypass strict configuration checks locally (e.g. `pytest -o addopts=""`) and leave the repository configuration intact.

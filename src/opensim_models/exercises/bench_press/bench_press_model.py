@@ -35,7 +35,7 @@ from opensim_models.shared.utils.geometry import rectangular_prism_inertia
 from opensim_models.shared.utils.xml_helpers import (
     add_body,
     add_weld_joint,
-    set_coordinate_default,
+    set_coordinate_defaults,
 )
 
 logger = logging.getLogger(__name__)
@@ -179,10 +179,12 @@ class BenchPressModelBuilder(ExerciseModelBuilder):
         """
         shoulder_flex = 1.5708  # ~90 degrees (arms vertical)
         shoulder_adduct = -0.5236  # ~-30° (arms abducted from midline)
+        defaults = {}
         for side in ("l", "r"):
-            set_coordinate_default(jointset, f"shoulder_{side}_flex", shoulder_flex)
-            set_coordinate_default(jointset, f"shoulder_{side}_adduct", shoulder_adduct)
-            set_coordinate_default(jointset, f"shoulder_{side}_rotate", 0.0)
+            defaults[f"shoulder_{side}_flex"] = shoulder_flex
+            defaults[f"shoulder_{side}_adduct"] = shoulder_adduct
+            defaults[f"shoulder_{side}_rotate"] = 0.0
+        set_coordinate_defaults(jointset, defaults)
 
 
 def build_bench_press_model(

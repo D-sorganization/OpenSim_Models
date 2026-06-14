@@ -18,7 +18,7 @@ import xml.etree.ElementTree as ET
 from opensim_models.exercises.base import ExerciseConfig, ExerciseModelBuilder
 from opensim_models.shared.utils.xml_helpers import (
     add_weld_joint,
-    set_coordinate_default,
+    set_coordinate_defaults,
 )
 
 logger = logging.getLogger(__name__)
@@ -81,13 +81,15 @@ class SitToStandModelBuilder(ExerciseModelBuilder):
         """
         hip_flex = 1.5708  # ~90 degrees
         knee_flex = -1.5708  # ~90 degrees
+        defaults = {}
         for side in ("l", "r"):
-            set_coordinate_default(jointset, f"hip_{side}_flex", hip_flex)
-            set_coordinate_default(jointset, f"hip_{side}_adduct", 0.0)
-            set_coordinate_default(jointset, f"hip_{side}_rotate", 0.0)
-            set_coordinate_default(jointset, f"knee_{side}_flex", knee_flex)
-            set_coordinate_default(jointset, f"ankle_{side}_flex", 0.1745)  # ~10 deg
-            set_coordinate_default(jointset, f"ankle_{side}_inversion", 0.0)
+            defaults[f"hip_{side}_flex"] = hip_flex
+            defaults[f"hip_{side}_adduct"] = 0.0
+            defaults[f"hip_{side}_rotate"] = 0.0
+            defaults[f"knee_{side}_flex"] = knee_flex
+            defaults[f"ankle_{side}_flex"] = 0.1745  # ~10 deg
+            defaults[f"ankle_{side}_inversion"] = 0.0
+        set_coordinate_defaults(jointset, defaults)
 
 
 def build_sit_to_stand_model(
