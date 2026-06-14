@@ -177,4 +177,4 @@ consider:
 3. Documenting the locale-aware formatting decision in `CONTRIBUTING.md`.
 
 Until then, `_messages.py` remains a simple Python constants module.
-<!-- Updated: 2026-06-02T06:00:00 -->| 2026-06-14 | 1.0.17 | Batched XML coordinate updates in `set_coordinate_defaults`, reducing redundant $O(N^2)$ traversal overhead during initial pose setup. |
+<!-- Updated: 2026-06-14T06:00:00 -->

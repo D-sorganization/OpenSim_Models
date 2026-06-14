@@ -81,3 +81,7 @@
 ## 2026-06-14 - XML Tree Traversal Batched Updating
 **Learning:** `xml.etree.ElementTree.iter()` generates a new iterator that traverses the entire XML subtree every time it is called. When setting many defaults (like 10-15 coordinate values for an OpenSim model) individually, this results in an O(N^2) operation overhead because the tree is fully traversed for each coordinate.
 **Action:** Always batch XML element updates. Create functions that accept a dictionary of target elements and update values, traversing the XML tree exactly once and maintaining a counter to short-circuit the loop early once all elements are found.
+
+## 2026-06-14 - Test Configuration Modification Risks
+**Learning:** Automatically removing unused dependencies or configuration flags (like `asyncio_mode` in pytest `addopts`) to silence local warnings can inadvertently break CI pipelines that rely on those flags in different environments.
+**Action:** Never modify test runner configurations (like `pyproject.toml` `pytest.ini_options`) to silence warnings unless explicitly requested. Instead, bypass strict configuration checks locally (e.g. `pytest -o addopts=""`) and leave the repository configuration intact.
