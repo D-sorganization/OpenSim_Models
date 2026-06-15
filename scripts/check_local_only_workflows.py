@@ -19,12 +19,6 @@ BANNED = (
     "runner=macos-latest",
 )
 
-# Files allowlisted from the hosted-runner scan. The tripwire workflow
-# intentionally runs on a hosted runner; everything else must stay local.
-LEGACY_HOSTED_RUNNER_ALLOWLIST = {
-    ".github/workflows/local-only-runner-guard.yml",
-}
-
 
 def main() -> int:
     failures: list[str] = []
@@ -35,8 +29,6 @@ def main() -> int:
         if path.suffix not in {".yml", ".yaml"}:
             continue
 
-        if path.as_posix() in LEGACY_HOSTED_RUNNER_ALLOWLIST:
-            continue
         try:
             text = path.read_text(encoding="utf-8")
         except UnicodeDecodeError:
@@ -45,7 +37,8 @@ def main() -> int:
             for token in BANNED:
                 if token in line:
                     failures.append(
-                        f"{path}:{line_number}: banned hosted-runner token {token!r}"
+                        f"{path.as_posix()}:{line_number}: "
+                        f"banned hosted-runner token {token!r}"
                     )
 
     if failures:

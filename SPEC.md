@@ -102,13 +102,14 @@ XML structure. The test suite checks generated XML directly.
 
 ## 7. Testing And CI
 
-| Area              | Current contract                                  |
-| ----------------- | ------------------------------------------------- |
-| Test runner       | `pytest`                                          |
-| Coverage target   | `>= 80%`                                          |
-| Linting           | `ruff`                                            |
-| Type checking     | `mypy`                                            |
-| Test organization | `tests/unit`, `tests/integration`, `tests/parity` |
+| Area              | Current contract                                                                                                                                                          |
+| ----------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Test runner       | `pytest`                                                                                                                                                                  |
+| Coverage target   | `>= 80%`                                                                                                                                                                  |
+| Linting           | `ruff`                                                                                                                                                                    |
+| Type checking     | `mypy`                                                                                                                                                                    |
+| Test organization | `tests/unit`, `tests/integration`, `tests/parity`                                                                                                                         |
+| Runner policy     | `.github/workflows/local-only-runner-guard.yml` runs `scripts/check_local_only_workflows.py` on `d-sorg-fleet` and fails if any workflow routes to GitHub-hosted runners. |
 
 Key test expectations:
 
