@@ -230,7 +230,7 @@ jobs:
       # ("command not found") and produced no coverage.xml. setup-python fetches
       # a prebuilt CPython for the requested version so the matrix is honoured.
       - name: Set up Python ${{ matrix.python }}
-        uses: actions/setup-python@v5
+        uses: actions/setup-python@v6
         with:
           python-version: ${{ matrix.python }}
       - name: Set up Python venv
