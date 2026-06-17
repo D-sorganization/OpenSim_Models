@@ -86,20 +86,22 @@ def require_finite(arr: ArrayLike, name: str) -> None:  # noqa: C901
     if type(arr) is list or type(arr) is tuple:
         try:
             arr_len = len(arr)
-            if arr_len == 3 and (
-                (type(arr[0]) is float or type(arr[0]) is int)
-                and (type(arr[1]) is float or type(arr[1]) is int)
-                and (type(arr[2]) is float or type(arr[2]) is int)
-            ):
+            if arr_len == 3:
                 # ⚡ Bolt Optimization: Fast path for flat 3-element lists/tuples
-                if not (
-                    math.isfinite(arr[0])
-                    and math.isfinite(arr[1])
-                    and math.isfinite(arr[2])
+                if (
+                    (type(arr[0]) is float or type(arr[0]) is int)
+                    and (type(arr[1]) is float or type(arr[1]) is int)
+                    and (type(arr[2]) is float or type(arr[2]) is int)
                 ):
-                    raise ValueError(f"{name} contains non-finite values")
-                return
-            if arr_len == 6 and (
+                    if not (
+                        math.isfinite(arr[0])
+                        and math.isfinite(arr[1])
+                        and math.isfinite(arr[2])
+                    ):
+                        raise ValueError(f"{name} contains non-finite values")
+                    return
+            elif arr_len == 6 and (
+                # ⚡ Bolt Optimization: Fast path for flat 6-element lists/tuples
                 (type(arr[0]) is float or type(arr[0]) is int)
                 and (type(arr[1]) is float or type(arr[1]) is int)
                 and (type(arr[2]) is float or type(arr[2]) is int)
@@ -107,7 +109,6 @@ def require_finite(arr: ArrayLike, name: str) -> None:  # noqa: C901
                 and (type(arr[4]) is float or type(arr[4]) is int)
                 and (type(arr[5]) is float or type(arr[5]) is int)
             ):
-                # ⚡ Bolt Optimization: Fast path for flat 6-element lists/tuples
                 if not (
                     math.isfinite(arr[0])
                     and math.isfinite(arr[1])
