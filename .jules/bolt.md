@@ -85,3 +85,7 @@
 ## 2026-06-14 - Test Configuration Modification Risks
 **Learning:** Automatically removing unused dependencies or configuration flags (like `asyncio_mode` in pytest `addopts`) to silence local warnings can inadvertently break CI pipelines that rely on those flags in different environments.
 **Action:** Never modify test runner configurations (like `pyproject.toml` `pytest.ini_options`) to silence warnings unless explicitly requested. Instead, bypass strict configuration checks locally (e.g. `pytest -o addopts=""`) and leave the repository configuration intact.
+
+## 2024-05-29 - Fast path for small Python lists and tuples in validation
+**Learning:** In high-frequency precondition checks (like `require_finite`), standard python lists and tuples suffer from iteration and internal type-checking overhead (checking for nested sequences in elements). For very common, small, fixed sizes (like 3-element and 6-element vectors), this overhead dominates execution time.
+**Action:** Unroll checks for known list/tuple sequence lengths directly checking elements using explicit index access (e.g. `arr_len == 3` -> `math.isfinite(arr[0]) and math.isfinite(arr[1])...`) bypassing loop and dynamic type-checking overhead.
