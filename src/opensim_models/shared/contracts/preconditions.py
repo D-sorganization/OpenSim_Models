@@ -85,6 +85,41 @@ def require_finite(arr: ArrayLike, name: str) -> None:  # noqa: C901
     # Impact: ~10x faster for standard python lists and tuples
     if type(arr) is list or type(arr) is tuple:
         try:
+            arr_len = len(arr)
+            if arr_len == 3:
+                # ⚡ Bolt Optimization: Fast path for flat 3-element lists/tuples
+                if (
+                    (type(arr[0]) is float or type(arr[0]) is int)
+                    and (type(arr[1]) is float or type(arr[1]) is int)
+                    and (type(arr[2]) is float or type(arr[2]) is int)
+                ):
+                    if not (
+                        math.isfinite(arr[0])
+                        and math.isfinite(arr[1])
+                        and math.isfinite(arr[2])
+                    ):
+                        raise ValueError(f"{name} contains non-finite values")
+                    return
+            elif arr_len == 6:
+                # ⚡ Bolt Optimization: Fast path for flat 6-element lists/tuples
+                if (
+                    (type(arr[0]) is float or type(arr[0]) is int)
+                    and (type(arr[1]) is float or type(arr[1]) is int)
+                    and (type(arr[2]) is float or type(arr[2]) is int)
+                    and (type(arr[3]) is float or type(arr[3]) is int)
+                    and (type(arr[4]) is float or type(arr[4]) is int)
+                    and (type(arr[5]) is float or type(arr[5]) is int)
+                ):
+                    if not (
+                        math.isfinite(arr[0])
+                        and math.isfinite(arr[1])
+                        and math.isfinite(arr[2])
+                        and math.isfinite(arr[3])
+                        and math.isfinite(arr[4])
+                        and math.isfinite(arr[5])
+                    ):
+                        raise ValueError(f"{name} contains non-finite values")
+                    return
             for x in arr:
                 if type(x) is list or type(x) is tuple:
                     for y in x:
