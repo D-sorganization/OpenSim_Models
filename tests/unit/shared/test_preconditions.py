@@ -75,9 +75,17 @@ class TestRequireFinite:
     def test_accepts_finite(self):
         require_finite([1.0, 2.0, 3.0], "arr")
 
+    def test_accepts_finite_six_vector(self):
+        require_finite([1.0, 2.0, 3.0, 4.0, 5.0, 6.0], "arr")
+        require_finite((1.0, 2.0, 3.0, 4.0, 5.0, 6.0), "arr")
+
     def test_rejects_nan(self):
         with pytest.raises(ValueError, match="non-finite"):
             require_finite([1.0, float("nan"), 3.0], "arr")
+
+    def test_rejects_nan_in_six_vector(self):
+        with pytest.raises(ValueError, match="non-finite"):
+            require_finite([1.0, 2.0, 3.0, 4.0, float("nan"), 6.0], "arr")
 
     def test_rejects_inf(self):
         with pytest.raises(ValueError, match="non-finite"):
