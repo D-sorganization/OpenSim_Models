@@ -43,7 +43,7 @@ permissions:
 
 concurrency:
   group: jules-redundant-issue-closer-${{ github.repository }}
-  cancel-in-progress: false
+  cancel-in-progress: true
 
 jobs:
   close-redundant:
@@ -59,7 +59,7 @@ jobs:
           owner: ${{ github.repository_owner }}
 
       - name: Checkout Repository_Management (for scripts)
-        uses: actions/checkout@v6
+        uses: actions/checkout@v7
         with:
           repository: D-sorganization/Repository_Management
           ref: main
@@ -70,7 +70,7 @@ jobs:
         uses: actions/setup-python@v6
         with:
           python-version: "3.11"
-          cache: 'pip'
+          cache: "pip"
 
       - name: Close redundant agent issues
         continue-on-error: true
