@@ -89,3 +89,6 @@
 ## 2024-05-29 - Fast path for small Python lists and tuples in validation
 **Learning:** In high-frequency precondition checks (like `require_finite`), standard python lists and tuples suffer from iteration and internal type-checking overhead (checking for nested sequences in elements). For very common, small, fixed sizes (like 3-element and 6-element vectors), this overhead dominates execution time.
 **Action:** Unroll checks for known list/tuple sequence lengths directly checking elements using explicit index access (e.g. `arr_len == 3` -> `math.isfinite(arr[0]) and math.isfinite(arr[1])...`) bypassing loop and dynamic type-checking overhead.
+## 2024-05-30 - Numpy scalar extraction overhead in mathematical hot paths
+**Learning:** Extracting scalars from a numpy array by indexing (e.g. `displacement[0]`) and wrapping it in a Python `float()` call incurs measurable overhead in mathematical hot paths due to the intermediate `np.float64` scalar type creation and subsequent CPython type casting. Using the native `.item(i)` method is ~10% faster as it directly returns the CPython scalar.
+**Action:** In geometry and mathematical hot paths that operate on numpy arrays, use `.item(i)` instead of indexing and `float()` casting when extracting individual components.

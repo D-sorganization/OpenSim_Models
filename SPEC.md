@@ -9,7 +9,7 @@
 | Primary language  | Python 3.10+                                        |
 | Package name      | `opensim_models`                                    |
 | Distribution name | `opensim-models`                                    |
-| Current version   | `1.0.20`                                            |
+| Current version   | `1.0.21`                                            |
 
 ## 2. Purpose
 
