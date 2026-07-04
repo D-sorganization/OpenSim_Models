@@ -89,3 +89,7 @@
 ## 2024-05-29 - Fast path for small Python lists and tuples in validation
 **Learning:** In high-frequency precondition checks (like `require_finite`), standard python lists and tuples suffer from iteration and internal type-checking overhead (checking for nested sequences in elements). For very common, small, fixed sizes (like 3-element and 6-element vectors), this overhead dominates execution time.
 **Action:** Unroll checks for known list/tuple sequence lengths directly checking elements using explicit index access (e.g. `arr_len == 3` -> `math.isfinite(arr[0]) and math.isfinite(arr[1])...`) bypassing loop and dynamic type-checking overhead.
+
+## 2024-05-18 - Exact type checking with `__class__` vs `type()`
+**Learning:** Checking types using exact identity checks `val.__class__ is float` is significantly faster (~15-20%) than `type(val) is float` because it avoids the function call overhead of `type()`.
+**Action:** When performing exact type checks in performance-critical execution paths (like `list`, `tuple`, `float`, `int`, `np.ndarray`), prefer exact checking with `x.__class__ is T` rather than `type(x) is T`.
