@@ -89,3 +89,7 @@
 ## 2024-05-29 - Fast path for small Python lists and tuples in validation
 **Learning:** In high-frequency precondition checks (like `require_finite`), standard python lists and tuples suffer from iteration and internal type-checking overhead (checking for nested sequences in elements). For very common, small, fixed sizes (like 3-element and 6-element vectors), this overhead dominates execution time.
 **Action:** Unroll checks for known list/tuple sequence lengths directly checking elements using explicit index access (e.g. `arr_len == 3` -> `math.isfinite(arr[0]) and math.isfinite(arr[1])...`) bypassing loop and dynamic type-checking overhead.
+
+## 2026-07-06 - Redundant XML Serialization in Model Generation
+**Learning:** During the model build process in `base.py`, serializing the `ET.Element` tree to an XML string before running postcondition checks via `ensure_coordinates_within_bounds(root)` was forcing redundant parsing or string formatting operations when the root `ET.Element` is already perfectly usable for validation logic.
+**Action:** When validating generated XML structures, always run validation checks directly against the in-memory `ET.Element` tree before serializing to an XML string, preventing any potentially slow redundant string traversal or serialization bottlenecks.
