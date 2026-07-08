@@ -30,14 +30,27 @@ def add_body(
     # Why: Inertia matrices are almost always diagonal in rigid body models.
     # Impact: Avoids evaluating cross-terms using `float_str`, reducing overhead during model generation.
     if inertia_xy == 0.0 and inertia_xz == 0.0 and inertia_yz == 0.0:
+        # ⚡ Bolt Optimization: Use % formatting instead of f-strings.
         ET.SubElement(body, "inertia").text = (
-            f"{float_str(inertia_xx)} {float_str(inertia_yy)} {float_str(inertia_zz)} "
-            "0.000000 0.000000 0.000000"
+            "%.6f %.6f %.6f 0.000000 0.000000 0.000000"  # noqa: UP031
+            % (
+                inertia_xx,
+                inertia_yy,
+                inertia_zz,
+            )
         )
     else:
-        ET.SubElement(body, "inertia").text = (
-            f"{float_str(inertia_xx)} {float_str(inertia_yy)} {float_str(inertia_zz)} "
-            f"{float_str(inertia_xy)} {float_str(inertia_xz)} {float_str(inertia_yz)}"
+        # ⚡ Bolt Optimization: Use % formatting instead of f-strings.
+        # What: Replace f"{float_str(...)} ..." with "%.6f ..." % (...)
+        # Why: In hot paths, old-style % formatting is significantly faster than f-strings.
+        # Impact: Reduces XML string formatting overhead for inertia elements.
+        ET.SubElement(body, "inertia").text = "%.6f %.6f %.6f %.6f %.6f %.6f" % (  # noqa: UP031
+            inertia_xx,
+            inertia_yy,
+            inertia_zz,
+            inertia_xy,
+            inertia_xz,
+            inertia_yz,
         )
 
     return body
