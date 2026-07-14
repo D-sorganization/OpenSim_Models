@@ -96,16 +96,21 @@ def require_finite(arr: ArrayLike, name: str) -> None:  # noqa: C901
                     and (tx2 is float or tx2 is int)
                 ):
                     if not (
-                        math.isfinite(x0)
-                        and math.isfinite(x1)
-                        and math.isfinite(x2)
+                        math.isfinite(x0) and math.isfinite(x1) and math.isfinite(x2)
                     ):
                         raise ValueError(f"{name} contains non-finite values")
                     return
             elif arr_len == 6:
                 # ⚡ Bolt Optimization: Fast path for flat 6-element lists/tuples
                 x0, x1, x2, x3, x4, x5 = arr[0], arr[1], arr[2], arr[3], arr[4], arr[5]
-                tx0, tx1, tx2, tx3, tx4, tx5 = x0.__class__, x1.__class__, x2.__class__, x3.__class__, x4.__class__, x5.__class__
+                tx0, tx1, tx2, tx3, tx4, tx5 = (
+                    x0.__class__,
+                    x1.__class__,
+                    x2.__class__,
+                    x3.__class__,
+                    x4.__class__,
+                    x5.__class__,
+                )
                 if (
                     (tx0 is float or tx0 is int)
                     and (tx1 is float or tx1 is int)
