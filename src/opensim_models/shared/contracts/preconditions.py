@@ -47,7 +47,7 @@ def require_unit_vector(vec: ArrayLike, name: str, tol: float = 1e-6) -> None:
         # What: Use `type(vec) is list or type(vec) is tuple` instead of `isinstance(vec, (list, tuple))`.
         # Why: Exact type checking avoids the overhead of checking MRO and subclass hierarchies in hot paths.
         # Impact: ~30% faster type checking for basic validation.
-        vec_type = type(vec)
+        vec_type = vec.__class__
         if vec_type is np.ndarray and vec.shape == (3,):  # type: ignore[attr-defined, union-attr]
             norm = math.hypot(vec.item(0), vec.item(1), vec.item(2))  # type: ignore[attr-defined, union-attr]
         elif (vec_type is list or vec_type is tuple) and len(vec) == 3:  # type: ignore[arg-type]
@@ -73,7 +73,7 @@ def require_finite(arr: ArrayLike, name: str) -> None:  # noqa: C901
     # What: Use exact type checking and math.isfinite() instead of numpy array conversion for floats/ints.
     # Why: require_finite is called thousands of times during model generation. Exact type checking is significantly faster than isinstance().
     # Impact: Reduces scalar require_finite validation time by ~45-50%.
-    arr_type = type(arr)
+    arr_type = arr.__class__
     if arr_type is float or arr_type is int or isinstance(arr, (float, int)):
         if not math.isfinite(cast(float, arr)):
             raise ValueError(f"{name} contains non-finite values")
@@ -83,44 +83,50 @@ def require_finite(arr: ArrayLike, name: str) -> None:  # noqa: C901
     # What: Iterate through lists and tuples to check for finiteness manually
     # Why: np.asarray adds significant overhead for standard python types
     # Impact: ~10x faster for standard python lists and tuples
-    if type(arr) is list or type(arr) is tuple:
+    if arr.__class__ is list or arr.__class__ is tuple:
         try:
             arr_len = len(arr)
             if arr_len == 3:
                 # ⚡ Bolt Optimization: Fast path for flat 3-element lists/tuples
+                x0, x1, x2 = arr[0], arr[1], arr[2]
+                tx0, tx1, tx2 = x0.__class__, x1.__class__, x2.__class__
                 if (
-                    (type(arr[0]) is float or type(arr[0]) is int)
-                    and (type(arr[1]) is float or type(arr[1]) is int)
-                    and (type(arr[2]) is float or type(arr[2]) is int)
+                    (tx0 is float or tx0 is int)
+                    and (tx1 is float or tx1 is int)
+                    and (tx2 is float or tx2 is int)
                 ):
                     if not (
-                        math.isfinite(arr[0])
-                        and math.isfinite(arr[1])
-                        and math.isfinite(arr[2])
+                        math.isfinite(x0)
+                        and math.isfinite(x1)
+                        and math.isfinite(x2)
                     ):
                         raise ValueError(f"{name} contains non-finite values")
                     return
-            elif arr_len == 6 and (
+            elif arr_len == 6:
                 # ⚡ Bolt Optimization: Fast path for flat 6-element lists/tuples
-                (type(arr[0]) is float or type(arr[0]) is int)
-                and (type(arr[1]) is float or type(arr[1]) is int)
-                and (type(arr[2]) is float or type(arr[2]) is int)
-                and (type(arr[3]) is float or type(arr[3]) is int)
-                and (type(arr[4]) is float or type(arr[4]) is int)
-                and (type(arr[5]) is float or type(arr[5]) is int)
-            ):
-                if not (
-                    math.isfinite(arr[0])
-                    and math.isfinite(arr[1])
-                    and math.isfinite(arr[2])
-                    and math.isfinite(arr[3])
-                    and math.isfinite(arr[4])
-                    and math.isfinite(arr[5])
+                x0, x1, x2, x3, x4, x5 = arr[0], arr[1], arr[2], arr[3], arr[4], arr[5]
+                tx0, tx1, tx2, tx3, tx4, tx5 = x0.__class__, x1.__class__, x2.__class__, x3.__class__, x4.__class__, x5.__class__
+                if (
+                    (tx0 is float or tx0 is int)
+                    and (tx1 is float or tx1 is int)
+                    and (tx2 is float or tx2 is int)
+                    and (tx3 is float or tx3 is int)
+                    and (tx4 is float or tx4 is int)
+                    and (tx5 is float or tx5 is int)
                 ):
-                    raise ValueError(f"{name} contains non-finite values")
-                return
+                    if not (
+                        math.isfinite(x0)
+                        and math.isfinite(x1)
+                        and math.isfinite(x2)
+                        and math.isfinite(x3)
+                        and math.isfinite(x4)
+                        and math.isfinite(x5)
+                    ):
+                        raise ValueError(f"{name} contains non-finite values")
+                    return
             for x in arr:
-                if type(x) is list or type(x) is tuple:
+                tx = x.__class__
+                if tx is list or tx is tuple:
                     for y in x:
                         if not math.isfinite(y):
                             raise ValueError(f"{name} contains non-finite values")
@@ -134,7 +140,7 @@ def require_finite(arr: ArrayLike, name: str) -> None:  # noqa: C901
     # What: Unroll math.isfinite check for common shape-3 arrays and use arr.all() instead of np.all() for larger arrays.
     # Why: np.asarray adds overhead even when the array is already a numpy array. np.all(np.isfinite()) is slower than np.isfinite().all().
     # Impact: ~7x faster for shape-3 numpy arrays, and ~1.6x faster for larger numpy arrays.
-    if type(arr) is np.ndarray:
+    if arr.__class__ is np.ndarray:
         # Check dtype kind to avoid TypeError on string/object arrays, maintaining original ValueError behavior
         if arr.dtype.kind not in "iuf":
             try:
@@ -185,7 +191,7 @@ def require_shape(arr: ArrayLike, expected: tuple[int, ...], name: str) -> None:
     # What: Avoid np.asarray for existing arrays.
     # Why: require_shape is a frequent precondition check.
     # Impact: Reduces overhead by ~1.1x for existing numpy arrays without risking regressions.
-    arr_type = type(arr)
+    arr_type = arr.__class__
     if arr_type is np.ndarray:
         ndarray = cast(np.ndarray, arr)
         if ndarray.shape != expected:
@@ -199,43 +205,42 @@ def require_shape(arr: ArrayLike, expected: tuple[int, ...], name: str) -> None:
     if arr_type is list or arr_type is tuple:
         sequence = cast(Sequence[object], arr)
         try:
-            if len(expected) == 1:
-                if len(sequence) != expected[0]:
+            if expected == (3,):
+                if len(sequence) != 3:
                     pass  # Fall through to np.asarray for precise error message
                 else:
                     # ensure strictly 1D (avoid ragged like [1, [2]])
                     # ⚡ Bolt Optimization: Unroll loop for common 3-vector case and avoid 'in' operator overhead.
-                    if expected[0] == 3:
-                        tx0, tx1, tx2 = (
-                            type(sequence[0]),
-                            type(sequence[1]),
-                            type(sequence[2]),
-                        )
-                        if (
-                            (tx0 is float or tx0 is int)
-                            and (tx1 is float or tx1 is int)
-                            and (tx2 is float or tx2 is int)
-                        ) or not (
-                            tx0 is list
-                            or tx0 is tuple
-                            or tx0 is np.ndarray
-                            or tx1 is list
-                            or tx1 is tuple
-                            or tx1 is np.ndarray
-                            or tx2 is list
-                            or tx2 is tuple
-                            or tx2 is np.ndarray
-                        ):
-                            return
-                    else:
-                        valid_1d = True
-                        for x in sequence:
-                            tx = type(x)
-                            if tx is list or tx is tuple or tx is np.ndarray:
-                                valid_1d = False
-                                break
-                        if valid_1d:
-                            return
+                    x, y, z = sequence[0], sequence[1], sequence[2]
+                    tx0, tx1, tx2 = x.__class__, y.__class__, z.__class__
+                    if (
+                        (tx0 is float or tx0 is int)
+                        and (tx1 is float or tx1 is int)
+                        and (tx2 is float or tx2 is int)
+                    ) or not (
+                        tx0 is list
+                        or tx0 is tuple
+                        or tx0 is np.ndarray
+                        or tx1 is list
+                        or tx1 is tuple
+                        or tx1 is np.ndarray
+                        or tx2 is list
+                        or tx2 is tuple
+                        or tx2 is np.ndarray
+                    ):
+                        return
+            elif len(expected) == 1:
+                if len(sequence) != expected[0]:
+                    pass  # Fall through to np.asarray for precise error message
+                else:
+                    valid_1d = True
+                    for x in sequence:
+                        tx = x.__class__
+                        if tx is list or tx is tuple or tx is np.ndarray:
+                            valid_1d = False
+                            break
+                    if valid_1d:
+                        return
         except TypeError:
             pass
 
