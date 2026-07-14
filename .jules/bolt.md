@@ -89,3 +89,6 @@
 ## 2024-05-29 - Fast path for small Python lists and tuples in validation
 **Learning:** In high-frequency precondition checks (like `require_finite`), standard python lists and tuples suffer from iteration and internal type-checking overhead (checking for nested sequences in elements). For very common, small, fixed sizes (like 3-element and 6-element vectors), this overhead dominates execution time.
 **Action:** Unroll checks for known list/tuple sequence lengths directly checking elements using explicit index access (e.g. `arr_len == 3` -> `math.isfinite(arr[0]) and math.isfinite(arr[1])...`) bypassing loop and dynamic type-checking overhead.
+## 2024-05-31 - Fast path shape validation using exact tuple equality
+**Learning:** In python, CPython evaluates direct tuple equality like `expected == (3,)` significantly faster than manual unwrapping and index checks like `len(expected) == 1 and expected[0] == 3`. This becomes a measurable bottleneck in frequent validation hot-paths.
+**Action:** In functions dealing with hot-path validation of tuple types (like `require_shape`), prioritize exact tuple equality fast-paths for the most common expected values over generalized index and length checks.
