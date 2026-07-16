@@ -129,6 +129,7 @@ CLI or by direct builder calls and are not treated as maintained source files.
 
 | Date       | Version | Notes                                                                                                                                                                                                                                                        |
 | ---------- | ------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| 2026-07-16 | 1.0.20  | Optimized `xml.etree.ElementTree` operations by replacing `.find()` with direct child iteration in hot-paths to avoid `ElementPath` regex parsing overhead. |
 | 2026-06-14 | 1.0.19  | Cast Matplotlib `rc_context` style dictionaries at the call boundary so CI type checking accepts the intentionally constrained visualization defaults without changing plotting behavior.                                                                    |
 | 2026-06-14 | 1.0.18  | Removed undeclared pytest-asyncio configuration from the strict pytest contract so CI jobs do not fail before collection.                                                                                                                                    |
 | 2026-06-14 | 1.0.17  | Batched XML coordinate updates in `set_coordinate_defaults`, reducing redundant $O(N^2)$ traversal overhead during initial pose setup.                                                                                                                       |
@@ -185,4 +186,4 @@ consider:
 
 Until then, `_messages.py` remains a simple Python constants module.
 
-<!-- Updated: 2026-06-14T09:35:00 -->
+<!-- Updated: 2026-07-16T05:28:43 -->
