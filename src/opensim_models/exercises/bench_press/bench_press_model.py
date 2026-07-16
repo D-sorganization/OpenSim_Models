@@ -111,9 +111,11 @@ class BenchPressModelBuilder(ExerciseModelBuilder):
                     "PhysicalOffsetFrame[@name='pelvis_to_bench_child']"
                 )
                 if child_frame is not None:
-                    orient_el = child_frame.find("orientation")
-                    if orient_el is not None:
-                        orient_el.text = supine_orient
+                    # ⚡ Bolt Optimization: Replace Element.find() with direct iteration
+                    for child in child_frame:
+                        if child.tag == "orientation":
+                            child.text = supine_orient
+                            break
                 break
 
     def _add_bench_and_constraint(

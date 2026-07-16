@@ -89,3 +89,7 @@
 ## 2024-05-29 - Fast path for small Python lists and tuples in validation
 **Learning:** In high-frequency precondition checks (like `require_finite`), standard python lists and tuples suffer from iteration and internal type-checking overhead (checking for nested sequences in elements). For very common, small, fixed sizes (like 3-element and 6-element vectors), this overhead dominates execution time.
 **Action:** Unroll checks for known list/tuple sequence lengths directly checking elements using explicit index access (e.g. `arr_len == 3` -> `math.isfinite(arr[0]) and math.isfinite(arr[1])...`) bypassing loop and dynamic type-checking overhead.
+
+## 2026-06-21 - XML Element.find() Overhead in Hot Paths
+**Learning:** In hot paths involving `xml.etree.ElementTree`, `Element.find()` incurs significant overhead due to ElementPath regex parsing and path resolving. For shallow child lookups (like finding `"default_value"` in `"Coordinate"`), directly iterating over the element's children (`for child in elem: if child.tag == "default_value":`) avoids this overhead and is significantly faster (~20-30% improvement in tight loops).
+**Action:** Replace `Element.find("tag")` with direct child iteration in performance-critical XML generation loops where we only need to look up direct children.

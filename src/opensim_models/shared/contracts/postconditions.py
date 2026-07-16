@@ -40,8 +40,21 @@ def ensure_coordinates_within_bounds(root: ET.Element) -> None:
     tol = 1e-6
     for coord in root.iter("Coordinate"):
         name = coord.get("name", "<unnamed>")
-        dv_el = coord.find("default_value")
-        rng_el = coord.find("range")
+        # ⚡ Bolt Optimization: Replace Element.find() with direct iteration
+        # What: Iterate over children directly instead of using Element.find()
+        # Why: Element.find() incurs significant overhead due to ElementPath parsing
+        # Impact: Significantly faster for simple child lookups in loops
+        dv_el = None
+        rng_el = None
+        for child in coord:
+            if child.tag == "default_value":
+                dv_el = child
+                if rng_el is not None:
+                    break
+            elif child.tag == "range":
+                rng_el = child
+                if dv_el is not None:
+                    break
         if dv_el is None or rng_el is None:
             continue
         default = float(dv_el.text)  # type: ignore[arg-type]
