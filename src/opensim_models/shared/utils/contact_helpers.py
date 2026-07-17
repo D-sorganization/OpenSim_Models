@@ -28,7 +28,15 @@ def add_contact_half_space(
     The default orientation (-90 deg about Z) makes the half-space surface
     point in the +Y direction, which is the standard ground normal in OpenSim.
     """
-    cg_set = model.find("ContactGeometrySet")
+    # ⚡ Bolt Optimization: Replace find() with direct iteration.
+    # What: Use direct child iteration to find "ContactGeometrySet".
+    # Why: Element.find() incurs ElementPath regex overhead. Direct iteration is significantly faster for shallow lookups.
+    # Impact: Reduces redundant parsing overhead.
+    cg_set = None
+    for child in model:
+        if child.tag == "ContactGeometrySet":
+            cg_set = child
+            break
     if cg_set is None:
         cg_set = ET.SubElement(model, "ContactGeometrySet")
     geom = ET.SubElement(cg_set, "ContactHalfSpace", name=name)
@@ -53,7 +61,15 @@ def add_contact_sphere(
     Rejects non-finite (NaN / +/-inf) and non-positive radii (issue #151).
     """
     require_positive(radius, "Contact sphere radius")
-    cg_set = model.find("ContactGeometrySet")
+    # ⚡ Bolt Optimization: Replace find() with direct iteration.
+    # What: Use direct child iteration to find "ContactGeometrySet".
+    # Why: Element.find() incurs ElementPath regex overhead. Direct iteration is significantly faster for shallow lookups.
+    # Impact: Reduces redundant parsing overhead.
+    cg_set = None
+    for child in model:
+        if child.tag == "ContactGeometrySet":
+            cg_set = child
+            break
     if cg_set is None:
         cg_set = ET.SubElement(model, "ContactGeometrySet")
     geom = ET.SubElement(cg_set, "ContactSphere", name=name)
@@ -76,7 +92,12 @@ def add_hunt_crossley_force(
     viscous_friction: float = 0.2,
 ) -> ET.Element:
     """Add a HuntCrossleyForce between two contact geometries."""
-    force_set = model.find("ForceSet")
+    # ⚡ Bolt Optimization: Replace find() with direct iteration.
+    force_set = None
+    for child in model:
+        if child.tag == "ForceSet":
+            force_set = child
+            break
     if force_set is None:
         force_set = ET.SubElement(model, "ForceSet")
     force = ET.SubElement(force_set, "HuntCrossleyForce", name=name)

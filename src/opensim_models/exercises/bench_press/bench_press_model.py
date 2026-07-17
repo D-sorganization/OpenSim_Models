@@ -107,11 +107,17 @@ class BenchPressModelBuilder(ExerciseModelBuilder):
         supine_orient = f"{math.pi / 2:.6f} 0.000000 0.000000"
         for j in jointset.findall("WeldJoint"):
             if j.get("name") == "pelvis_to_bench":
-                child_frame = j.find(
-                    "PhysicalOffsetFrame[@name='pelvis_to_bench_child']"
-                )
+                child_frame = None
+                for child in j:
+                    if child.tag == "PhysicalOffsetFrame" and child.get("name") == "pelvis_to_bench_child":
+                        child_frame = child
+                        break
                 if child_frame is not None:
-                    orient_el = child_frame.find("orientation")
+                    orient_el = None
+                    for child in child_frame:
+                        if child.tag == "orientation":
+                            orient_el = child
+                            break
                     if orient_el is not None:
                         orient_el.text = supine_orient
                 break
