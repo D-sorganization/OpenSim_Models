@@ -109,7 +109,10 @@ class BenchPressModelBuilder(ExerciseModelBuilder):
             if j.get("name") == "pelvis_to_bench":
                 child_frame = None
                 for child in j:
-                    if child.tag == "PhysicalOffsetFrame" and child.get("name") == "pelvis_to_bench_child":
+                    if (
+                        child.tag == "PhysicalOffsetFrame"
+                        and child.get("name") == "pelvis_to_bench_child"
+                    ):
                         child_frame = child
                         break
                 if child_frame is not None:
