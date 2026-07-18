@@ -253,9 +253,13 @@ def set_coordinate_default(jointset: ET.Element, coord_name: str, value: float) 
     """
     for coord in jointset.iter("Coordinate"):
         if coord.get("name") == coord_name:
-            dv = coord.find("default_value")
-            if dv is not None:
-                dv.text = float_str(value)
+            # ⚡ Bolt Optimization: Direct child iteration instead of .find()
+            # What: Replace `coord.find("default_value")` with `for child in coord`
+            # Why: .find() has significant ElementPath parsing overhead.
+            for child in coord:
+                if child.tag == "default_value":
+                    child.text = float_str(value)
+                    return
             return
     raise ValueError(f"Coordinate {coord_name!r} not found in jointset")
 
@@ -280,9 +284,11 @@ def set_coordinate_defaults(jointset: ET.Element, defaults: dict[str, float]) ->
     for coord in jointset.iter("Coordinate"):
         name = coord.get("name")
         if name in defaults:
-            dv = coord.find("default_value")
-            if dv is not None:
-                dv.text = float_str(defaults[name])  # type: ignore
+            # ⚡ Bolt Optimization: Direct child iteration instead of .find()
+            for child in coord:
+                if child.tag == "default_value":
+                    child.text = float_str(defaults[name])  # type: ignore
+                    break
             found_count += 1
             if found_count == target_count:
                 break
