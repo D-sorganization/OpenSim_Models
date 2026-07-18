@@ -28,7 +28,12 @@ def add_contact_half_space(
     The default orientation (-90 deg about Z) makes the half-space surface
     point in the +Y direction, which is the standard ground normal in OpenSim.
     """
-    cg_set = model.find("ContactGeometrySet")
+    # ⚡ Bolt Optimization: Fast-path shallow child lookup to avoid ElementPath regex overhead.
+    cg_set = None
+    for child in model:
+        if child.tag == "ContactGeometrySet":
+            cg_set = child
+            break
     if cg_set is None:
         cg_set = ET.SubElement(model, "ContactGeometrySet")
     geom = ET.SubElement(cg_set, "ContactHalfSpace", name=name)
@@ -53,7 +58,12 @@ def add_contact_sphere(
     Rejects non-finite (NaN / +/-inf) and non-positive radii (issue #151).
     """
     require_positive(radius, "Contact sphere radius")
-    cg_set = model.find("ContactGeometrySet")
+    # ⚡ Bolt Optimization: Fast-path shallow child lookup to avoid ElementPath regex overhead.
+    cg_set = None
+    for child in model:
+        if child.tag == "ContactGeometrySet":
+            cg_set = child
+            break
     if cg_set is None:
         cg_set = ET.SubElement(model, "ContactGeometrySet")
     geom = ET.SubElement(cg_set, "ContactSphere", name=name)
@@ -76,7 +86,12 @@ def add_hunt_crossley_force(
     viscous_friction: float = 0.2,
 ) -> ET.Element:
     """Add a HuntCrossleyForce between two contact geometries."""
-    force_set = model.find("ForceSet")
+    # ⚡ Bolt Optimization: Fast-path shallow child lookup to avoid ElementPath regex overhead.
+    force_set = None
+    for child in model:
+        if child.tag == "ForceSet":
+            force_set = child
+            break
     if force_set is None:
         force_set = ET.SubElement(model, "ForceSet")
     force = ET.SubElement(force_set, "HuntCrossleyForce", name=name)
