@@ -9,7 +9,7 @@
 | Primary language  | Python 3.10+                                        |
 | Package name      | `opensim_models`                                    |
 | Distribution name | `opensim-models`                                    |
-| Current version   | `1.0.20`                                            |
+| Current version   | `0.1.3`                                            |
 
 ## 2. Purpose
 
@@ -185,4 +185,4 @@ consider:
 
 Until then, `_messages.py` remains a simple Python constants module.
 
-<!-- Updated: 2026-06-14T09:35:00 -->
+<!-- Updated: 2026-06-25T12:00:00 -->
