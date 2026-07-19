@@ -129,6 +129,7 @@ CLI or by direct builder calls and are not treated as maintained source files.
 
 | Date       | Version | Notes                                                                                                                                                                                                                                                        |
 | ---------- | ------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| 2026-07-19 | 1.0.20  | Inlined mathematical expressions like `math.isfinite` to avoid function call overhead, simplified unwieldy sequence unpacking by relying on fast-path tuple equality, and reshaped condition blocks to defer short-circuit checks.                           |
 | 2026-06-14 | 1.0.19  | Cast Matplotlib `rc_context` style dictionaries at the call boundary so CI type checking accepts the intentionally constrained visualization defaults without changing plotting behavior.                                                                    |
 | 2026-06-14 | 1.0.18  | Removed undeclared pytest-asyncio configuration from the strict pytest contract so CI jobs do not fail before collection.                                                                                                                                    |
 | 2026-06-14 | 1.0.17  | Batched XML coordinate updates in `set_coordinate_defaults`, reducing redundant $O(N^2)$ traversal overhead during initial pose setup.                                                                                                                       |
@@ -185,4 +186,4 @@ consider:
 
 Until then, `_messages.py` remains a simple Python constants module.
 
-<!-- Updated: 2026-06-14T09:35:00 -->
+<!-- Updated: 2026-07-19T05:54:00 -->
