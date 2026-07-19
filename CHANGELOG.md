@@ -51,3 +51,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - CI uses pinned action versions with SHA hashes.
 - Bandit security scanning enabled.
 - pip-audit for dependency vulnerability checking.
+
+## [0.1.1] - 2026-06-25
+
+### Changed
+- Replaced `ElementTree.find()` with direct child iteration in `ensure_coordinates_within_bounds` postcondition to avoid ElementPath parsing overhead.

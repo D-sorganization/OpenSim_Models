@@ -186,3 +186,8 @@ consider:
 Until then, `_messages.py` remains a simple Python constants module.
 
 <!-- Updated: 2026-06-14T09:35:00 -->
+
+## 2026-06-25 - [0.1.1]
+
+### Changed
+- Replaced `ElementTree.find()` with direct child iteration in `ensure_coordinates_within_bounds` postcondition to avoid ElementPath parsing overhead.
