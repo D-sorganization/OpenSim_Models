@@ -104,7 +104,7 @@ jobs:
       - name: Security Audit
         timeout-minutes: 5
         run: |
-          pip install pip-audit
+          pip install pip-audit requests
           pip install --upgrade pygments
           # NOTE: Review suppressed CVEs quarterly. See issue #209 for tracking.
           # If any CVE is resolved upstream, remove its --ignore-vuln flag and upgrade the package.
