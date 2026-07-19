@@ -48,15 +48,18 @@ def require_unit_vector(vec: ArrayLike, name: str, tol: float = 1e-6) -> None:
         # Why: Exact type checking avoids the overhead of checking MRO and subclass hierarchies in hot paths.
         # Impact: ~30% faster type checking for basic validation.
         vec_type = type(vec)
-        if vec_type is np.ndarray and vec.shape == (3,):  # type: ignore[attr-defined, union-attr]
-            norm = math.hypot(vec.item(0), vec.item(1), vec.item(2))  # type: ignore[attr-defined, union-attr]
-        elif (vec_type is list or vec_type is tuple) and len(vec) == 3:  # type: ignore[arg-type]
-            norm = math.hypot(vec[0], vec[1], vec[2])  # type: ignore[index, arg-type]
+        if vec_type is list or vec_type is tuple:
+            if len(vec) == 3:  # type: ignore[arg-type]
+                norm = math.hypot(vec[0], vec[1], vec[2])  # type: ignore[index, arg-type]
+            else:
+                raise TypeError  # Fallback to slow path
+        elif vec_type is np.ndarray:
+            if vec.shape == (3,):  # type: ignore[attr-defined, union-attr]
+                norm = math.hypot(vec.item(0), vec.item(1), vec.item(2))  # type: ignore[attr-defined, union-attr]
+            else:
+                raise TypeError  # Fallback to slow path
         else:
-            arr = np.asarray(vec, dtype=float)
-            if arr.shape != (3,):
-                raise ValueError(f"{name} must be a 3-vector, got shape {arr.shape}")
-            norm = math.hypot(arr.item(0), arr.item(1), arr.item(2))
+            raise TypeError  # Fallback to slow path
     except (TypeError, ValueError, IndexError, KeyError) as e:
         arr = np.asarray(vec, dtype=float)
         if arr.shape != (3,):
@@ -199,43 +202,46 @@ def require_shape(arr: ArrayLike, expected: tuple[int, ...], name: str) -> None:
     if arr_type is list or arr_type is tuple:
         sequence = cast(Sequence[object], arr)
         try:
-            if len(expected) == 1:
-                if len(sequence) != expected[0]:
+            # ⚡ Bolt Optimization: Fast path using direct tuple equality.
+            if expected == (3,):
+                if len(sequence) != 3:
                     pass  # Fall through to np.asarray for precise error message
                 else:
                     # ensure strictly 1D (avoid ragged like [1, [2]])
                     # ⚡ Bolt Optimization: Unroll loop for common 3-vector case and avoid 'in' operator overhead.
-                    if expected[0] == 3:
-                        tx0, tx1, tx2 = (
-                            type(sequence[0]),
-                            type(sequence[1]),
-                            type(sequence[2]),
-                        )
-                        if (
-                            (tx0 is float or tx0 is int)
-                            and (tx1 is float or tx1 is int)
-                            and (tx2 is float or tx2 is int)
-                        ) or not (
-                            tx0 is list
-                            or tx0 is tuple
-                            or tx0 is np.ndarray
-                            or tx1 is list
-                            or tx1 is tuple
-                            or tx1 is np.ndarray
-                            or tx2 is list
-                            or tx2 is tuple
-                            or tx2 is np.ndarray
-                        ):
-                            return
-                    else:
-                        valid_1d = True
-                        for x in sequence:
-                            tx = type(x)
-                            if tx is list or tx is tuple or tx is np.ndarray:
-                                valid_1d = False
-                                break
-                        if valid_1d:
-                            return
+                    tx0, tx1, tx2 = (
+                        type(sequence[0]),
+                        type(sequence[1]),
+                        type(sequence[2]),
+                    )
+                    if (
+                        (tx0 is float or tx0 is int)
+                        and (tx1 is float or tx1 is int)
+                        and (tx2 is float or tx2 is int)
+                    ) or not (
+                        tx0 is list
+                        or tx0 is tuple
+                        or tx0 is np.ndarray
+                        or tx1 is list
+                        or tx1 is tuple
+                        or tx1 is np.ndarray
+                        or tx2 is list
+                        or tx2 is tuple
+                        or tx2 is np.ndarray
+                    ):
+                        return
+            elif len(expected) == 1:
+                if len(sequence) != expected[0]:
+                    pass
+                else:
+                    valid_1d = True
+                    for x in sequence:
+                        tx = type(x)
+                        if tx is list or tx is tuple or tx is np.ndarray:
+                            valid_1d = False
+                            break
+                    if valid_1d:
+                        return
         except TypeError:
             pass
 

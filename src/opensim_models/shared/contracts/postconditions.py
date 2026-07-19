@@ -13,11 +13,6 @@ import xml.etree.ElementTree as ET
 logger = logging.getLogger(__name__)
 
 
-def _is_finite_positive(value: float) -> bool:
-    """Return True iff *value* is a finite float strictly > 0."""
-    return math.isfinite(value) and value > 0
-
-
 def ensure_valid_xml(xml_string: str) -> ET.Element:
     """Parse *xml_string* and return the root element.
 
@@ -59,7 +54,7 @@ def ensure_positive_mass(mass: float, body_name: str) -> None:
 
     Rejects NaN and +/-inf as well as non-positive values (issue #151).
     """
-    if not _is_finite_positive(mass):
+    if not (math.isfinite(mass) and mass > 0):
         raise ValueError(
             f"Postcondition violated: {body_name} mass={mass} is not a "
             f"finite positive value"
