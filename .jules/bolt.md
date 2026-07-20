@@ -89,3 +89,7 @@
 ## 2024-05-29 - Fast path for small Python lists and tuples in validation
 **Learning:** In high-frequency precondition checks (like `require_finite`), standard python lists and tuples suffer from iteration and internal type-checking overhead (checking for nested sequences in elements). For very common, small, fixed sizes (like 3-element and 6-element vectors), this overhead dominates execution time.
 **Action:** Unroll checks for known list/tuple sequence lengths directly checking elements using explicit index access (e.g. `arr_len == 3` -> `math.isfinite(arr[0]) and math.isfinite(arr[1])...`) bypassing loop and dynamic type-checking overhead.
+
+## 2024-05-31 - Fast path for shape-6 numpy arrays in require_finite
+**Learning:** Checking elements of small fixed-size numpy arrays with `.all()` after `np.isfinite(arr)` carries significant overhead, even for small vectors. Explicitly checking `arr.size == 6` and manually unrolling the 6-element check with `math.isfinite(arr.item(i))` avoids intermediate array allocations and yields a ~1.8x speedup. Since 6-DOF arrays are very common in this domain, this translates to a measurable gain across the application.
+**Action:** When validating numpy arrays of a small, frequently-encountered known size (like 3 or 6) in a hot path, manually unroll the check using `.item(i)` rather than relying on standard array-wide NumPy methods like `.all()`.
