@@ -105,15 +105,21 @@ class BenchPressModelBuilder(ExerciseModelBuilder):
             location_in_child=(0, 0, 0),
         )
         supine_orient = f"{math.pi / 2:.6f} 0.000000 0.000000"
-        for j in jointset.findall("WeldJoint"):
-            if j.get("name") == "pelvis_to_bench":
-                child_frame = j.find(
-                    "PhysicalOffsetFrame[@name='pelvis_to_bench_child']"
-                )
-                if child_frame is not None:
-                    orient_el = child_frame.find("orientation")
-                    if orient_el is not None:
-                        orient_el.text = supine_orient
+
+        # ⚡ Bolt Optimization: Direct child iteration instead of XPath findall/find
+        # What: Avoid ElementPath parsing overhead for nested lookups
+        # Why: .find() with XPath-like syntax ("PhysicalOffsetFrame[@name=...]") is significantly
+        #      slower than simple nested iteration in hot paths.
+        # Impact: Reduces parsing latency for simple tree queries.
+        for j in jointset:
+            if j.tag == "WeldJoint" and j.get("name") == "pelvis_to_bench":
+                for child in j:
+                    if child.tag == "PhysicalOffsetFrame" and child.get("name") == "pelvis_to_bench_child":
+                        for subchild in child:
+                            if subchild.tag == "orientation":
+                                subchild.text = supine_orient
+                                break
+                        break
                 break
 
     def _add_bench_and_constraint(
