@@ -1,6 +1,6 @@
 [project]
 name = "opensim-models"
-version = "0.1.0"
+version = "0.1.3"
 description = "OpenSim musculoskeletal models for classical barbell exercises"
 readme = "README.md"
 license = { text = "MIT" }

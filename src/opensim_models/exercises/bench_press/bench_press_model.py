@@ -114,7 +114,10 @@ class BenchPressModelBuilder(ExerciseModelBuilder):
         for j in jointset:
             if j.tag == "WeldJoint" and j.get("name") == "pelvis_to_bench":
                 for child in j:
-                    if child.tag == "PhysicalOffsetFrame" and child.get("name") == "pelvis_to_bench_child":
+                    if (
+                        child.tag == "PhysicalOffsetFrame"
+                        and child.get("name") == "pelvis_to_bench_child"
+                    ):
                         for subchild in child:
                             if subchild.tag == "orientation":
                                 subchild.text = supine_orient
