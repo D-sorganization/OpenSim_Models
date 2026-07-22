@@ -9,7 +9,7 @@
 | Primary language  | Python 3.10+                                        |
 | Package name      | `opensim_models`                                    |
 | Distribution name | `opensim-models`                                    |
-| Current version   | `1.0.20`                                            |
+| Current version   | `0.1.3`                                            |
 
 ## 2. Purpose
 
@@ -129,6 +129,7 @@ CLI or by direct builder calls and are not treated as maintained source files.
 
 | Date       | Version | Notes                                                                                                                                                                                                                                                        |
 | ---------- | ------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| 2026-07-08 | 1.0.20  | Optimized `_joints.py` and `_bodies.py` by replacing multiple f-strings with old-style `%` formatting for OpenSim `range` and `inertia` XML elements, reducing model generation string overhead.                                                             |
 | 2026-06-14 | 1.0.19  | Cast Matplotlib `rc_context` style dictionaries at the call boundary so CI type checking accepts the intentionally constrained visualization defaults without changing plotting behavior.                                                                    |
 | 2026-06-14 | 1.0.18  | Removed undeclared pytest-asyncio configuration from the strict pytest contract so CI jobs do not fail before collection.                                                                                                                                    |
 | 2026-06-14 | 1.0.17  | Batched XML coordinate updates in `set_coordinate_defaults`, reducing redundant $O(N^2)$ traversal overhead during initial pose setup.                                                                                                                       |
