@@ -9,7 +9,7 @@
 | Primary language  | Python 3.10+                                        |
 | Package name      | `opensim_models`                                    |
 | Distribution name | `opensim-models`                                    |
-| Current version   | `1.0.20`                                            |
+| Current version   | `0.1.3`                                            |
 
 ## 2. Purpose
 
@@ -136,6 +136,7 @@ CLI or by direct builder calls and are not treated as maintained source files.
 | 2026-05-31 | 1.0.15  | Added fast-paths for diagonal inertia matrices in XML generation to avoid unnecessary string formatting overhead for zero off-diagonal elements.                                                                                                             |
 | 2026-05-28 | 1.0.14  | Replaced `isinstance` with exact type checks (`type(x) is float`) in the scalar fast-path of `require_finite` to avoid MRO overhead, maintaining `isinstance` as a fallback.                                                                                 |
 | 2026-05-25 | 1.0.13  | Optimized `require_finite` validation function in `preconditions.py` using `.all()` and unrolled `math.isfinite` checks, improving performance by up to 7x for hot-path spatial vectors.                                                                     |
+| 2026-06-25 | 1.0.13  | Optimize shallow child lookups in XML `ElementTree` handling by replacing `.find()` with direct child iteration.                                                                                                                                             |
 | 2026-05-23 | 1.0.12  | Replaced inline f-string formatting with a `float_str` helper for scalar XML attributes, speeding up common 0.0 values by ~10x via literal return strings.                                                                                                   |
 | 2026-05-22 | 1.0.11  | Optimized `build` method in `base.py` to bypass redundant XML string parsing, reducing model generation time by ~20%.                                                                                                                                        |
 | 2026-05-20 | 1.0.10  | Optimized validation checking for 3D vectors in `preconditions.py` (`require_shape`) using explicit unrolled loops and `type(...) is ...` to reduce execution time overhead.                                                                                 |
