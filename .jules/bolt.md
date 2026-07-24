@@ -96,3 +96,7 @@
 ## 2026-06-25 - Element.find() overhead in XML Parsing
 **Learning:** In hot paths involving `xml.etree.ElementTree`, calling `Element.find()` incurs significant overhead due to ElementPath regex parsing and execution. For simple shallow child lookups (e.g., finding `default_value` inside a `Coordinate`), direct iteration over the parent element's children is measurably faster (approx 10-15% speedup for single finds, up to 3x faster when extracting multiple fields from the same element).
 **Action:** Replace `Element.find()` with direct child iteration (e.g., `for child in elem: if child.tag == "tag_name":`) for shallow lookups in performance-critical XML construction and validation paths to bypass regex parsing overhead.
+
+## 2026-06-25 - Fail-Fast Validation Execution Order
+**Learning:** Running postcondition validations (like coordinate bounds checking) on the in-memory `ET.Element` tree *after* executing serialization via `serialize_model(root)` (which uses `ET.tostring`) results in unnecessary stringification overhead when validation fails.
+**Action:** Always run postcondition validations directly on the in-memory `ET.Element` tree *before* executing serialization to fail fast and avoid redundant string generation overhead in error paths.

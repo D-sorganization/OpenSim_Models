@@ -270,10 +270,14 @@ class ExerciseModelBuilder(ABC):
         self._add_ground_contact(model)
         self._post_contact_hook(model)
 
-        xml_str = serialize_model(root)
-
-        # Postconditions: well-formed XML and coordinate defaults within bounds
+        # Postconditions: coordinate defaults within bounds
+        # ⚡ Bolt Optimization: Validate before serialization
+        # What: Run ensure_coordinates_within_bounds before serialize_model.
+        # Why: Fail-fast execution avoids redundant string stringification overhead if validation fails.
+        # Impact: Improves performance in error paths by preventing unnecessary XML generation.
         ensure_coordinates_within_bounds(root)
+
+        xml_str = serialize_model(root)
 
         logger.info("%s model built successfully", self.exercise_name)
         return xml_str
