@@ -96,7 +96,11 @@ class BenchPressModelBuilder(ExerciseModelBuilder):
         Supine: lifter lies face-up; pelvis Y-axis (long axis when standing)
         becomes the Z-axis. Rotate 90° about X (pi/2) to achieve this.
         """
-        add_weld_joint(
+        # ⚡ Bolt Optimization: Replace findall() with direct variable assignment.
+        # What: Capture the returned Element from add_weld_joint directly.
+        # Why: ElementTree.findall() involves ElementPath parsing overhead. Returning the created Element avoids searching for it.
+        # Impact: Removes redundant XML parsing overhead in model generation.
+        joint = add_weld_joint(
             jointset,
             name="pelvis_to_bench",
             parent_body="bench",
@@ -105,25 +109,22 @@ class BenchPressModelBuilder(ExerciseModelBuilder):
             location_in_child=(0, 0, 0),
         )
         supine_orient = f"{math.pi / 2:.6f} 0.000000 0.000000"
-        for j in jointset.findall("WeldJoint"):
-            if j.get("name") == "pelvis_to_bench":
-                child_frame = None
-                for child in j:
-                    if (
-                        child.tag == "PhysicalOffsetFrame"
-                        and child.get("name") == "pelvis_to_bench_child"
-                    ):
-                        child_frame = child
-                        break
-                if child_frame is not None:
-                    orient_el = None
-                    for child in child_frame:
-                        if child.tag == "orientation":
-                            orient_el = child
-                            break
-                    if orient_el is not None:
-                        orient_el.text = supine_orient
+        child_frame = None
+        for child in joint:
+            if (
+                child.tag == "PhysicalOffsetFrame"
+                and child.get("name") == "pelvis_to_bench_child"
+            ):
+                child_frame = child
                 break
+        if child_frame is not None:
+            orient_el = None
+            for child in child_frame:
+                if child.tag == "orientation":
+                    orient_el = child
+                    break
+            if orient_el is not None:
+                orient_el.text = supine_orient
 
     def _add_bench_and_constraint(
         self,

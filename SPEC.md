@@ -9,7 +9,7 @@
 | Primary language  | Python 3.10+                                        |
 | Package name      | `opensim_models`                                    |
 | Distribution name | `opensim-models`                                    |
-| Current version   | `0.1.3`                                            |
+| Current version   | `1.0.21`                                            |
 
 ## 2. Purpose
 
@@ -129,7 +129,7 @@ CLI or by direct builder calls and are not treated as maintained source files.
 
 | Date       | Version | Notes                                                                                                                                                                                                                                                        |
 | ---------- | ------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
-| 2026-07-24 | 1.0.21  | Moved `ensure_coordinates_within_bounds` validation before XML serialization to create a fail-fast execution order, preventing redundant stringification overhead. |
+| 2026-07-24 | 1.0.21  | Moved `ensure_coordinates_within_bounds` validation before XML serialization to create a fail-fast execution order and removed redundant `findall` XML parsing overhead in `bench_press_model.py` by directly capturing the returned `ET.Element`.           |
 | 2026-07-08 | 1.0.20  | Optimized `_joints.py` and `_bodies.py` by replacing multiple f-strings with old-style `%` formatting for OpenSim `range` and `inertia` XML elements, reducing model generation string overhead.                                                             |
 | 2026-06-14 | 1.0.19  | Cast Matplotlib `rc_context` style dictionaries at the call boundary so CI type checking accepts the intentionally constrained visualization defaults without changing plotting behavior.                                                                    |
 | 2026-06-14 | 1.0.18  | Removed undeclared pytest-asyncio configuration from the strict pytest contract so CI jobs do not fail before collection.                                                                                                                                    |
