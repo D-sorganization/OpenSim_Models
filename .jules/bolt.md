@@ -96,3 +96,7 @@
 ## 2026-06-25 - Element.find() overhead in XML Parsing
 **Learning:** In hot paths involving `xml.etree.ElementTree`, calling `Element.find()` incurs significant overhead due to ElementPath regex parsing and execution. For simple shallow child lookups (e.g., finding `default_value` inside a `Coordinate`), direct iteration over the parent element's children is measurably faster (approx 10-15% speedup for single finds, up to 3x faster when extracting multiple fields from the same element).
 **Action:** Replace `Element.find()` with direct child iteration (e.g., `for child in elem: if child.tag == "tag_name":`) for shallow lookups in performance-critical XML construction and validation paths to bypass regex parsing overhead.
+
+## 2026-07-24 - Avoiding ElementTree.findall() Overhead for Newly Created Elements
+**Learning:** When generating XML documents, functions that append new elements (like `add_weld_joint`) typically return the created `ET.Element`. Subsequently searching the entire parent tree using `ElementTree.findall()` to locate the very element just created incurs unnecessary ElementPath parsing and tree traversal overhead. By capturing the returned element directly, this overhead is bypassed entirely.
+**Action:** When creating new XML elements via helper functions, always capture and use the returned `ET.Element` object directly instead of searching the parent tree using `.find()` or `.findall()`.
