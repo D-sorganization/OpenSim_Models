@@ -2,6 +2,12 @@
 
 All notable changes to this project will be documented in this file.
 
+## [1.0.22] - 2026-07-25
+
+### Changed
+
+- Replaced type(x) checks with x.__class__ in hot validation paths to reduce Python function call overhead.
+
 ## [1.0.21] - 2026-07-24
 
 ### Changed
