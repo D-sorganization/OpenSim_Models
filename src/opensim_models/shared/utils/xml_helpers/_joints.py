@@ -22,15 +22,35 @@ def _add_joint_frames(
     orientation_in_child: tuple[float, float, float],
 ) -> None:
     """Append parent and child PhysicalOffsetFrame elements to a joint."""
+    # ⚡ Bolt Optimization: Fast-path tuple equality before function calls.
+    # What: Use CPython's highly efficient tuple equality check `== (0.0, 0.0, 0.0)` to bypass `vec3_str` function call overhead.
+    # Why: Zero vectors are extremely common for orientations and translations. Avoiding the function call provides a measurable speedup.
+    # Impact: Reduces overhead in the heavily used `_add_joint_frames` function.
     pf = ET.SubElement(joint, "PhysicalOffsetFrame", name=f"{name}_parent")
     ET.SubElement(pf, "socket_parent").text = f"/bodyset/{parent_body}"
-    ET.SubElement(pf, "translation").text = vec3_str(*location_in_parent)
-    ET.SubElement(pf, "orientation").text = vec3_str(*orientation_in_parent)
+    ET.SubElement(pf, "translation").text = (
+        "0.000000 0.000000 0.000000"
+        if location_in_parent == (0.0, 0.0, 0.0)
+        else vec3_str(*location_in_parent)
+    )
+    ET.SubElement(pf, "orientation").text = (
+        "0.000000 0.000000 0.000000"
+        if orientation_in_parent == (0.0, 0.0, 0.0)
+        else vec3_str(*orientation_in_parent)
+    )
 
     cf = ET.SubElement(joint, "PhysicalOffsetFrame", name=f"{name}_child")
     ET.SubElement(cf, "socket_parent").text = f"/bodyset/{child_body}"
-    ET.SubElement(cf, "translation").text = vec3_str(*location_in_child)
-    ET.SubElement(cf, "orientation").text = vec3_str(*orientation_in_child)
+    ET.SubElement(cf, "translation").text = (
+        "0.000000 0.000000 0.000000"
+        if location_in_child == (0.0, 0.0, 0.0)
+        else vec3_str(*location_in_child)
+    )
+    ET.SubElement(cf, "orientation").text = (
+        "0.000000 0.000000 0.000000"
+        if orientation_in_child == (0.0, 0.0, 0.0)
+        else vec3_str(*orientation_in_child)
+    )
 
     ET.SubElement(joint, "socket_parent_frame").text = f"{name}_parent"
     ET.SubElement(joint, "socket_child_frame").text = f"{name}_child"
