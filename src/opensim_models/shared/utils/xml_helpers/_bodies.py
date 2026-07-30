@@ -44,13 +44,9 @@ def add_body(
         # What: Replace f"{float_str(...)} ..." with "%.6f ..." % (...)
         # Why: In hot paths, old-style % formatting is significantly faster than f-strings.
         # Impact: Reduces XML string formatting overhead for inertia elements.
-        ET.SubElement(body, "inertia").text = "%.6f %.6f %.6f %.6f %.6f %.6f" % (  # noqa: UP031
-            inertia_xx,
-            inertia_yy,
-            inertia_zz,
-            inertia_xy,
-            inertia_xz,
-            inertia_yz,
+        ET.SubElement(body, "inertia").text = (
+            f"{inertia_xx:.6f} {inertia_yy:.6f} {inertia_zz:.6f} "
+            f"{inertia_xy:.6f} {inertia_xz:.6f} {inertia_yz:.6f}"
         )
 
     return body
