@@ -144,3 +144,8 @@
 
 **Learning:** In high-frequency validation hot paths (like `require_finite` and `require_shape`), exact type checking using the `__class__` property (e.g., `x.__class__ is float`) avoids the function call overhead of `type(x)` and is measurably faster (~35% faster). This provides maximum performance for routing logic based on standard Python types.
 **Action:** When performing exact type checks in performance-critical execution paths (especially in validation preconditions), use the `__class__` property and the `is` operator rather than the `type()` function.
+
+## 2026-08-01 - Tuple Equality for Zero Vector Fast Paths
+
+**Learning:** In high-frequency functions like `_add_joint_frames`, applying CPython's highly efficient tuple equality check (e.g., `location == (0.0, 0.0, 0.0)`) before falling back to helper formatting functions (like `vec3_str`) bypasses the function call overhead completely for the common zero vector cases. Zero vectors are overwhelmingly common for location and orientation, and avoiding the function call provides a measurable reduction in XML string formatting time.
+**Action:** When conditionally evaluating vector formats in heavily executed formatting functions, use native tuple equality in an inline expression (`"0.0...0" if val == (0.0, ...) else func(val)`) instead of relying solely on the function's internal fast path, saving thousands of function call frame creations.

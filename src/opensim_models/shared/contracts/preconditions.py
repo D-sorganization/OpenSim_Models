@@ -179,7 +179,9 @@ def require_in_range(value: float, low: float, high: float, name: str) -> None:
         raise ValueError(f"{name} must be in [{low}, {high}], got {value}")
 
 
-def require_shape(arr: ArrayLike, expected: tuple[int, ...], name: str) -> None:  # noqa: C901
+def require_shape(  # noqa: C901
+    arr: ArrayLike, expected: tuple[int, ...], name: str
+) -> None:
     """Require *arr* to have the given shape."""
     # ⚡ Bolt Optimization: Fast path for shape checking without array conversion.
     # What: Avoid np.asarray for existing arrays.
