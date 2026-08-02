@@ -149,3 +149,7 @@
 
 **Learning:** In high-frequency functions like `_add_joint_frames`, applying CPython's highly efficient tuple equality check (e.g., `location == (0.0, 0.0, 0.0)`) before falling back to helper formatting functions (like `vec3_str`) bypasses the function call overhead completely for the common zero vector cases. Zero vectors are overwhelmingly common for location and orientation, and avoiding the function call provides a measurable reduction in XML string formatting time.
 **Action:** When conditionally evaluating vector formats in heavily executed formatting functions, use native tuple equality in an inline expression (`"0.0...0" if val == (0.0, ...) else func(val)`) instead of relying solely on the function's internal fast path, saving thousands of function call frame creations.
+## 2026-08-02 - Reusing Zero Vector Fast Paths in Joint Creation
+
+**Learning:** When abstracting XML element creation (like parent/child frames in OpenSim joints), inline duplicated code might accidentally bypass carefully tuned fast-paths. In this case, `add_pin_joint` manually duplicated the element generation logic found in `_add_joint_frames`, completely bypassing the extremely efficient `tuple == (0.0, 0.0, 0.0)` fast-path for zero vectors.
+**Action:** Always ensure high-frequency operations that share the exact same structural pattern use the centralized helper function where performance optimizations (like tuple equality checks or pre-formatted string literals) have already been applied, ensuring the benefits propagate to all users of that pattern.
