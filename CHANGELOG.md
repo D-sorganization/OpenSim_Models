@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file.
 
+## [1.0.24] - 2026-08-02
+
+### Changed
+
+- Performance: Refactored `add_pin_joint` to reuse `_add_joint_frames`, utilizing zero-vector tuple equality fast-path for XML attribute string formatting.
+
+
 ## [1.0.22] - 2026-07-25
 
 ### Changed
