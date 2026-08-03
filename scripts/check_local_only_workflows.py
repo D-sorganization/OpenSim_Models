@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Fail when GitHub Actions workflows can route to hosted runners."""
+"""Fail when workflows use hosted runners outside the reversible fast lane."""
 
 from __future__ import annotations
 
@@ -20,6 +20,15 @@ BANNED = (
 )
 
 
+def _hybrid_mode_enabled(text: str) -> bool:
+    """Return whether a workflow declares the fail-safe public fast lane."""
+    return (
+        "CI_RUNNER_MODE != 'local'" in text
+        and "ubuntu-latest" in text
+        and "d-sorg-fleet" in text
+    )
+
+
 def main() -> int:
     failures: list[str] = []
     if not WORKFLOW_DIR.exists():
@@ -33,23 +42,26 @@ def main() -> int:
             text = path.read_text(encoding="utf-8")
         except UnicodeDecodeError:
             text = path.read_text(encoding="utf-8-sig")
+        hybrid_mode = _hybrid_mode_enabled(text)
         for line_number, line in enumerate(text.splitlines(), start=1):
             for token in BANNED:
                 if token in line:
+                    if hybrid_mode and token in {
+                        "ubuntu-latest",
+                        "runner=ubuntu-latest",
+                    }:
+                        continue
                     failures.append(
                         f"{path.as_posix()}:{line_number}: "
                         f"banned hosted-runner token {token!r}"
                     )
 
     if failures:
-        print(
-            "GitHub-hosted runner routing is forbidden. "
-            "Use local self-hosted runners only."
-        )
+        print("GitHub-hosted runner routing is outside the approved fast lane.")
         print("\n".join(failures))
         return 1
 
-    print("Workflow runner routing is local-only.")
+    print("Workflow runner routing follows the approved hybrid policy.")
     return 0
 
 

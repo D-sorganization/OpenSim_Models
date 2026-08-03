@@ -76,4 +76,35 @@ def test_guard_workflow_can_route_to_fleet(
     )
 
     assert policy_module.main() == 0
-    assert "Workflow runner routing is local-only." in capsys.readouterr().out
+    assert "approved hybrid policy" in capsys.readouterr().out
+
+
+def test_guard_allows_fail_safe_reversible_hosted_expression(
+    tmp_path: Path,
+    monkeypatch: pytest.MonkeyPatch,
+    policy_module,
+) -> None:
+    monkeypatch.chdir(tmp_path)
+    write_workflow(
+        tmp_path,
+        ".github/workflows/ci-standard.yml",
+        "${{ !github.event.repository.private && vars.CI_RUNNER_MODE != 'local' && 'ubuntu-latest' || 'd-sorg-fleet' }}",
+    )
+
+    assert policy_module.main() == 0
+
+
+def test_repository_ci_picker_is_zero_polling_and_heavy_rust_stays_local() -> None:
+    import yaml  # noqa: PLC0415
+
+    root = Path(__file__).resolve().parents[1]
+    workflow = yaml.safe_load(
+        (root / ".github/workflows/ci-standard.yml").read_text(encoding="utf-8")
+    )
+    jobs = workflow["jobs"]
+    scripts = "\n".join(step.get("run", "") for step in jobs["pick-runner"]["steps"])
+
+    assert "CI_RUNNER_MODE != 'local'" in jobs["pick-runner"]["runs-on"]
+    assert "gh api" not in scripts
+    assert jobs["tests"]["strategy"]["max-parallel"] == 3
+    assert "d-sorg-fleet" in jobs["rust-gate"]["runs-on"]
