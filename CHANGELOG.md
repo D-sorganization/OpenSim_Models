@@ -2,6 +2,12 @@
 
 All notable changes to this project will be documented in this file.
 
+## [1.0.25] - 2026-08-03
+
+### Changed
+
+- Performance: Optimized XML joint generation string concatenation and removed duplicated elements in `add_pin_joint`.
+
 ## [1.0.24] - 2026-08-02
 
 ### Changed
