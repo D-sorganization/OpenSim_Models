@@ -266,7 +266,8 @@ jobs:
           echo "$RUNNER_TEMP/ci-venv/bin" >> "$GITHUB_PATH"
 
       - name: Install Dependencies
-        run: pip install -e ".[dev]"
+        run: |
+          for i in 1 2 3; do pip install -e ".[dev]" && break || sleep 5; done
 
       - name: Run Test Suite
         run: |
@@ -341,7 +342,8 @@ jobs:
           done
           echo "No Python3 found on PATH" && exit 1
       - name: Install package
-        run: pip install -e ".[dev]"
+        run: |
+          for i in 1 2 3; do pip install -e ".[dev]" && break || sleep 5; done
       - name: opensim-models console script is installed
         run: |
           which opensim-models
