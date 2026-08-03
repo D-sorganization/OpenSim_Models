@@ -129,6 +129,7 @@ CLI or by direct builder calls and are not treated as maintained source files.
 
 | Date       | Version | Notes                                                                                                                                                                                                                                                        |
 | ---------- | ------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| 2026-08-03 | 1.0.25 | Optimized XML joint generation string concatenation and removed duplicated elements in `add_pin_joint` |
 | 2026-08-02 | 1.0.24 | Refactored `add_pin_joint` to use `_add_joint_frames` fast-paths |
 | 2026-08-01 | 1.0.23  | Optimized XML tuple validation strings in `_joints.py` by applying an inline tuple equality check (`== (0.0, 0.0, 0.0)`) before falling back to `vec3_str`, thereby bypassing the function call overhead for common zero-vectors entirely.                   |
 | 2026-07-24 | 1.0.22  | Moved `ensure_coordinates_within_bounds` validation before XML serialization to create a fail-fast execution order and removed redundant `findall` XML parsing overhead in `bench_press_model.py` by directly capturing the returned `ET.Element`.           |

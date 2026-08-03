@@ -1,0 +1,6 @@
+<<<<<<< SEARCH
+| 2026-08-02 | 1.0.24 | Refactored `add_pin_joint` to use `_add_joint_frames` fast-paths |
+=======
+| 2026-08-03 | 1.0.25 | Optimized XML joint generation string concatenation and removed duplicated elements in `add_pin_joint` |
+| 2026-08-02 | 1.0.24 | Refactored `add_pin_joint` to use `_add_joint_frames` fast-paths |
+>>>>>>> REPLACE
