@@ -102,14 +102,14 @@ XML structure. The test suite checks generated XML directly.
 
 ## 7. Testing And CI
 
-| Area              | Current contract                                                                                                                                                          |
-| ----------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| Test runner       | `pytest`                                                                                                                                                                  |
-| Coverage target   | `>= 80%`                                                                                                                                                                  |
-| Linting           | `ruff`                                                                                                                                                                    |
-| Type checking     | `mypy`                                                                                                                                                                    |
-| Test organization | `tests/unit`, `tests/integration`, `tests/parity`                                                                                                                         |
-| Runner policy     | `.github/workflows/local-only-runner-guard.yml` runs `scripts/check_local_only_workflows.py` on `d-sorg-fleet` and fails if any workflow routes to GitHub-hosted runners. |
+| Area              | Current contract                                                                                                                                             |
+| ----------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| Test runner       | `pytest`                                                                                                                                                     |
+| Coverage target   | `>= 80%`                                                                                                                                                     |
+| Linting           | `ruff`                                                                                                                                                       |
+| Type checking     | `mypy`                                                                                                                                                       |
+| Test organization | `tests/unit`, `tests/integration`, `tests/parity`                                                                                                            |
+| Runner policy     | Lightweight public CI defaults to GitHub-hosted Linux and returns to `d-sorg-fleet` with `CI_RUNNER_MODE=local`; private repositories and Rust remain local. |
 
 Key test expectations:
 
@@ -129,11 +129,12 @@ CLI or by direct builder calls and are not treated as maintained source files.
 
 | Date       | Version | Notes                                                                                                                                                                                                                                                        |
 | ---------- | ------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
-| 2026-08-02 | 1.0.24 | Refactored `add_pin_joint` to use `_add_joint_frames` fast-paths |
+| 2026-08-02 | 1.0.24  | Refactored `add_pin_joint` to use `_add_joint_frames` fast-paths                                                                                                                                                                                             |
 | 2026-08-01 | 1.0.23  | Optimized XML tuple validation strings in `_joints.py` by applying an inline tuple equality check (`== (0.0, 0.0, 0.0)`) before falling back to `vec3_str`, thereby bypassing the function call overhead for common zero-vectors entirely.                   |
 | 2026-07-24 | 1.0.22  | Moved `ensure_coordinates_within_bounds` validation before XML serialization to create a fail-fast execution order and removed redundant `findall` XML parsing overhead in `bench_press_model.py` by directly capturing the returned `ET.Element`.           |
 | 2026-07-08 | 1.0.20  | Optimized `_joints.py` and `_bodies.py` by replacing multiple f-strings with old-style `%` formatting for OpenSim `range` and `inertia` XML elements, reducing model generation string overhead.                                                             |
 | 2026-06-14 | 1.0.19  | Cast Matplotlib `rc_context` style dictionaries at the call boundary so CI type checking accepts the intentionally constrained visualization defaults without changing plotting behavior.                                                                    |
+| 2026-08-03 | 1.0.20  | Added a zero-polling reversible hosted fast lane for lightweight public CI while keeping Rust work on the local fleet.                                                                                                                                       |
 | 2026-06-14 | 1.0.18  | Removed undeclared pytest-asyncio configuration from the strict pytest contract so CI jobs do not fail before collection.                                                                                                                                    |
 | 2026-06-14 | 1.0.17  | Batched XML coordinate updates in `set_coordinate_defaults`, reducing redundant $O(N^2)$ traversal overhead during initial pose setup.                                                                                                                       |
 | 2026-06-02 | 1.0.16  | Optimized precondition check hot-paths (`require_shape`, `require_finite`, `require_unit_vector`) by utilizing `arr.item()` for fast scalar retrieval from numpy arrays and replacing negative exclusion lists with positive exact type-checking inclusions. |
