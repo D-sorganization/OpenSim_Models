@@ -191,7 +191,7 @@ jobs:
             rustup default stable
           elif ! command -v cargo >/dev/null 2>&1; then
             echo "Installing rustup..."
-            curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh -s -- -y --profile minimal --default-toolchain stable
+            for i in {1..5}; do curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh -s -- -y --profile minimal --default-toolchain stable && break || sleep 5; done
             source $HOME/.cargo/env
           fi
           # Ensure cargo is on PATH if just installed
