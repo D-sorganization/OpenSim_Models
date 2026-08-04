@@ -153,3 +153,7 @@
 
 **Learning:** When abstracting XML element creation (like parent/child frames in OpenSim joints), inline duplicated code might accidentally bypass carefully tuned fast-paths. In this case, `add_pin_joint` manually duplicated the element generation logic found in `_add_joint_frames`, completely bypassing the extremely efficient `tuple == (0.0, 0.0, 0.0)` fast-path for zero vectors.
 **Action:** Always ensure high-frequency operations that share the exact same structural pattern use the centralized helper function where performance optimizations (like tuple equality checks or pre-formatted string literals) have already been applied, ensuring the benefits propagate to all users of that pattern.
+## 2026-08-04 - XML Element Creation Duplication
+
+**Learning:** When refactoring element creation logic into helper functions (like `_add_joint_frames` doing the work of creating `socket_parent_frame` and `socket_child_frame`), it is easy to accidentally leave the original creation logic in the caller function (like `add_pin_joint`). This results in generating duplicate XML tags and wastes execution cycles on redundant ElementTree API calls and string interpolation overhead.
+**Action:** Always verify that newly extracted helper functions correctly replace all of the logic in the calling functions to avoid duplicate side effects (especially in XML generation or DOM manipulation).

@@ -2,6 +2,12 @@
 
 All notable changes to this project will be documented in this file.
 
+## [1.0.25] - 2026-08-04
+
+### Changed
+
+- Performance: Removed redundant XML element creation in `add_pin_joint` to save XML tree building overhead.
+
 ## [1.0.24] - 2026-08-02
 
 ### Changed
