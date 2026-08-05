@@ -106,9 +106,6 @@ def add_pin_joint(
         orientation_in_child,
     )
 
-    ET.SubElement(joint, "socket_parent_frame").text = f"{name}_parent"
-    ET.SubElement(joint, "socket_child_frame").text = f"{name}_child"
-
     # Coordinate
     coords = ET.SubElement(joint, "coordinates")
     coord = ET.SubElement(coords, "Coordinate", name=coord_name)
