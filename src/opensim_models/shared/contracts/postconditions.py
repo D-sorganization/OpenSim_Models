@@ -37,17 +37,16 @@ def ensure_coordinates_within_bounds(root: ET.Element) -> None:
 
     Raises ValueError if any default is out of range (with 1e-6 tolerance).
     """
+    # ⚡ Bolt Optimization: Use .find() for fast C-level child lookups.
+    # What: Replace manual Python loop over element children with `.find()`.
+    # Why: ElementTree's `.find()` is implemented in C and is significantly faster than
+    #      iterating over children and matching tags in Python.
+    # Impact: Reduces XML traversal overhead during postcondition checks.
     tol = 1e-6
     for coord in root.iter("Coordinate"):
         name = coord.get("name", "<unnamed>")
-        dv_el = rng_el = None
-        for child in coord:
-            if child.tag == "default_value":
-                dv_el = child
-            elif child.tag == "range":
-                rng_el = child
-            if dv_el is not None and rng_el is not None:
-                break
+        dv_el = coord.find("default_value")
+        rng_el = coord.find("range")
         if dv_el is None or rng_el is None:
             continue
         default = float(dv_el.text)  # type: ignore[arg-type]
