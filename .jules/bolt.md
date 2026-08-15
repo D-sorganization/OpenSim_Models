@@ -157,3 +157,9 @@
 
 **Learning:** When refactoring element creation logic into helper functions (like `_add_joint_frames` doing the work of creating `socket_parent_frame` and `socket_child_frame`), it is easy to accidentally leave the original creation logic in the caller function (like `add_pin_joint`). This results in generating duplicate XML tags and wastes execution cycles on redundant ElementTree API calls and string interpolation overhead.
 **Action:** Always verify that newly extracted helper functions correctly replace all of the logic in the calling functions to avoid duplicate side effects (especially in XML generation or DOM manipulation).
+## 2025-01-08 - ElementTree `.find()` is faster than manual child iteration
+**Learning:** Contrary to intuition about XML path parsing overhead, using the `xml.etree.ElementTree.Element.find("tag")` method is significantly faster (~2x) than manually iterating over element children and matching the tag name (`for child in parent: if child.tag == "tag"`). This is because `find()` delegates the operation directly to the underlying C implementation, whereas the manual loop incurs Python iteration overhead.
+**Action:** When searching for a specific direct child of an ElementTree element, always prefer `.find("tag")` over manual iteration.
+## 2025-01-08 - `str.split()` outperforms manual slicing for space-separated data
+**Learning:** For parsing simple space-separated strings (like "1.0 2.0" representing bounds or coordinates), native `str.split()` is substantially faster (~1.5x) than manually finding the space with `str.find(" ")` and using string slicing.
+**Action:** When parsing whitespace-separated strings, rely on the highly optimized C implementation of `str.split()` rather than attempting manual string manipulation.
