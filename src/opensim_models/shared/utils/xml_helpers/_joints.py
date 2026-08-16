@@ -274,11 +274,10 @@ def set_coordinate_default(jointset: ET.Element, coord_name: str, value: float) 
     """
     for coord in jointset.iter("Coordinate"):
         if coord.get("name") == coord_name:
-            # ⚡ Bolt Optimization: Direct iteration over find()
-            for child in coord:
-                if child.tag == "default_value":
-                    child.text = float_str(value)
-                    break
+            # ⚡ Bolt Optimization: Use .find() for fast C-level child lookups.
+            child = coord.find("default_value")
+            if child is not None:
+                child.text = float_str(value)
             return
     raise ValueError(f"Coordinate {coord_name!r} not found in jointset")
 
@@ -303,11 +302,10 @@ def set_coordinate_defaults(jointset: ET.Element, defaults: dict[str, float]) ->
     for coord in jointset.iter("Coordinate"):
         name = coord.get("name")
         if name in defaults:
-            # ⚡ Bolt Optimization: Direct iteration over find()
-            for child in coord:
-                if child.tag == "default_value":
-                    child.text = float_str(defaults[name])  # type: ignore
-                    break
+            # ⚡ Bolt Optimization: Use .find() for fast C-level child lookups.
+            child = coord.find("default_value")
+            if child is not None:
+                child.text = float_str(defaults[name])  # type: ignore
             found_count += 1
             if found_count == target_count:
                 break

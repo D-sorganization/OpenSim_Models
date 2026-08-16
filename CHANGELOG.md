@@ -2,6 +2,12 @@
 
 All notable changes to this project will be documented in this file.
 
+## [1.0.26] - 2026-08-16
+
+### Changed
+
+- Performance: Replaced manual ElementTree child iteration with faster `.find()` method in `contact_helpers.py` and `_joints.py` to optimize XML model generation.
+
 ## [1.0.25] - 2026-08-04
 
 ### Changed
