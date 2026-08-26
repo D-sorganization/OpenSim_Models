@@ -163,3 +163,8 @@
 ## 2025-01-08 - `str.split()` outperforms manual slicing for space-separated data
 **Learning:** For parsing simple space-separated strings (like "1.0 2.0" representing bounds or coordinates), native `str.split()` is substantially faster (~1.5x) than manually finding the space with `str.find(" ")` and using string slicing.
 **Action:** When parsing whitespace-separated strings, rely on the highly optimized C implementation of `str.split()` rather than attempting manual string manipulation.
+
+## 2026-08-05 - Array Ambiguity with Tuple Equality
+
+**Learning:** When adding tuple equality fast-paths (like `location == (0.0, 0.0, 0.0)`) in mathematical Python applications (e.g., OpenSim XML generation), passing a NumPy array as the argument will cause the equality check to return an array of booleans. When Python evaluates this boolean array in an `if` statement context, NumPy throws `ValueError: The truth value of an array with more than one element is ambiguous`.
+**Action:** When implementing tuple equality fast-paths for variables that could potentially be NumPy arrays, always explicitly type-check the input as a tuple first (e.g., `if type(location) is tuple and location == (0.0, 0.0, 0.0)`) to ensure the fast path correctly short-circuits without triggering the NumPy broadcasting error.

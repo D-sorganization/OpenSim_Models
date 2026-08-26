@@ -40,8 +40,16 @@ def add_contact_half_space(
     ET.SubElement(geom, "socket_frame").text = (
         f"/bodyset/{body}" if body != "ground" else "/ground"
     )
-    ET.SubElement(geom, "location").text = vec3_str(*location)
-    ET.SubElement(geom, "orientation").text = vec3_str(*orientation)
+    ET.SubElement(geom, "location").text = (
+        "0.000000 0.000000 0.000000"
+        if type(location) is tuple and location == (0.0, 0.0, 0.0)
+        else vec3_str(*location)
+    )
+    ET.SubElement(geom, "orientation").text = (
+        "0.000000 0.000000 0.000000"
+        if type(orientation) is tuple and orientation == (0.0, 0.0, 0.0)
+        else vec3_str(*orientation)
+    )
     return geom
 
 
@@ -68,7 +76,11 @@ def add_contact_sphere(
         cg_set = ET.SubElement(model, "ContactGeometrySet")
     geom = ET.SubElement(cg_set, "ContactSphere", name=name)
     ET.SubElement(geom, "socket_frame").text = f"/bodyset/{body}"
-    ET.SubElement(geom, "location").text = vec3_str(*location)
+    ET.SubElement(geom, "location").text = (
+        "0.000000 0.000000 0.000000"
+        if type(location) is tuple and location == (0.0, 0.0, 0.0)
+        else vec3_str(*location)
+    )
     ET.SubElement(geom, "radius").text = float_str(radius)
     return geom
 
