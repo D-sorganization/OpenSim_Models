@@ -23,7 +23,15 @@ def add_body(
     """Append a <Body> element to *bodyset* and return it."""
     body = ET.SubElement(bodyset, "Body", name=name)
     ET.SubElement(body, "mass").text = float_str(mass)
-    ET.SubElement(body, "mass_center").text = vec3_str(*mass_center)
+    # ⚡ Bolt Optimization: Fast-path tuple equality before function calls.
+    # What: Use CPython's highly efficient tuple equality check `== (0.0, 0.0, 0.0)` to bypass `vec3_str` function call overhead.
+    # Why: Zero vectors are extremely common for mass centers. Avoiding the function call provides a measurable speedup.
+    # Impact: Reduces overhead in the heavily used `add_body` function.
+    ET.SubElement(body, "mass_center").text = (
+        "0.000000 0.000000 0.000000"
+        if type(mass_center) is tuple and mass_center == (0.0, 0.0, 0.0)
+        else vec3_str(*mass_center)
+    )
 
     # ⚡ Bolt Optimization: Fast-path for diagonal inertia matrices.
     # What: Check if cross terms are zero and use f-strings with pre-formatted zeros.
