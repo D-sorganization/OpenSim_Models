@@ -228,6 +228,48 @@ def require_shape(  # noqa: C901
                         or tx2 is np.ndarray
                     ):
                         return
+            elif expected == (6,):
+                if len(sequence) != 6:
+                    pass  # Fall through to np.asarray for precise error message
+                else:
+                    # ensure strictly 1D (avoid ragged like [1, [2]])
+                    # ⚡ Bolt Optimization: Unroll loop for common 6-vector case and avoid 'in' operator overhead.
+                    tx0, tx1, tx2, tx3, tx4, tx5 = (
+                        sequence[0].__class__,
+                        sequence[1].__class__,
+                        sequence[2].__class__,
+                        sequence[3].__class__,
+                        sequence[4].__class__,
+                        sequence[5].__class__,
+                    )
+                    if (
+                        (tx0 is float or tx0 is int)
+                        and (tx1 is float or tx1 is int)
+                        and (tx2 is float or tx2 is int)
+                        and (tx3 is float or tx3 is int)
+                        and (tx4 is float or tx4 is int)
+                        and (tx5 is float or tx5 is int)
+                    ) or not (
+                        tx0 is list
+                        or tx0 is tuple
+                        or tx0 is np.ndarray
+                        or tx1 is list
+                        or tx1 is tuple
+                        or tx1 is np.ndarray
+                        or tx2 is list
+                        or tx2 is tuple
+                        or tx2 is np.ndarray
+                        or tx3 is list
+                        or tx3 is tuple
+                        or tx3 is np.ndarray
+                        or tx4 is list
+                        or tx4 is tuple
+                        or tx4 is np.ndarray
+                        or tx5 is list
+                        or tx5 is tuple
+                        or tx5 is np.ndarray
+                    ):
+                        return
             elif len(expected) == 1:
                 if len(sequence) != expected[0]:
                     pass  # Fall through to np.asarray for precise error message

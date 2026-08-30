@@ -168,3 +168,7 @@
 
 **Learning:** When adding tuple equality fast-paths (like `location == (0.0, 0.0, 0.0)`) in mathematical Python applications (e.g., OpenSim XML generation), passing a NumPy array as the argument will cause the equality check to return an array of booleans. When Python evaluates this boolean array in an `if` statement context, NumPy throws `ValueError: The truth value of an array with more than one element is ambiguous`.
 **Action:** When implementing tuple equality fast-paths for variables that could potentially be NumPy arrays, always explicitly type-check the input as a tuple first (e.g., `if type(location) is tuple and location == (0.0, 0.0, 0.0)`) to ensure the fast path correctly short-circuits without triggering the NumPy broadcasting error.
+## 2026-08-30 - Require Shape 6-Vector Unrolling
+
+**Learning:** When validating sequences in hot paths (like `require_shape` verifying coordinates or orientations), unrolling the validation logic for common specific lengths (like 6-vectors) to directly check `__class__` avoids inner loop and iterator allocation overhead, mirroring the benefits of 3-vector unrolling.
+**Action:** Extend explicit fast-paths for highly common collection sizes (like length 6 for spatial parameters) by manually unrolling their element validation logic instead of falling back to dynamic loops.

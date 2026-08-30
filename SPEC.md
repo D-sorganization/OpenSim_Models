@@ -9,7 +9,7 @@
 | Primary language  | Python 3.10+                                        |
 | Package name      | `opensim_models`                                    |
 | Distribution name | `opensim-models`                                    |
-| Current version   | `1.0.26`                                            |
+| Current version   | `1.0.27`                                            |
 
 ## 2. Purpose
 
@@ -129,6 +129,7 @@ CLI or by direct builder calls and are not treated as maintained source files.
 
 | Date       | Version | Notes                                                                                                                                                                                                                                                                        |
 | ---------- | ------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| 2026-08-30 | 1.0.27  | Added fast-path for 6-vectors in `require_shape` by unrolling the shape checking for `expected == (6,)` lists/tuples.                                                                                                                                                      |
 | 2026-08-26 | 1.0.26  | Added tuple equality short-circuiting fast-paths (`type(val) is tuple and val == (0.0, 0.0, 0.0)`) across XML element generation helpers for joints, bodies, and contact geometries to bypass `vec3_str` call overhead without triggering NumPy array truth-value ambiguity. |
 | 2026-08-02 | 1.0.24  | Refactored `add_pin_joint` to use `_add_joint_frames` fast-paths                                                                                                                                                                                                             |
 | 2026-08-01 | 1.0.23  | Optimized XML tuple validation strings in `_joints.py` by applying an inline tuple equality check (`== (0.0, 0.0, 0.0)`) before falling back to `vec3_str`, thereby bypassing the function call overhead for common zero-vectors entirely.                                   |
