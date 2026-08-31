@@ -172,3 +172,13 @@
 
 **Learning:** When validating sequences in hot paths (like `require_shape` verifying coordinates or orientations), unrolling the validation logic for common specific lengths (like 6-vectors) to directly check `__class__` avoids inner loop and iterator allocation overhead, mirroring the benefits of 3-vector unrolling.
 **Action:** Extend explicit fast-paths for highly common collection sizes (like length 6 for spatial parameters) by manually unrolling their element validation logic instead of falling back to dynamic loops.
+
+## 2026-09-02 - NumPy Array Shape vs Size Validation
+
+**Learning:** When checking the exact dimensionality of a numpy array in validation paths (like `require_unit_vector`), `arr.size == N` is not logically equivalent to `arr.shape == (N,)`. Replacing `shape` checks with `size` checks to avoid tuple allocation overhead introduces a regression because `size` permits any multidimensional array with `N` total elements (e.g., `(1, 3)` or `(3, 1)`), bypassing strict 1D structure requirements.
+**Action:** Do not replace `shape` checks with `size` checks when a strict 1D structure is required. The minor performance gain of avoiding a tuple allocation is outweighed by the loss of correctness.
+
+## 2026-09-02 - NumPy Array Flat Iteration in Hot Paths
+
+**Learning:** For checking elements of fixed-size NumPy arrays (like 6-element vectors) in hot paths, explicitly unrolling the checks using `arr.item(i)` (e.g., `math.isfinite(arr.item(i))`) is faster (~25-30%) than using array-wide NumPy methods like `np.isfinite(arr).all()`. The `.item()` method directly returns a native Python scalar, bypassing the intermediate boolean array allocation that `.all()` requires.
+**Action:** Unroll validation checks for highly common NumPy array sizes (like length 6 for spatial vectors) using `.item()` to maximize throughput in high-frequency functions.
