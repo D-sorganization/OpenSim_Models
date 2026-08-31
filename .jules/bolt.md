@@ -176,3 +176,7 @@
 ## 2026-08-31 - ElementPath Parsing Overhead vs Simple Find
 **Learning:** While `ET.Element.find('tag')` is significantly faster (~2x) than manual child iteration for simple tag lookups, using XPath-like syntax with attributes (e.g., `.find("tag[@name='val']")`) invokes the `ElementPath` regex parsing engine. This overhead makes attribute-based `.find()` queries drastically slower (~10x slower) than manual Python child iteration for simple lists. However, for deep nested searches, `ElementPath` might still win out on ease of use or very large trees.
 **Action:** For simple child lookups by tag name, always use `.find('tag')`. For simple child lookups by attribute, use native python manual iteration over the children and avoid the XPath `.find()` syntax in hot paths.
+
+## 2026-08-31 - CI TMPDIR Space Exhaustion
+**Learning:** The self-hosted CI runners can sometimes exhaust space in `/tmp`, causing commands that implicitly rely on it (like `mktemp -d` during the `rustup` install script) to fail with `os error 28`.
+**Action:** When a CI workflow fails due to `/tmp` being full, configure a local temporary directory by running `mkdir -p $HOME/tmp && export TMPDIR=$HOME/tmp` before executing the problematic commands.
