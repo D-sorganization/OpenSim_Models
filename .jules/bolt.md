@@ -172,3 +172,7 @@
 
 **Learning:** When validating sequences in hot paths (like `require_shape` verifying coordinates or orientations), unrolling the validation logic for common specific lengths (like 6-vectors) to directly check `__class__` avoids inner loop and iterator allocation overhead, mirroring the benefits of 3-vector unrolling.
 **Action:** Extend explicit fast-paths for highly common collection sizes (like length 6 for spatial parameters) by manually unrolling their element validation logic instead of falling back to dynamic loops.
+
+## 2026-08-31 - ElementPath Parsing Overhead vs Simple Find
+**Learning:** While `ET.Element.find('tag')` is significantly faster (~2x) than manual child iteration for simple tag lookups, using XPath-like syntax with attributes (e.g., `.find("tag[@name='val']")`) invokes the `ElementPath` regex parsing engine. This overhead makes attribute-based `.find()` queries drastically slower (~10x slower) than manual Python child iteration for simple lists. However, for deep nested searches, `ElementPath` might still win out on ease of use or very large trees.
+**Action:** For simple child lookups by tag name, always use `.find('tag')`. For simple child lookups by attribute, use native python manual iteration over the children and avoid the XPath `.find()` syntax in hot paths.
