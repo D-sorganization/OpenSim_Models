@@ -2,6 +2,12 @@
 
 All notable changes to this project will be documented in this file.
 
+## [1.0.27] - 2026-08-31
+
+### Changed
+
+- Performance: Unrolled finiteness checks for 6-element numpy arrays in `require_finite` to bypass array allocation overhead.
+
 ## [1.0.26] - 2026-08-16
 
 ### Changed
