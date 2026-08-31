@@ -118,11 +118,11 @@ class BenchPressModelBuilder(ExerciseModelBuilder):
                 child_frame = child
                 break
         if child_frame is not None:
-            orient_el = None
-            for child in child_frame:
-                if child.tag == "orientation":
-                    orient_el = child
-                    break
+            # ⚡ Bolt Optimization: Use .find() for fast C-level child lookups.
+            # What: Replace manual Python loop over element children with `.find()`.
+            # Why: ElementTree's `.find()` is implemented in C and is significantly faster than manual Python loop.
+            # Impact: Speeds up XML model generation by avoiding Python iteration overhead.
+            orient_el = child_frame.find("orientation")
             if orient_el is not None:
                 orient_el.text = supine_orient
 
