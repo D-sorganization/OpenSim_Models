@@ -31,6 +31,8 @@ with open("squat.osim", "w") as f:
 
 ## Architecture
 
+See [docs/architecture/C4.md](docs/architecture/C4.md) for the authoritative Mermaid C4 architecture map and feature-to-component traceability matrix.
+
 - **`shared/`** — Reusable components (DRY)
   - `barbell/` — Olympic barbell model (IWF/IPF spec)
   - `body/` — Full-body musculoskeletal model (Winter 2009 anthropometrics)
