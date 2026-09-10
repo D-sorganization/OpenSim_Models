@@ -102,6 +102,7 @@ disallow_untyped_defs = true
 
 [tool.pytest.ini_options]
 testpaths = ["tests"]
+pythonpath = ["src", "."]
 addopts = "-ra -q --strict-markers --strict-config --durations=20 -m \"not slow and not live_simulation and not e2e and not requires_network and not heavy\""
 markers = [
     "unit: Pure logic, highly isolated, execution in < 100ms",
