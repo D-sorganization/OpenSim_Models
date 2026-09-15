@@ -196,3 +196,4 @@ Until then, `_messages.py` remains a simple Python constants module.
 
 <!-- Updated: 2026-06-14T09:35:00 -->
 - 2026-09-14: Downgraded non-existent workflow action versions to @v4/@v5 across workflows (#348).
+- 2026-09-14: Removed invalid pip cache from redundant closer workflows (#350).
