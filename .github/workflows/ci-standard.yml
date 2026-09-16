@@ -145,16 +145,6 @@ jobs:
 
     needs: pick-runner
 
-  quality-gate-compat:
-    name: quality-gate
-    needs:
-      - pick-runner
-      - quality-gate
-    runs-on: ${{ needs.pick-runner.outputs.runner }}
-    timeout-minutes: 5
-    steps:
-      - run: echo "Compatibility context for branch ruleset."
-
   rust-gate:
     name: Rust Gate
     needs:
@@ -306,16 +296,6 @@ jobs:
           name: coverage-${{ matrix.python }}
           path: coverage.xml
 
-  tests-311-compat:
-    name: tests (3.11)
-    needs:
-      - pick-runner
-      - tests
-    runs-on: ${{ needs.pick-runner.outputs.runner }}
-    timeout-minutes: 5
-    steps:
-      - run: echo "Compatibility context for branch ruleset."
-
   model-pack-smoke:
     name: Model-Pack API Smoke (UpstreamDrift #5179)
     needs:
@@ -401,3 +381,60 @@ jobs:
         with:
           name: model-pack-osim
           path: artifacts/osim/*.osim
+
+  # Posts the `tests (3.11)` context. `if: always()` is load-bearing: the old
+  # echo-only shim needed `tests` without it, so a red matrix *skipped* the
+  # context and GitHub treats a skipped required check as passing.
+  tests-311-compat:
+    name: tests (3.11)
+    needs: [pick-runner, tests]
+    if: always()
+    runs-on: ${{ needs.pick-runner.outputs.runner }}
+    timeout-minutes: 5
+    steps:
+      - name: Require the Python test matrix to pass
+        shell: bash
+        env:
+          RESULT_TESTS: ${{ needs.tests.result }}
+        run: |
+          echo "tests: $RESULT_TESTS"
+          if [ "$RESULT_TESTS" != "success" ]; then
+            echo "::error::tests reported '$RESULT_TESTS', expected 'success'."
+            exit 1
+          fi
+
+  # Required branch-protection context for `main` (org ruleset
+  # Repository_Protections requires exactly this name). Aggregates the
+  # Quality Gate (lint/format/mypy), the Rust gate AND the Python test matrix
+  # so a red test run blocks merge. Before 2026-09-15 this was an echo-only
+  # shim that needed `quality-gate` without `if: always()`, so any failure
+  # skipped it - and a skipped required check counts as passing.
+  quality-gate-compat:
+    name: quality-gate
+    needs: [pick-runner, quality-gate, rust-gate, tests]
+    if: always()
+    runs-on: ${{ needs.pick-runner.outputs.runner }}
+    timeout-minutes: 5
+    steps:
+      - name: Require every gated job to succeed
+        shell: bash
+        env:
+          RESULT_QUALITY_GATE: ${{ needs.quality-gate.result }}
+          RESULT_RUST_GATE: ${{ needs.rust-gate.result }}
+          RESULT_TESTS: ${{ needs.tests.result }}
+        run: |
+          failed=0
+          for pair in "quality-gate=$RESULT_QUALITY_GATE" "rust-gate=$RESULT_RUST_GATE" "tests=$RESULT_TESTS"; do
+            job="${pair%%=*}"
+            result="${pair#*=}"
+            echo "$job: $result"
+            if [ "$result" != "success" ]; then
+              echo "::error::$job reported '$result', expected 'success'."
+              failed=1
+            fi
+          done
+          if [ "$failed" -ne 0 ]; then
+            echo "::error::quality-gate: one or more gated jobs did not succeed."
+            exit 1
+          fi
+          echo "quality-gate: all gated jobs succeeded."
