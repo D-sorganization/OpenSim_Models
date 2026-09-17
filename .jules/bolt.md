@@ -180,3 +180,17 @@
 ## 2026-08-31 - CI TMPDIR Space Exhaustion
 **Learning:** The self-hosted CI runners can sometimes exhaust space in `/tmp`, causing commands that implicitly rely on it (like `mktemp -d` during the `rustup` install script) to fail with `os error 28`.
 **Action:** When a CI workflow fails due to `/tmp` being full, configure a local temporary directory by running `mkdir -p $HOME/tmp && export TMPDIR=$HOME/tmp` before executing the problematic commands.
+## 2026-09-17 - Precondition Type Evaluation Order
+
+**Learning:** When validating input types in extremely hot paths (like `require_shape` checks during XML model generation), the order of `if type(x) is...` branches has a measurable impact. While `numpy.ndarray` checks were listed first, `tuple` and `list` inputs are overwhelmingly more common in this codebase due to default parameter definitions. Checking `tuple` and `list` first reduces the average number of condition evaluations per call.
+**Action:** Always order type-checking branches based on statistical frequency in the codebase, checking the most common expected types (like tuples for small vectors) before less common types (like numpy arrays).
+
+## 2026-09-17 - Unit Vector Validation via Squared Magnitude
+
+**Learning:** In the `require_unit_vector` hot path, validating the norm using `math.hypot()` involves an expensive underlying square root calculation. Since the goal is only to ensure the norm is within a small tolerance of 1.0 (e.g., `abs(norm - 1.0) <= tol`), squaring both sides roughly yields `abs(norm^2 - 1.0) <= 2*tol` for small tolerances. Calculating squared magnitude via simple multiplication (`x*x + y*y + z*z`) and comparing against `2 * tol` avoids the square root overhead entirely, proving faster than `math.hypot`.
+**Action:** When validating unit vectors (or fixed magnitudes), prefer comparing the squared components against a squared tolerance bound rather than computing the true Euclidean norm, avoiding expensive `math.sqrt` or `math.hypot` operations.
+
+## 2026-09-17 - Success-First Short-Circuiting in Preconditions
+
+**Learning:** For extremely common scalar validations like `require_positive` and `require_non_negative`, evaluating separate failure conditions (`if not math.isfinite(x)` followed by `if x <= 0`) forces the Python interpreter to execute multiple bytecode jumps for the >99% valid path. Combining the valid criteria into a single success condition (`if value > 0 and math.isfinite(value): return`) and placing it first allows the function to short-circuit faster.
+**Action:** In simple scalar precondition checks, implement a fast path that checks the combined success condition and returns immediately before falling back to granular error generation branches.
