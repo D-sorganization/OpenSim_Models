@@ -2,6 +2,12 @@
 
 All notable changes to this project will be documented in this file.
 
+## [1.0.30] - 2026-09-17
+
+### Changed
+
+- Performance: Optimized `preconditions.py` fast-paths by reordering type checks, prioritizing success-case short circuits, and replacing `math.hypot()` with squared magnitude comparisons.
+
 ## [1.0.27] - 2026-08-31
 
 ### Changed
