@@ -65,7 +65,7 @@ def require_unit_vector(vec: ArrayLike, name: str, tol: float = 1e-6) -> None:
             norm_sq = x * x + y * y + z * z
         elif (vec_type is list or vec_type is tuple) and len(vec) == 3:  # type: ignore[arg-type]
             x, y, z = vec[0], vec[1], vec[2]  # type: ignore[index, arg-type]
-            norm_sq = x * x + y * y + z * z
+            norm_sq = x * x + y * y + z * z  # type: ignore[operator]
         else:
             arr = np.asarray(vec, dtype=float)
             if arr.shape != (3,):
