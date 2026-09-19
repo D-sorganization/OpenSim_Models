@@ -9,7 +9,7 @@
 | Primary language  | Python 3.10+                                        |
 | Package name      | `opensim_models`                                    |
 | Distribution name | `opensim-models`                                    |
-| Current version   | `1.0.27`                                            |
+| Current version   | `1.0.31`                                            |
 
 ## 2. Purpose
 
@@ -129,6 +129,7 @@ CLI or by direct builder calls and are not treated as maintained source files.
 
 | Date       | Version | Notes                                                                                                                                                                                                                                                                        |
 | ---------- | ------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| 2026-09-19 | #388 | Optimized `require_unit_vector` to calculate squared magnitude instead of `math.hypot()` to avoid square root overhead. |
 | 2026-09-17 | 1.0.30  | Optimized `preconditions.py` fast-paths by reordering type checks, prioritizing success-case short circuits, and replacing `math.hypot()` with squared magnitude comparisons. | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | 2026-09-10 | 1.0.29  | Adopted Mermaid C4 architecture-map contract in `docs/architecture/C4.md` with C4Context, C4Container, and Feature Map, validated by `scripts/architecture_map_contract.py` and enforced in CI (issue #1606).                                                           |
 | 2026-08-31 | 1.0.28  | Replaced manual Python for loop with ElementTree's `.find()` method in bench press model to avoid Python iteration overhead and speed up XML generation.                                                                                                                   |
