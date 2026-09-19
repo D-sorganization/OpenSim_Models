@@ -2,6 +2,12 @@
 
 All notable changes to this project will be documented in this file.
 
+## [1.0.31] - 2026-09-19
+
+### Changed
+
+- Performance: Optimized `require_unit_vector` to calculate squared magnitude instead of `math.hypot()` to avoid square root overhead.
+
 ## [1.0.30] - 2026-09-17
 
 ### Changed
