@@ -30,7 +30,8 @@ def _add_joint_frames(
     ET.SubElement(pf, "socket_parent").text = f"/bodyset/{parent_body}"
     ET.SubElement(pf, "translation").text = (
         "0.000000 0.000000 0.000000"
-        if location_in_parent.__class__ is tuple and location_in_parent == (0.0, 0.0, 0.0)
+        if location_in_parent.__class__ is tuple
+        and location_in_parent == (0.0, 0.0, 0.0)
         else vec3_str(*location_in_parent)
     )
     ET.SubElement(pf, "orientation").text = (
