@@ -29,7 +29,7 @@ def add_body(
     # Impact: Reduces overhead in the heavily used `add_body` function.
     ET.SubElement(body, "mass_center").text = (
         "0.000000 0.000000 0.000000"
-        if type(mass_center) is tuple and mass_center == (0.0, 0.0, 0.0)
+        if mass_center.__class__ is tuple and mass_center == (0.0, 0.0, 0.0)
         else vec3_str(*mass_center)
     )
 
