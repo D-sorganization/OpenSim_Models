@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file.
 
+## [1.0.32] - 2026-09-23
+
+### Changed
+
+- Performance: Optimized tuple type checking in XML generation fast paths (`_joints.py` and `_bodies.py`) using CPython `__class__` attribute instead of `type()` for measurable speedups.
+
+
 ## [1.0.31] - 2026-09-19
 
 ### Changed
