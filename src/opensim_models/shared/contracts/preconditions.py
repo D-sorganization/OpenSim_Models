@@ -93,7 +93,7 @@ def require_finite(arr: ArrayLike, name: str) -> None:  # noqa: C901
     # Why: require_finite is called thousands of times during model generation. Exact type checking is significantly faster than isinstance().
     # Impact: Reduces scalar require_finite validation time by ~45-50%.
     arr_type = arr.__class__
-    if arr_type is float or arr_type is int or isinstance(arr, (float, int)):
+    if arr_type is float or arr_type is int:
         if not math.isfinite(cast(float, arr)):
             raise ValueError(f"{name} contains non-finite values")
         return
@@ -102,7 +102,7 @@ def require_finite(arr: ArrayLike, name: str) -> None:  # noqa: C901
     # What: Iterate through lists and tuples to check for finiteness manually
     # Why: np.asarray adds significant overhead for standard python types
     # Impact: ~10x faster for standard python lists and tuples
-    if arr.__class__ is list or arr.__class__ is tuple:
+    if arr_type is list or arr_type is tuple:
         try:
             arr_len = len(arr)
             if arr_len == 3:
@@ -148,6 +148,11 @@ def require_finite(arr: ArrayLike, name: str) -> None:  # noqa: C901
             return
         except TypeError:
             pass  # fallthrough for objects that cant be checked by math.isfinite easily
+    elif isinstance(arr, (float, int)):
+        # Fallback for numpy scalar types like np.float64
+        if not math.isfinite(cast(float, arr)):
+            raise ValueError(f"{name} contains non-finite values")
+        return
 
     # ⚡ Bolt Optimization: Fast path for numpy arrays avoiding np.asarray overhead
     # What: Unroll math.isfinite check for common shape-3 arrays and use arr.all() instead of np.all() for larger arrays.
