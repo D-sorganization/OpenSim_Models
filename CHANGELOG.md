@@ -2,6 +2,11 @@
 
 All notable changes to this project will be documented in this file.
 
+## [1.0.33] - 2026-10-05
+
+### Changed
+- Performance optimization in `require_finite` type checking to avoid `isinstance` overhead for `list` and `tuple` inputs.
+
 ## [1.0.32] - 2026-09-23
 
 ### Changed

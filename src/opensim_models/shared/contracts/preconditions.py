@@ -104,46 +104,47 @@ def require_finite(arr: ArrayLike, name: str) -> None:  # noqa: C901
     # Impact: ~10x faster for standard python lists and tuples
     if arr_type is list or arr_type is tuple:
         try:
-            arr_len = len(arr)
+            sequence = cast(Sequence[object], arr)
+            arr_len = len(sequence)
             if arr_len == 3:
                 # ⚡ Bolt Optimization: Fast path for flat 3-element lists/tuples
                 if (
-                    (arr[0].__class__ is float or arr[0].__class__ is int)
-                    and (arr[1].__class__ is float or arr[1].__class__ is int)
-                    and (arr[2].__class__ is float or arr[2].__class__ is int)
+                    (sequence[0].__class__ is float or sequence[0].__class__ is int)
+                    and (sequence[1].__class__ is float or sequence[1].__class__ is int)
+                    and (sequence[2].__class__ is float or sequence[2].__class__ is int)
                 ):
                     if not (
-                        math.isfinite(arr[0])
-                        and math.isfinite(arr[1])
-                        and math.isfinite(arr[2])
+                        math.isfinite(sequence[0])  # type: ignore[arg-type]
+                        and math.isfinite(sequence[1])  # type: ignore[arg-type]
+                        and math.isfinite(sequence[2])  # type: ignore[arg-type]
                     ):
                         raise ValueError(f"{name} contains non-finite values")
                     return
             elif arr_len == 6 and (
                 # ⚡ Bolt Optimization: Fast path for flat 6-element lists/tuples
-                (arr[0].__class__ is float or arr[0].__class__ is int)
-                and (arr[1].__class__ is float or arr[1].__class__ is int)
-                and (arr[2].__class__ is float or arr[2].__class__ is int)
-                and (arr[3].__class__ is float or arr[3].__class__ is int)
-                and (arr[4].__class__ is float or arr[4].__class__ is int)
-                and (arr[5].__class__ is float or arr[5].__class__ is int)
+                (sequence[0].__class__ is float or sequence[0].__class__ is int)
+                and (sequence[1].__class__ is float or sequence[1].__class__ is int)
+                and (sequence[2].__class__ is float or sequence[2].__class__ is int)
+                and (sequence[3].__class__ is float or sequence[3].__class__ is int)
+                and (sequence[4].__class__ is float or sequence[4].__class__ is int)
+                and (sequence[5].__class__ is float or sequence[5].__class__ is int)
             ):
                 if not (
-                    math.isfinite(arr[0])
-                    and math.isfinite(arr[1])
-                    and math.isfinite(arr[2])
-                    and math.isfinite(arr[3])
-                    and math.isfinite(arr[4])
-                    and math.isfinite(arr[5])
+                    math.isfinite(sequence[0])  # type: ignore[arg-type]
+                    and math.isfinite(sequence[1])  # type: ignore[arg-type]
+                    and math.isfinite(sequence[2])  # type: ignore[arg-type]
+                    and math.isfinite(sequence[3])  # type: ignore[arg-type]
+                    and math.isfinite(sequence[4])  # type: ignore[arg-type]
+                    and math.isfinite(sequence[5])  # type: ignore[arg-type]
                 ):
                     raise ValueError(f"{name} contains non-finite values")
                 return
-            for x in arr:
+            for x in sequence:
                 if x.__class__ is list or x.__class__ is tuple:
-                    for y in x:
-                        if not math.isfinite(y):
+                    for y in cast(Sequence[object], x):
+                        if not math.isfinite(y):  # type: ignore[arg-type]
                             raise ValueError(f"{name} contains non-finite values")
-                elif not math.isfinite(x):
+                elif not math.isfinite(x):  # type: ignore[arg-type]
                     raise ValueError(f"{name} contains non-finite values")
             return
         except TypeError:
