@@ -2,6 +2,12 @@
 
 All notable changes to this project will be documented in this file.
 
+## [1.0.34] - 2026-09-27
+
+### Changed
+- Performance optimization: Inlined zero-value scalar formatting in XML helpers to avoid `float_str` function call overhead.
+
+
 ## [1.0.33] - 2026-10-05
 
 ### Changed

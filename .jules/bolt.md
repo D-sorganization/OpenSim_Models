@@ -198,8 +198,3 @@
 
 **Learning:** When validating sequences and scalars together in high-frequency hot paths (like `require_finite`), checking `isinstance(arr, (float, int))` to catch numpy scalar types adds severe overhead. If this check is placed before or alongside exact class checks (`arr_type is list or arr_type is tuple`), it slows down the validation of common python collections. Moving the slow `isinstance` check to an `elif` block *after* the exact `list` and `tuple` checks avoids executing it entirely for sequences.
 **Action:** When validating mixed scalar and sequence types in hot paths, place exact class checks for common sequence types (like `list` and `tuple`) *before* any `isinstance` fallbacks used for scalar subclasses (like `np.float64`). This prevents the slow `isinstance` check from executing unnecessarily on standard collections, significantly reducing overhead.
-
-## 2026-10-06 - Inline string formatting vs function calls for scalar properties
-
-**Learning:** When setting simple scalar properties like XML element text (e.g. `Coordinate` default values), wrapping the formatting logic in a helper function like `float_str(value)` introduces measurable overhead in hot loops. By directly inlining the fast-path check for `0.0` and the `%` string formatting (`"0.000000" if v == 0.0 else "%.6f" % v`) directly at the call site, we save thousands of function call frame allocations during XML serialization, resulting in a ~3% performance improvement globally on model generation.
-**Action:** When repeatedly setting simple scalar strings in heavily executed paths, avoid wrapping the basic formatting logic inside a helper function if a simple literal check and old-style formatting can be inlined safely.
