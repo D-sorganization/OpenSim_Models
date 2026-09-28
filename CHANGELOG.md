@@ -2,6 +2,12 @@
 
 All notable changes to this project will be documented in this file.
 
+## [1.0.34] - 2026-10-06
+
+### Changed
+- Performance: Inlined `float_str` logic in `_joints.py` to bypass python function call overhead for XML coordinate generation.
+
+
 ## [1.0.33] - 2026-10-05
 
 ### Changed
