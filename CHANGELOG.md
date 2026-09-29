@@ -2,6 +2,11 @@
 
 All notable changes to this project will be documented in this file.
 
+## [1.0.34] - 2026-10-06
+
+### Changed
+- Performance optimization: Inlined string formatting fast paths in `_joints.py` to avoid frame allocation overhead for scalar variables.
+
 ## [1.0.33] - 2026-10-05
 
 ### Changed
