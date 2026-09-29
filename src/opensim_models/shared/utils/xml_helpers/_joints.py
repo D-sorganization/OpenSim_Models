@@ -6,7 +6,6 @@ import xml.etree.ElementTree as ET
 
 from opensim_models.shared.utils.xml_helpers._formatting import (
     ZERO_VEC3,
-    float_str,
     vec3_str,
 )
 
@@ -67,8 +66,9 @@ def _add_coordinate_set(
     coord_set = ET.SubElement(joint, "coordinates")
     for c in coordinates:
         coord = ET.SubElement(coord_set, "Coordinate", name=str(c["name"]))
-        ET.SubElement(coord, "default_value").text = float_str(
-            float(c["default_value"])
+        v = float(c["default_value"])
+        ET.SubElement(coord, "default_value").text = (
+            "0.000000" if v == 0.0 else "%.6f" % v  # noqa: UP031
         )
         # ⚡ Bolt Optimization: Use % formatting instead of f-strings.
         # What: Replace f"{float_str(min)} {float_str(max)}" with "%.6f %.6f" % (min, max)
@@ -112,7 +112,9 @@ def add_pin_joint(
     # Coordinate
     coords = ET.SubElement(joint, "coordinates")
     coord = ET.SubElement(coords, "Coordinate", name=coord_name)
-    ET.SubElement(coord, "default_value").text = float_str(default_value)
+    ET.SubElement(coord, "default_value").text = (
+        "0.000000" if default_value == 0.0 else "%.6f" % default_value  # noqa: UP031
+    )
     # ⚡ Bolt Optimization: Use % formatting instead of f-strings.
     ET.SubElement(coord, "range").text = "%.6f %.6f" % (  # noqa: UP031
         range_min,
@@ -280,7 +282,7 @@ def set_coordinate_default(jointset: ET.Element, coord_name: str, value: float) 
             # ⚡ Bolt Optimization: Use .find() for fast C-level child lookups.
             child = coord.find("default_value")
             if child is not None:
-                child.text = float_str(value)
+                child.text = "0.000000" if value == 0.0 else "%.6f" % value  # noqa: UP031
             return
     raise ValueError(f"Coordinate {coord_name!r} not found in jointset")
 
@@ -308,7 +310,8 @@ def set_coordinate_defaults(jointset: ET.Element, defaults: dict[str, float]) ->
             # ⚡ Bolt Optimization: Use .find() for fast C-level child lookups.
             child = coord.find("default_value")
             if child is not None:
-                child.text = float_str(defaults[name])  # type: ignore
+                val = defaults[name]
+                child.text = "0.000000" if val == 0.0 else "%.6f" % val  # noqa: UP031
             found_count += 1
             if found_count == target_count:
                 break
