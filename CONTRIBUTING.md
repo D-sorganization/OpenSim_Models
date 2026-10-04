@@ -45,7 +45,7 @@ mypy src --config-file pyproject.toml
 - Keep PRs focused on a single concern.
 - Include tests for new functionality.
 - All CI checks must pass before merge.
-- Use descriptive commit messages explaining *why*, not just *what*.
+- Use descriptive commit messages explaining _why_, not just _what_.
 - Reference related GitHub issues in the PR description.
 
 ## Code Style
@@ -67,6 +67,13 @@ mypy src --config-file pyproject.toml
 ## Reporting Issues
 
 Use GitHub Issues with a clear title and description. Include:
+
 - Steps to reproduce (if a bug).
 - Expected vs. actual behavior.
 - Python version and OS.
+
+## Merging
+
+Pull requests merge through the GitHub merge queue. Arm auto-merge (squash) and the
+queue rebuilds the PR on the latest `main`, runs the required checks once more, and
+merges it. There is no need to update a PR branch by hand before merging.
