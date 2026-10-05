@@ -3,7 +3,10 @@
   "divergences": {
     "root_joint": {
       "issue": "#378",
-      "reason": "bench_press welds the pelvis to the bench (WeldJoint) so the pelvis has no 6-DOF floating root; the standard expects a free root for every exercise. Other exercises are free."
+      "reason": "bench_press welds the pelvis to the bench (WeldJoint) so the pelvis has no 6-DOF floating root; the standard expects a free root for every exercise. Other exercises are free.",
+      "exercises": [
+        "bench_press"
+      ]
     }
   }
 }

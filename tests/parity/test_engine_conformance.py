@@ -68,16 +68,17 @@ def test_fingerprint_has_no_unexpected_divergence(exercise: str) -> None:
     fp = fingerprint(exercise)
     assert fp["loaded_in_engine"], fp["load_error"]
     divs = conformance.check_fingerprint(fp, STD)
-    unexpected, _ = conformance.reconcile(divs, conformance.load_ledger(LEDGER))
+    ledger = conformance.load_ledger(LEDGER)
+    unexpected, _ = conformance.reconcile(divs, ledger, exercise=exercise)
     assert not unexpected, [(d.key, d.expected, d.measured) for d in unexpected]
 
 
 @needs_opensim
 def test_divergence_ledger_has_no_stale_entries() -> None:
-    divs = []
-    for exercise in EXERCISES:
-        divs += conformance.check_fingerprint(fingerprint(exercise), STD)
-    _, stale = conformance.reconcile(divs, conformance.load_ledger(LEDGER))
+    by_exercise = {
+        ex: conformance.check_fingerprint(fingerprint(ex), STD) for ex in EXERCISES
+    }
+    _, stale = conformance.reconcile_all(by_exercise, conformance.load_ledger(LEDGER))
     assert not stale, stale
 
 
