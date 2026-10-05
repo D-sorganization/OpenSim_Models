@@ -125,10 +125,31 @@ Key test expectations:
 The repo is source-first. Generated `.osim` files are produced on demand by the
 CLI or by direct builder calls and are not treated as maintained source files.
 
+## Engine Parity Contract
+
+Cross-engine parameters come from the fleet parity standard vendored at
+`src/opensim_models/shared/parity/_canonical/` (`biomech_parity_standard.json`,
+`conformance.py`, `assemble.py`, `MANIFEST.json`). The canonical source is
+`Repository_Management/shared_scripts/model_parity/`; vendored files are never
+edited here and `tests/parity/` verifies their hashes against `MANIFEST.json`.
+
+- `shared/parity/standard.py` and the body segment table are computed from the
+  bundle; no constants are duplicated.
+- `shared/parity/fingerprint.py` loads every exercise's generated .osim model in
+  the real opensim engine and reports a `model-fingerprint/v1`
+  (`python -m opensim_models.shared.parity.fingerprint --all --out DIR`).
+- `tests/parity/test_engine_conformance.py` runs in default CI with the engine
+  installed and fails on any divergence from the standard that is not listed,
+  with an issue reference, in `shared/parity/parity_divergences.json`. Ledger
+  entries that no longer diverge fail as stale, so the ledger only shrinks.
+- `model_pack.yaml` declares honest `capabilities` levels (`none`, `partial`,
+  `full`); `full` requires a public API and a real-engine test as evidence.
+
 ## 9. Change Log
 
 | Date       | Version | Notes                                                                                                                                                                                                                                                                        |
 | ---------- | ------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| 2026-10-05 | #378 | Generated .osim now loads in OpenSim 4.6 (set <objects> wrappers, six-axis CustomJoints, SmoothSphereHalfSpaceForce contact, right-hand grip as WeldConstraint, Y-up foot spheres); real-engine parity conformance against the fleet standard. |
 | 2026-09-29 | #371    | Inlined `float_str` scalar formatting in `_joints.py` to eliminate function call overhead during XML coordinate generation.                                                                                                                                                  |
 | 2026-09-19 | #388    | Optimized `require_unit_vector` to calculate squared magnitude instead of `math.hypot()` to avoid square root overhead.                                                                                                                                                      |
 | 2026-09-17 | 1.0.30  | Optimized `preconditions.py` fast-paths by reordering type checks, prioritizing success-case short circuits, and replacing `math.hypot()` with squared magnitude comparisons.                                                                                                |
