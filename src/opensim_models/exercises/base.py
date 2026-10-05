@@ -27,6 +27,7 @@ from opensim_models.shared.body import (
     add_foot_contact_spheres,
     create_full_body,
 )
+from opensim_models.shared.body.ground_placement import standing_pelvis_height
 from opensim_models.shared.contracts.postconditions import (
     ensure_coordinates_within_bounds,
 )
@@ -38,6 +39,7 @@ from opensim_models.shared.utils.contact_helpers import (
 from opensim_models.shared.utils.xml_helpers import (
     add_weld_joint,
     serialize_model,
+    set_coordinate_default,
     set_coordinate_defaults,
 )
 
@@ -190,6 +192,10 @@ class ExerciseModelBuilder(ABC):
         """
         return False
 
+    def _initial_pelvis_height(self, model: ET.Element) -> float:
+        """Default ``pelvis_ty``: lowest foot sphere touches y = 0 (#381)."""
+        return standing_pelvis_height(model)
+
     def _post_contact_hook(  # noqa: B027 -- intentional no-op hook, not a missing abstract
         self, model: ET.Element
     ) -> None:
@@ -279,6 +285,10 @@ class ExerciseModelBuilder(ABC):
         # Ground contact geometry and forces, plus subclass hook
         self._add_ground_contact(model)
         self._post_contact_hook(model)
+        if not self._skip_ground_joint():
+            set_coordinate_default(
+                jointset, "pelvis_ty", self._initial_pelvis_height(model)
+            )
 
         # Postconditions: coordinate defaults within bounds
         # ⚡ Bolt Optimization: Validate before serialization

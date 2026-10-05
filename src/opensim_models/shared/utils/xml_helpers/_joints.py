@@ -238,7 +238,8 @@ def add_free_joint(
     # Coordinate order of a FreeJoint is rx, ry, rz, tx, ty, tz.
     coords = ET.SubElement(joint, "coordinates")
     for suffix in ("rx", "ry", "rz", "tx", "ty", "tz"):
-        ET.SubElement(coords, "Coordinate", name=f"{child_body}_{suffix}")
+        coord = ET.SubElement(coords, "Coordinate", name=f"{child_body}_{suffix}")
+        ET.SubElement(coord, "default_value").text = "0.000000"
     return joint
 
 
