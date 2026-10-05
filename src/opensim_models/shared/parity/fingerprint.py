@@ -1,22 +1,14 @@
-"""Engine fingerprint: load a generated exercise model in real OpenSim.
+"""OpenSim engine adapter for the fleet ``model-fingerprint/v1`` standard.
 
-Implements the ``model-fingerprint/v1`` schema of the fleet parity standard.
-Every value is read from the model as OpenSim loaded it, never from this
-package's Python constants.
+Loads a generated exercise model in real OpenSim and measures raw engine-native
+quantities; assembly, frame rotation and the CLI live in the vendored bundle.
 
-CLI::
-
-    python -m opensim_models.shared.parity.fingerprint --exercise squat
     python -m opensim_models.shared.parity.fingerprint --all --out DIR
 """
 
 from __future__ import annotations
 
-import argparse
-import json
 import logging
-import math
-import sys
 import tempfile
 from pathlib import Path
 from typing import Any
@@ -24,7 +16,7 @@ from typing import Any
 from opensim_models.exercises import EXERCISE_BUILDERS
 from opensim_models.model_pack import list_exercises, manifest
 from opensim_models.optimization.exercise_objectives import EXERCISE_OBJECTIVES
-from opensim_models.shared.parity._canonical import conformance
+from opensim_models.shared.parity._canonical import assemble, conformance
 
 logger = logging.getLogger(__name__)
 
@@ -46,14 +38,6 @@ SEGMENT_ALIASES: dict[str, str] = {}
 _FOOT_FORCE = "force_foot_l_heel_medial"
 
 
-def _canonical_segment(body: str) -> str:
-    return SEGMENT_ALIASES.get(body, body)
-
-
-def _canonical_coordinate(coord: str) -> str:
-    return COORDINATE_ALIASES.get(coord, coord)
-
-
 def _pelvis_root_joint(model: Any) -> str:
     """Return "free" if the pelvis hangs from a 6-DOF joint, else "fixed"."""
     joints = model.getJointSet()
@@ -62,58 +46,6 @@ def _pelvis_root_joint(model: Any) -> str:
         if joint.getChildFrame().findBaseFrame().getName() == "pelvis":
             return "free" if joint.numCoordinates() == 6 else "fixed"
     return "fixed"
-
-
-def _read_segments(model: Any, std: dict[str, Any]) -> dict[str, dict[str, float]]:
-    wanted = set(conformance.expected_segments(std))
-    bodies = model.getBodySet()
-    out: dict[str, dict[str, float]] = {}
-    for i in range(bodies.getSize()):
-        body = bodies.get(i)
-        name = _canonical_segment(body.getName())
-        if name in wanted:
-            out[name] = {"mass_kg": float(body.getMass())}
-    return out
-
-
-def _read_coordinates(model: Any, std: dict[str, Any]) -> dict[str, dict[str, Any]]:
-    wanted = set(conformance.expected_coordinates(std))
-    coords = model.getCoordinateSet()
-    out: dict[str, dict[str, Any]] = {}
-    for i in range(coords.getSize()):
-        coord = coords.get(i)
-        name = _canonical_coordinate(coord.getName())
-        if name in wanted:
-            out[name] = {
-                "limits_rad": [float(coord.getRangeMin()), float(coord.getRangeMax())]
-            }
-    return out
-
-
-def _neutral_origins(
-    model: Any, state: Any, std: dict[str, Any]
-) -> dict[str, list[float]]:
-    """World origin of each segment at all-zero coordinates, pelvis at origin."""
-    coords = model.getCoordinateSet()
-    for i in range(coords.getSize()):
-        coords.get(i).setValue(state, 0.0, False)
-    model.realizePosition(state)
-    wanted = set(conformance.expected_segments(std))
-    raw: dict[str, tuple[float, float, float]] = {}
-    bodies = model.getBodySet()
-    for i in range(bodies.getSize()):
-        body = bodies.get(i)
-        name = _canonical_segment(body.getName())
-        if name in wanted:
-            p = body.getPositionInGround(state)
-            raw[name] = conformance.to_canonical(
-                std, ENGINE, (p.get(0), p.get(1), p.get(2))
-            )
-    pelvis = raw["pelvis"]
-    return {
-        n: [float(a - b) for a, b in zip(v, pelvis, strict=True)]
-        for n, v in raw.items()
-    }
 
 
 def _ground_friction(model: Any) -> dict[str, float] | None:
@@ -129,11 +61,6 @@ def _ground_friction(model: Any) -> dict[str, float] | None:
     }
 
 
-def _capabilities() -> dict[str, str]:
-    caps = manifest().get("capabilities", {})
-    return {key: str(entry["level"]) for key, entry in caps.items()}
-
-
 def _load(exercise: str) -> tuple[Any, Any]:
     import opensim
 
@@ -144,6 +71,28 @@ def _load(exercise: str) -> tuple[Any, Any]:
         path.write_text(xml, encoding="utf-8")
         model = opensim.Model(str(path))
     return model, model.initSystem()
+
+
+def _measure(model: Any, state: Any) -> tuple[dict[str, float], dict, dict]:
+    """Return raw masses, coordinate limits and neutral world origins (Y-up)."""
+    coords = model.getCoordinateSet()
+    human = set(conformance.expected_coordinates(conformance.load_standard()))
+    limits = {}
+    for i in range(coords.getSize()):
+        c = coords.get(i)
+        # Root (pelvis_*) coordinates are not part of the 28 human coordinates.
+        if COORDINATE_ALIASES.get(c.getName(), c.getName()) in human:
+            limits[c.getName()] = (float(c.getRangeMin()), float(c.getRangeMax()))
+        c.setValue(state, 0.0, False)
+    model.realizePosition(state)
+    masses, origins = {}, {}
+    bodies = model.getBodySet()
+    for i in range(bodies.getSize()):
+        body = bodies.get(i)
+        p = body.getPositionInGround(state)
+        masses[body.getName()] = float(body.getMass())
+        origins[body.getName()] = (p.get(0), p.get(1), p.get(2))
+    return masses, limits, origins
 
 
 def fingerprint(exercise: str) -> dict[str, Any]:
@@ -157,71 +106,37 @@ def fingerprint(exercise: str) -> dict[str, Any]:
     if exercise not in EXERCISE_BUILDERS:
         raise ValueError(f"unknown exercise {exercise!r}")
     std = conformance.load_standard()
-    fp: dict[str, Any] = {
-        "schema": conformance.FINGERPRINT_SCHEMA,
-        "engine": ENGINE,
-        "engine_version": str(opensim.GetVersion()),
-        "exercise": exercise,
-        "standard_sha256": conformance.standard_sha256(),
-        "loaded_in_engine": False,
-        "load_error": None,
-        "capabilities": _capabilities(),
-    }
+    version = str(opensim.GetVersion())
     try:
         model, state = _load(exercise)
-        g = model.getGravity()
-        segments = _read_segments(model, std)
-        fp.update(
-            root_joint=_pelvis_root_joint(model),
-            gravity_canonical=list(
-                conformance.to_canonical(std, ENGINE, (g.get(0), g.get(1), g.get(2)))
-            ),
-            body_mass_kg=sum(s["mass_kg"] for s in segments.values()),
-            segments=segments,
-            coordinates=_read_coordinates(model, std),
-            segment_origins_neutral_m=_neutral_origins(model, state, std),
-        )
-        friction = _ground_friction(model)
-        if friction is not None:
-            fp["ground_friction"] = friction
-        objective = EXERCISE_OBJECTIVES.get(exercise)
-        if objective is not None:
-            fp["phase_count"] = len(objective.phases)
-        fp["loaded_in_engine"] = True
+        masses, limits, origins = _measure(model, state)
     except (RuntimeError, OSError) as exc:  # SWIG raises RuntimeError on bad models
         logger.error("OpenSim failed to load %s: %s", exercise, exc)
-        fp["load_error"] = str(exc)
-        return fp
-    if not math.isfinite(fp["body_mass_kg"]):
-        raise ValueError("fingerprint postcondition: body mass must be finite")
-    return fp
+        return assemble.failed_fingerprint(ENGINE, version, exercise, exc)
+    g = model.getGravity()
+    objective = EXERCISE_OBJECTIVES.get(exercise)
+    return assemble.assemble_fingerprint(
+        engine=ENGINE,
+        engine_version=version,
+        exercise=exercise,
+        std=std,
+        root_joint=_pelvis_root_joint(model),
+        gravity_engine=(g.get(0), g.get(1), g.get(2)),
+        segment_masses_kg=masses,
+        coordinate_limits_rad=limits,
+        segment_origins_engine_m=origins,
+        capabilities=assemble.capabilities_from_manifest(manifest(), std),
+        coordinate_aliases=COORDINATE_ALIASES,
+        segment_aliases=SEGMENT_ALIASES,
+        ground_friction=_ground_friction(model),
+        phase_count=None if objective is None else len(objective.phases),
+    )
 
 
 def main(argv: list[str] | None = None) -> int:
-    """CLI entry point; returns a process exit code."""
-    parser = argparse.ArgumentParser(description="OpenSim model-fingerprint/v1")
-    group = parser.add_mutually_exclusive_group(required=True)
-    group.add_argument("--exercise", choices=sorted(list_exercises()))
-    group.add_argument("--all", action="store_true", help="fingerprint every exercise")
-    parser.add_argument("--out", type=Path, default=None, help="output directory")
-    args = parser.parse_args(argv)
-
-    exercises = list_exercises() if args.all else [args.exercise]
-    status = 0
-    for exercise in exercises:
-        fp = fingerprint(exercise)
-        text = json.dumps(fp, indent=2, sort_keys=True)
-        if args.out is None:
-            sys.stdout.write(text + "\n")
-        else:
-            args.out.mkdir(parents=True, exist_ok=True)
-            (args.out / f"{ENGINE}_{exercise}.json").write_text(
-                text + "\n", encoding="utf-8"
-            )
-        if not fp["loaded_in_engine"]:
-            status = 1
-    return status
+    """CLI entry point (shared bundle implementation)."""
+    return assemble.run_fingerprint_cli(argv, fingerprint, list_exercises(), ENGINE)
 
 
 if __name__ == "__main__":
-    sys.exit(main())
+    raise SystemExit(main())
