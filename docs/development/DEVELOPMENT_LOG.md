@@ -18,6 +18,19 @@ reachable from any live state and `abandoned` from `parked`.
 
 ## Active
 
+### DL-#383 · Anatomical Joint Axes: X Forward, Z Lateral, Mirrored Left Side
+
+- **State:** in_review
+- **Owner:** unassigned
+- **Issue:** #383
+- **Branch:** fix/issue-383-hip-flexion-axis
+- **PR:** #401
+- **Paths:** see #401
+- **Started:** 2026-10-05
+- **Last verified:** 2026-10-05 (`adeacfc0`; collated from changes/383-hip-flexion-axis.md)
+- **Summary:** OpenSim body model now uses one axis convention: X forward, Z lateral with left at -Z (canonical +Y). Hip/shoulder/lumbar/neck become explicit-axis CustomJoints (flexion anterior-positive; adduction, internal rotation, inversion and wrist deviation mirrored left/right); barbell lies along Z; seated sit_to_stand lifts the knees so the feet rest on the floor.
+- **Next step:** Repository_Management#2011 should adopt (or amend) these positive senses in the standard v2 kinematics block; MuJoCo#410 and Drake#373 need the same flexion-axis fix.
+
 ### DL-#1606 · Adopt Mermaid C4 Architecture Map Contract
 
 - **Issue:** #1606 (https://github.com/D-sorganization/Repository_Management/issues/1606)
