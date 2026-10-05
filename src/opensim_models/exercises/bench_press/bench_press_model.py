@@ -43,9 +43,9 @@ logger = logging.getLogger(__name__)
 BENCH_HEIGHT = 0.43  # IPF standard bench height (meters)
 
 # Bench box geometry (approximate dimensions for a standard IPF bench)
-_BENCH_WIDTH = 0.30  # metres (X)
+_BENCH_LENGTH = 1.20  # metres (X) — along the supine lifter's long axis
 _BENCH_HEIGHT_DIM = 0.05  # metres (Y) — thickness of the padded top
-_BENCH_DEPTH = 1.20  # metres (Z) — length of bench
+_BENCH_WIDTH = 0.30  # metres (Z) — lateral
 
 # Inertia for bench (treated as massless rigid constraint body)
 _BENCH_MASS = 1e-4  # near-zero mass (kg) — bench mass is borne by ground
@@ -67,7 +67,7 @@ class BenchPressModelBuilder(ExerciseModelBuilder):
     def _add_bench_body(self, bodyset: ET.Element) -> None:
         """Add the bench rigid body to *bodyset* with near-zero mass."""
         bench_inertia = rectangular_prism_inertia(
-            _BENCH_MASS, _BENCH_WIDTH, _BENCH_HEIGHT_DIM, _BENCH_DEPTH
+            _BENCH_MASS, _BENCH_LENGTH, _BENCH_HEIGHT_DIM, _BENCH_WIDTH
         )
         add_body(
             bodyset,
@@ -93,8 +93,9 @@ class BenchPressModelBuilder(ExerciseModelBuilder):
     def _weld_pelvis_to_bench_supine(self, jointset: ET.Element) -> None:
         """Weld pelvis to bench and patch child frame to supine orientation.
 
-        Supine: lifter lies face-up; pelvis Y-axis (long axis when standing)
-        becomes the Z-axis. Rotate 90° about X (pi/2) to achieve this.
+        Supine: lifter lies face-up. The pelvis is turned +90° about the
+        lateral Z-axis, so its anterior X-axis points up (+Y) and its long
+        Y-axis points along -X (head end); the child frame holds the inverse.
         """
         # ⚡ Bolt Optimization: Replace findall() with direct variable assignment.
         # What: Capture the returned Element from add_weld_joint directly.
@@ -108,7 +109,7 @@ class BenchPressModelBuilder(ExerciseModelBuilder):
             location_in_parent=(0, 0, 0),
             location_in_child=(0, 0, 0),
         )
-        supine_orient = f"{math.pi / 2:.6f} 0.000000 0.000000"
+        supine_orient = f"0.000000 0.000000 {-math.pi / 2:.6f}"
         child_frame = None
         for child in joint:
             if (
@@ -184,7 +185,8 @@ class BenchPressModelBuilder(ExerciseModelBuilder):
         """Set supine lockout position.
 
         Shoulders flexed ~90 deg (arms pointing up), elbows near-extended.
-        Shoulder adduction set for bench grip width.
+        Shoulder adduction set for bench grip width; an equal wrist deviation
+        keeps the hands, and so the bar, on the lateral axis.
         The supine orientation is enforced by the bench-pelvis weld constraint.
         """
         shoulder_flex = 1.5708  # ~90 degrees (arms vertical)
@@ -194,6 +196,7 @@ class BenchPressModelBuilder(ExerciseModelBuilder):
             defaults[f"shoulder_{side}_flex"] = shoulder_flex
             defaults[f"shoulder_{side}_adduct"] = shoulder_adduct
             defaults[f"shoulder_{side}_rotate"] = 0.0
+            defaults[f"wrist_{side}_deviation"] = -shoulder_adduct
         set_coordinate_defaults(jointset, defaults)
 
 

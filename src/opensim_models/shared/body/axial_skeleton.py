@@ -1,7 +1,11 @@
 """Axial skeleton builder: pelvis, torso, head and their joints.
 
 Handles the central body segments and their inter-connections
-(ground-pelvis FreeJoint, lumbar BallJoint, neck PinJoint).
+(ground-pelvis FreeJoint, 3-DOF lumbar and 1-DOF neck CustomJoints).
+
+Axes (Y-up, X forward, Z lateral with left = -Z): flexion turns about -Z so a
+positive value bends the trunk or head forward; lumbar lateral bend (about -X)
+and axial rotation (about +Y) are positive toward the left (#383).
 """
 
 from __future__ import annotations
@@ -15,10 +19,9 @@ from opensim_models.shared.utils.geometry import (
     rectangular_prism_inertia,
 )
 from opensim_models.shared.utils.xml_helpers import (
-    add_ball_joint,
     add_body,
+    add_custom_joint,
     add_free_joint,
-    add_pin_joint,
 )
 
 logger = logging.getLogger(__name__)
@@ -74,8 +77,8 @@ def _add_lumbar_joint(
     jointset: ET.Element,
     p_len: float,
 ) -> None:
-    """Add the 3-DOF BallJoint connecting pelvis to torso."""
-    add_ball_joint(
+    """Add the 3-DOF lumbar CustomJoint connecting pelvis to torso."""
+    add_custom_joint(
         jointset,
         name="lumbar",
         parent_body="pelvis",
@@ -88,18 +91,21 @@ def _add_lumbar_joint(
                 "default_value": 0.0,
                 "range_min": -0.5236,
                 "range_max": 0.7854,
+                "axis": "0 0 -1",
             },
             {
                 "name": "lumbar_lateral",
                 "default_value": 0.0,
                 "range_min": -0.5236,
                 "range_max": 0.5236,
+                "axis": "-1 0 0",
             },
             {
                 "name": "lumbar_rotate",
                 "default_value": 0.0,
                 "range_min": -0.5236,
                 "range_max": 0.5236,
+                "axis": "0 1 0",
             },
         ],
     )
@@ -109,17 +115,23 @@ def _add_neck_joint(
     jointset: ET.Element,
     t_len: float,
 ) -> None:
-    """Add the 1-DOF PinJoint connecting torso to head."""
-    add_pin_joint(
+    """Add the 1-DOF neck CustomJoint connecting torso to head."""
+    add_custom_joint(
         jointset,
         name="neck",
         parent_body="torso",
         child_body="head",
         location_in_parent=(0, t_len, 0),
         location_in_child=(0, 0, 0),
-        coord_name="neck_flex",
-        range_min=-0.5236,
-        range_max=0.5236,
+        coordinates=[
+            {
+                "name": "neck_flex",
+                "default_value": 0.0,
+                "range_min": -0.5236,
+                "range_max": 0.5236,
+                "axis": "0 0 -1",
+            }
+        ],
     )
 
 

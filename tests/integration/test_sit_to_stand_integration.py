@@ -36,7 +36,7 @@ class TestSitToStandIntegration:
         assert "chair_to_ground" in weld_names
 
     def test_initial_pose_seated(self) -> None:
-        """Initial pose should have ~90 deg hip and knee flexion."""
+        """Initial pose is seated with the feet resting on the floor."""
         xml_str = build_sit_to_stand_model()
         root = ET.fromstring(xml_str)
         defaults: dict[str, float] = {}
@@ -45,9 +45,12 @@ class TestSitToStandIntegration:
             dv = coord.find("default_value")
             if dv is not None and dv.text:
                 defaults[name] = float(dv.text)
-        # Hip flexion should be near 90 deg (1.5708 rad)
-        assert abs(defaults.get("hip_l_flex", 0.0) - 1.5708) < 0.01
-        assert abs(defaults.get("hip_r_flex", 0.0) - 1.5708) < 0.01
+        # Seated: hips flexed ~90 deg, knees lifted a little so the feet reach
+        # the floor, shins vertical (hip + knee = 0) (#383).
+        for side in ("l", "r"):
+            hip = defaults[f"hip_{side}_flex"]
+            assert 1.5708 <= hip <= 1.5708 + 0.5236
+            assert defaults[f"knee_{side}_flex"] == pytest.approx(-hip, abs=1e-6)
 
     def test_has_ground_pelvis_free_joint(self) -> None:
         xml_str = build_sit_to_stand_model()

@@ -31,7 +31,7 @@ _ANKLE_NEUTRAL_INVERSION: float = 0.0  # neutral inversion/eversion
 _WRIST_NEUTRAL_DEVIATION: float = 0.0  # neutral radial/ulnar deviation
 
 # Squat-specific multi-DOF angles.
-_SQUAT_HIP_EXTERNAL_ROTATE: float = 0.1745  # ~10° external rotation
+_SQUAT_HIP_EXTERNAL_ROTATE: float = -0.1745  # ~10° external (positive is internal)
 
 # Bench press-specific multi-DOF angles.
 _BENCH_SHOULDER_ADDUCT: float = -0.5236  # ~-30° (abducted from midline)

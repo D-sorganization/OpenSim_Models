@@ -30,17 +30,17 @@ def add_foot_contact_spheres(
     _, foot_len, _ = _seg(spec, "foot")
     # OpenSim frames are Y-up: the foot body hangs from the ankle (origin) down
     # to the sole at y = -foot_len, so a sphere resting on the ground has its
-    # centre one radius above the sole. Forward is +X, mediolateral is Z.
+    # centre one radius above the sole. Forward is +X, mediolateral is Z with
+    # the right foot at +Z, so "lateral" is +Z on the right and -Z on the left.
     sole_y = -foot_len + _CONTACT_SPHERE_RADIUS
 
-    contact_points = {
-        "heel_medial": (-0.08, sole_y, -0.03),
-        "heel_lateral": (-0.08, sole_y, 0.03),
-        "toe_medial": (0.12, sole_y, -0.03),
-        "toe_lateral": (0.12, sole_y, 0.03),
-    }
-
-    for side in ("l", "r"):
+    for side, lateral in (("l", -0.03), ("r", 0.03)):
+        contact_points = {
+            "heel_medial": (-0.08, sole_y, -lateral),
+            "heel_lateral": (-0.08, sole_y, lateral),
+            "toe_medial": (0.12, sole_y, -lateral),
+            "toe_lateral": (0.12, sole_y, lateral),
+        }
         for point_name, location in contact_points.items():
             add_contact_sphere(
                 model,

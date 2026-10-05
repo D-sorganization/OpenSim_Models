@@ -35,6 +35,15 @@ from opensim_models.shared.utils.xml_helpers import (
 logger = logging.getLogger(__name__)
 
 
+def _along_z(inertia: tuple[float, float, float]) -> tuple[float, float, float]:
+    """Re-express an along-X cylinder inertia (axial, perp, perp) along Z.
+
+    The bar lies on the lateral axis, which is Z in the Y-up body frame (#383).
+    """
+    axial, perp_y, perp_z = inertia
+    return (perp_y, perp_z, axial)
+
+
 @dataclass(frozen=True)
 class BarbellSpec:
     """Immutable specification for a barbell.
@@ -128,7 +137,8 @@ def _compute_sleeve_inertia(
     under the 80-line threshold.
 
     Returns:
-        (Ixx, Iyy, Izz) for the sleeve including any loaded plates.
+        (Ixx, Iyy, Izz) for the sleeve including any loaded plates, with the
+        sleeve axis along Z.
     """
     sleeve_inertia = hollow_cylinder_inertia_along_x(
         spec.sleeve_mass,
@@ -149,7 +159,7 @@ def _compute_sleeve_inertia(
             sleeve_inertia[1] + plate_inertia[1],
             sleeve_inertia[2] + plate_inertia[2],
         )
-    return sleeve_inertia
+    return _along_z(sleeve_inertia)
 
 
 def _add_barbell_bodies(
@@ -167,8 +177,8 @@ def _add_barbell_bodies(
     Returns:
         (shaft_body, left_body, right_body) XML elements.
     """
-    shaft_inertia = cylinder_inertia_along_x(
-        spec.shaft_mass, spec.shaft_radius, spec.shaft_length
+    shaft_inertia = _along_z(
+        cylinder_inertia_along_x(spec.shaft_mass, spec.shaft_radius, spec.shaft_length)
     )
     sleeve_total_mass = spec.sleeve_mass + spec.plate_mass_per_side
 
@@ -222,16 +232,16 @@ def _add_sleeve_weld_joints(
         name=f"{prefix}_left_weld",
         parent_body=shaft_name,
         child_body=left_name,
-        location_in_parent=(-half_shaft, 0, 0),
-        location_in_child=(half_sleeve, 0, 0),
+        location_in_parent=(0, 0, -half_shaft),
+        location_in_child=(0, 0, half_sleeve),
     )
     add_weld_joint(
         jointset,
         name=f"{prefix}_right_weld",
         parent_body=shaft_name,
         child_body=right_name,
-        location_in_parent=(half_shaft, 0, 0),
-        location_in_child=(-half_sleeve, 0, 0),
+        location_in_parent=(0, 0, half_shaft),
+        location_in_child=(0, 0, -half_sleeve),
     )
 
 
@@ -247,7 +257,8 @@ def create_barbell_bodies(
     Returns dict of created body elements keyed by name.
 
     The barbell shaft center is at the local origin. Sleeves extend
-    symmetrically along the X-axis (left = -X, right = +X).
+    symmetrically along the lateral Z-axis (left = -Z, right = +Z), which is
+    the canonical Y-axis with left at +Y.
 
     DbC preconditions are enforced by BarbellSpec.__post_init__.
     """

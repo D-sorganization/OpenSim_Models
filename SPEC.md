@@ -135,6 +135,16 @@ edited here and `tests/parity/` verifies their hashes against `MANIFEST.json`.
 
 - `shared/parity/standard.py` and the body segment table are computed from the
   bundle; no constants are duplicated.
+- **Axis convention (#383).** Body frames are Y-up with X forward and Z lateral;
+  right-side joints sit at +Z and left-side joints at -Z (canonical left = +Y).
+  Hip, shoulder, lumbar and neck are explicit-axis `CustomJoint`s. Flexion is
+  positive when the distal segment (or the trunk and head) moves anteriorly;
+  the knee keeps its negative flexion range. Adduction (toward the midline),
+  hip and shoulder internal rotation, ankle inversion and wrist deviation are
+  mirrored left/right, so equal values give a symmetric pose. Lumbar lateral
+  bend and axial rotation are positive toward the left. The barbell lies along
+  Z. `tests/unit/shared/test_anatomical_directions.py` checks every direction
+  through the generator's forward kinematics.
 - `shared/parity/fingerprint.py` loads every exercise's generated .osim model in
   the real opensim engine and reports a `model-fingerprint/v1`
   (`python -m opensim_models.shared.parity.fingerprint --all --out DIR`).

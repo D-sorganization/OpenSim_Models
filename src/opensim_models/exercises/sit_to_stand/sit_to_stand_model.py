@@ -13,10 +13,14 @@ Biomechanical notes:
 from __future__ import annotations
 
 import logging
+import math
 import xml.etree.ElementTree as ET
 
 from opensim_models.exercises.base import ExerciseConfig, ExerciseModelBuilder
 from opensim_models.shared.body._segment_data import _seg
+from opensim_models.shared.body.ground_placement import (
+    lowest_contact_height_below_pelvis,
+)
 from opensim_models.shared.utils.xml_helpers import (
     add_weld_joint,
     set_coordinate_defaults,
@@ -26,6 +30,10 @@ logger = logging.getLogger(__name__)
 
 # Default chair seat height in meters
 _DEFAULT_SEAT_HEIGHT = 0.45
+# Seated knee lift: extra hip flexion (shin kept vertical) that rests the feet
+# on the floor, searched within +/-30 deg of the 90/90 sitting pose.
+_KNEE_LIFT_LIMIT = math.radians(30.0)
+_KNEE_LIFT_ITERATIONS = 40
 
 
 class SitToStandModelBuilder(ExerciseModelBuilder):
@@ -63,14 +71,50 @@ class SitToStandModelBuilder(ExerciseModelBuilder):
             name="chair_to_ground",
             parent_body="ground",
             child_body="chair",
-            location_in_parent=(0, self.seat_height, -0.3),
+            location_in_parent=(-0.3, self.seat_height, 0),  # behind the pelvis
             location_in_child=(0, 0, 0),
         )
 
     def _initial_pelvis_height(self, model: ET.Element) -> float:
-        """Seated start: the pelvis rests on the seat, not on its feet."""
+        """Seated start: the pelvis rests on the seat and the feet on the floor.
+
+        Lifts the knees (hip flexion 90 deg + a, knee -(90 deg + a), so the
+        shin stays vertical) until the lowest foot sphere touches y = 0 (#383).
+        """
         _, pelvis_len, _ = _seg(self.body_spec, "pelvis")
-        return self.seat_height + pelvis_len / 2.0
+        pelvis_ty = self.seat_height + pelvis_len / 2.0
+        self._rest_feet_on_floor(model, pelvis_ty)
+        return pelvis_ty
+
+    def _rest_feet_on_floor(self, model: ET.Element, pelvis_ty: float) -> None:
+        """Bisect the knee lift so the feet touch the floor (clamped if not)."""
+        jointset = model.find("JointSet")
+        if jointset is None:
+            raise ValueError("model has no JointSet")
+
+        def gap(lift: float) -> float:
+            self._set_seated_legs(jointset, lift)
+            return pelvis_ty + lowest_contact_height_below_pelvis(model)
+
+        lo, hi = -_KNEE_LIFT_LIMIT, _KNEE_LIFT_LIMIT
+        if gap(lo) > 0.0 or gap(hi) < 0.0:
+            logger.warning(
+                "Seat height %.3f m cannot rest the feet on the floor", self.seat_height
+            )
+            self._set_seated_legs(jointset, lo if gap(lo) > 0.0 else hi)
+            return
+        for _ in range(_KNEE_LIFT_ITERATIONS):
+            mid = (lo + hi) / 2.0
+            lo, hi = (mid, hi) if gap(mid) < 0.0 else (lo, mid)
+        self._set_seated_legs(jointset, (lo + hi) / 2.0)
+
+    @staticmethod
+    def _set_seated_legs(jointset: ET.Element, lift: float) -> None:
+        defaults = {}
+        for side in ("l", "r"):
+            defaults[f"hip_{side}_flex"] = math.pi / 2.0 + lift
+            defaults[f"knee_{side}_flex"] = -(math.pi / 2.0 + lift)
+        set_coordinate_defaults(jointset, defaults)
 
     def attach_barbell(
         self,

@@ -16,7 +16,6 @@ needs_opensim = pytest.mark.skipif(
 )
 
 FREE_ROOT = [e for e in EXERCISE_BUILDERS if e != "bench_press"]
-SEATED = {"sit_to_stand"}
 TOL = 0.005  # 5 mm
 BODY_MASS = 80.0
 G = 9.80665
@@ -56,8 +55,8 @@ def test_feet_do_not_start_inside_the_ground(tmp_path: Path, exercise: str) -> N
     lows = _sphere_lows(opensim, model, state)
     assert len(lows) == 8
     assert min(lows) >= -TOL, f"{exercise}: sphere {-min(lows):.3f} m deep"
-    if exercise not in SEATED:
-        assert min(lows) == pytest.approx(0.0, abs=TOL), "feet float above y=0"
+    # Seated sit_to_stand included: its feet rest on the floor too (#383).
+    assert min(lows) == pytest.approx(0.0, abs=TOL), "feet float above y=0"
 
 
 @needs_opensim

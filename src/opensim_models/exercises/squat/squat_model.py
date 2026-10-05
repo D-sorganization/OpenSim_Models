@@ -58,7 +58,7 @@ class SquatModelBuilder(ExerciseModelBuilder):
             name="barbell_to_torso",
             parent_body="torso",
             child_body="barbell_shaft",
-            location_in_parent=(0, trap_height, -0.02),
+            location_in_parent=(-0.02, trap_height, 0),  # 2 cm posterior
             location_in_child=(0, 0, 0),
         )
 
@@ -69,7 +69,7 @@ class SquatModelBuilder(ExerciseModelBuilder):
         """
         hip_flex = 0.0873  # ~5 degrees
         knee_flex = -0.0873  # ~5 degrees
-        hip_rotate = 0.1745  # ~10° external rotation for squat stance
+        hip_rotate = -0.1745  # ~10° external rotation (positive is internal)
         defaults = {}
         for side in ("l", "r"):
             defaults[f"hip_{side}_flex"] = hip_flex
