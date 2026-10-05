@@ -46,8 +46,8 @@ def test_ledger_is_valid_and_cites_issues() -> None:
     assert stale == [
         key for key, e in sorted(ledger["divergences"].items()) if "exercises" not in e
     ]
+    # Issue references (#N or URL) are validated by the canonical reconcile_all.
     for entry in ledger["divergences"].values():
-        assert entry["issue"].startswith("#")
         assert set(entry.get("exercises", [])) <= set(list_exercises())
 
 
