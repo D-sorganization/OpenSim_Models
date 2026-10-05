@@ -93,6 +93,7 @@ def test_fingerprint_reports_canonical_names_and_frame() -> None:
     assert fp["segment_origins_neutral_m"]["foot_l"][2] < -0.5
 
 
+@needs_opensim
 def test_fingerprint_rejects_unknown_exercise() -> None:
     with pytest.raises(ValueError, match="unknown exercise"):
         fingerprint("not_an_exercise")
