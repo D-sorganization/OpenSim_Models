@@ -40,9 +40,15 @@ def test_aliases_map_generated_coordinates_onto_canonical_set(exercise: str) -> 
 
 def test_ledger_is_valid_and_cites_issues() -> None:
     ledger = conformance.load_ledger(LEDGER)
-    unexpected, stale = conformance.reconcile([], ledger)
-    assert unexpected == []
-    assert set(stale) == set(ledger["divergences"])
+    unexpected, stale = conformance.reconcile_all({}, ledger)
+    assert unexpected == {}
+    # No exercise was checked, so scoped entries cannot be judged stale.
+    assert stale == [
+        key for key, e in sorted(ledger["divergences"].items()) if "exercises" not in e
+    ]
+    # Issue references (#N or URL) are validated by the canonical reconcile_all.
+    for entry in ledger["divergences"].values():
+        assert set(entry.get("exercises", [])) <= set(list_exercises())
 
 
 def test_capabilities_parse_from_pack_manifest() -> None:
