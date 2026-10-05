@@ -98,7 +98,7 @@ class TestHuntCrossleyForce:
             contact_geometry_1="foot_sphere",
             contact_geometry_2="ground_contact",
         )
-        assert force.tag == "HuntCrossleyForce"
+        assert force.tag == "SmoothSphereHalfSpaceForce"
         assert force.get("name") == "force_foot"
 
     def test_has_contact_geometry_refs(self):
@@ -109,8 +109,8 @@ class TestHuntCrossleyForce:
             contact_geometry_1="s1",
             contact_geometry_2="s2",
         )
-        assert force.find("contact_geometry_1").text == "s1"
-        assert force.find("contact_geometry_2").text == "s2"
+        assert force.find("socket_sphere").text == "/contactgeometryset/s1"
+        assert force.find("socket_half_space").text == "/contactgeometryset/s2"
 
     def test_has_default_parameters(self):
         model = ET.Element("Model")
@@ -171,7 +171,7 @@ class TestExerciseModelGroundContact:
     def test_squat_has_hunt_crossley_forces(self):
         xml_str = SquatModelBuilder().build()
         root = ET.fromstring(xml_str)
-        forces = root.findall(".//HuntCrossleyForce")
+        forces = root.findall(".//SmoothSphereHalfSpaceForce")
         # 8 forces (one per foot contact sphere)
         assert len(forces) == 8
 
@@ -196,7 +196,7 @@ class TestExerciseModelGroundContact:
     def test_bench_press_has_pelvis_bench_force(self):
         xml_str = BenchPressModelBuilder().build()
         root = ET.fromstring(xml_str)
-        force = root.find(".//HuntCrossleyForce[@name='force_pelvis_bench']")
+        force = root.find(".//SmoothSphereHalfSpaceForce[@name='force_pelvis_bench']")
         assert force is not None
 
     def test_bench_press_total_contact_spheres(self):
@@ -209,6 +209,6 @@ class TestExerciseModelGroundContact:
     def test_bench_press_total_forces(self):
         xml_str = BenchPressModelBuilder().build()
         root = ET.fromstring(xml_str)
-        forces = root.findall(".//HuntCrossleyForce")
+        forces = root.findall(".//SmoothSphereHalfSpaceForce")
         # 8 foot + 1 pelvis-bench = 9
         assert len(forces) == 9

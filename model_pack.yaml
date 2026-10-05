@@ -21,3 +21,13 @@ exercises:
     path: src/opensim_models/exercises/gait
   - id: sit_to_stand
     path: src/opensim_models/exercises/sit_to_stand
+capabilities:
+  load_in_engine: {level: full, evidence: tests/parity/test_engine_conformance.py}
+  forward_kinematics: {level: partial, evidence: tests/parity/test_engine_conformance.py}
+  inverse_kinematics: {level: none, evidence: null}
+  forward_dynamics: {level: none, evidence: null}
+  inverse_dynamics: {level: none, evidence: null}
+  contact_grf: {level: partial, evidence: tests/parity/test_engine_conformance.py}
+  urdf_import: {level: none, evidence: null}
+  urdf_export: {level: none, evidence: null}
+  video_export: {level: none, evidence: null}

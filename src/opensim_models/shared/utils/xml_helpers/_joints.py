@@ -8,6 +8,14 @@ from opensim_models.shared.utils.xml_helpers._formatting import (
     ZERO_VEC3,
     vec3_str,
 )
+from opensim_models.shared.utils.xml_helpers._spatial_transform import (
+    _add_spatial_transform,
+)
+
+
+def _frame_path(body: str) -> str:
+    """Return the OpenSim component path of a body (ground lives at /ground)."""
+    return "/ground" if body == "ground" else f"/bodyset/{body}"
 
 
 def _add_joint_frames(
@@ -26,7 +34,7 @@ def _add_joint_frames(
     # Why: Zero vectors are extremely common for orientations and translations. Avoiding the function call provides a measurable speedup.
     # Impact: Reduces overhead in the heavily used `_add_joint_frames` function.
     pf = ET.SubElement(joint, "PhysicalOffsetFrame", name=f"{name}_parent")
-    ET.SubElement(pf, "socket_parent").text = f"/bodyset/{parent_body}"
+    ET.SubElement(pf, "socket_parent").text = _frame_path(parent_body)
     ET.SubElement(pf, "translation").text = (
         "0.000000 0.000000 0.000000"
         if location_in_parent.__class__ is tuple
@@ -41,7 +49,7 @@ def _add_joint_frames(
     )
 
     cf = ET.SubElement(joint, "PhysicalOffsetFrame", name=f"{name}_child")
-    ET.SubElement(cf, "socket_parent").text = f"/bodyset/{child_body}"
+    ET.SubElement(cf, "socket_parent").text = _frame_path(child_body)
     ET.SubElement(cf, "translation").text = (
         "0.000000 0.000000 0.000000"
         if location_in_child.__class__ is tuple and location_in_child == (0.0, 0.0, 0.0)
@@ -164,22 +172,6 @@ def add_ball_joint(
     return joint
 
 
-def _add_spatial_transform(
-    joint: ET.Element,
-    coordinates: list[dict[str, float | str]],
-) -> None:
-    """Append a <SpatialTransform> with TransformAxis elements to a CustomJoint."""
-    spatial = ET.SubElement(joint, "SpatialTransform")
-    rotation_axes = ["rotation1", "rotation2", "rotation3"]
-    translation_axes = ["translation1", "translation2", "translation3"]
-
-    for i, c in enumerate(coordinates):
-        axis_name = rotation_axes[i] if i < 3 else translation_axes[i - 3]
-        ta = ET.SubElement(spatial, "TransformAxis", name=axis_name)
-        ET.SubElement(ta, "coordinates").text = str(c["name"])
-        ET.SubElement(ta, "axis").text = str(c.get("axis", "0 0 1"))
-
-
 def add_custom_joint(
     jointset: ET.Element,
     *,
@@ -199,7 +191,8 @@ def add_custom_joint(
       - ``default_value`` (float): initial value in radians
       - ``range_min`` (float): lower bound in radians
       - ``range_max`` (float): upper bound in radians
-      - ``axis`` (str, optional): rotation axis, e.g. "1 0 0" (defaults to "0 0 1")
+      - ``axis`` (str, optional): rotation axis, e.g. "1 0 0" (defaults to
+        "0 0 1", "1 0 0", "0 1 0" for the 1st, 2nd, 3rd coordinate)
     """
     if len(coordinates) < 1:
         raise ValueError("CustomJoint requires at least 1 coordinate")
@@ -241,6 +234,11 @@ def add_free_joint(
         ZERO_VEC3,
         ZERO_VEC3,
     )
+    # Explicit names: OpenSim otherwise auto-names them "_coord_0".."_coord_5".
+    # Coordinate order of a FreeJoint is rx, ry, rz, tx, ty, tz.
+    coords = ET.SubElement(joint, "coordinates")
+    for suffix in ("rx", "ry", "rz", "tx", "ty", "tz"):
+        ET.SubElement(coords, "Coordinate", name=f"{child_body}_{suffix}")
     return joint
 
 

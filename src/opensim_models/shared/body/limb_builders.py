@@ -165,7 +165,8 @@ def add_bilateral_custom_joint_limb(
                 "default_value": float(c.get("default_value", 0.0)),
                 "range_min": float(c["range_min"]),
                 "range_max": float(c["range_max"]),
-                "axis": str(c.get("axis", "0 0 1")),
+                # No default axis here: add_custom_joint assigns distinct ones.
+                **({"axis": str(c["axis"])} if "axis" in c else {}),
             }
             for c in coord_defs
         ]

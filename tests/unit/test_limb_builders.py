@@ -292,7 +292,16 @@ class TestAddBilateralCustomJointLimb:
                 axis.find("axis").text
                 for axis in joint.findall("SpatialTransform/TransformAxis")
             ]  # type: ignore[union-attr]
-            assert axes == ["0 0 1", "0 0 1"]
+            # All six TransformAxis are written; the rotation axes must be
+            # mutually non-collinear or OpenSim rejects the CustomJoint.
+            assert axes == [
+                "0 0 1",
+                "1 0 0",
+                "0 1 0",
+                "1 0 0",
+                "0 1 0",
+                "0 0 1",
+            ]
 
     def test_missing_required_range_key_raises(self) -> None:
         """DbC: a coord_def without ``range_min`` should raise KeyError."""

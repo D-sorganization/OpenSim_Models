@@ -266,10 +266,13 @@ class TestModelBuildEdgeCases:
         """Bench press should attach barbell to both hands."""
         xml_str = build_bench_press_model()
         root = ET.fromstring(xml_str)
-        jointset = root.find(".//JointSet")
-        joint_names = [j.get("name", "") for j in jointset]  # type: ignore
+        joint_names = [j.get("name") for j in root.findall(".//JointSet/objects/*")]
         assert "barbell_to_left_hand" in joint_names
-        assert "barbell_to_right_hand" in joint_names
+        # Second grip is a WeldConstraint: a body has only one parent joint.
+        constraint_names = [
+            c.get("name") for c in root.findall(".//ConstraintSet/objects/*")
+        ]
+        assert "barbell_to_right_hand" in constraint_names
 
     def test_extreme_plate_mass(self):
         """Very heavy plates should still build a valid model."""

@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import copy
 import xml.etree.ElementTree as ET
 from typing import NamedTuple
 
@@ -85,7 +86,50 @@ def indent_xml(elem: ET.Element, level: int = 0) -> None:
     ET.indent(elem, space="  ", level=level)
 
 
+# OpenSim 4.x stores the members of every *Set property inside an <objects>
+# element; without it the sets load empty (issue #378).
+_OBJECT_SETS: tuple[str, ...] = (
+    "BodySet",
+    "JointSet",
+    "ForceSet",
+    "ContactGeometrySet",
+    "ConstraintSet",
+)
+
+
+def wrap_set_objects(root: ET.Element) -> ET.Element:
+    """Return a copy of *root* in OpenSim 4.x nesting (``<objects>``, ``<frames>``).
+
+    The in-memory builder tree keeps flat sets (helpers and tests append to
+    them directly); the nested form is only produced for serialization.
+    """
+    out = copy.deepcopy(root)
+    for tag in _OBJECT_SETS:
+        for set_el in out.iter(tag):
+            if set_el.find("objects") is not None:
+                continue
+            members = list(set_el)
+            objects = ET.Element("objects")
+            for member in members:
+                set_el.remove(member)
+                objects.append(member)
+            set_el.append(objects)
+    # Joint offset frames belong in a <frames> property (also serialization-only).
+    for joint in out.iter():
+        if not joint.tag.endswith("Joint"):
+            continue
+        offsets = joint.findall("PhysicalOffsetFrame")
+        if offsets:
+            frames = ET.Element("frames")
+            for off in offsets:
+                joint.remove(off)
+                frames.append(off)
+            joint.append(frames)
+    return out
+
+
 def serialize_model(root: ET.Element) -> str:
     """Serialize an OpenSim model ElementTree to a formatted XML string."""
-    indent_xml(root)
-    return ET.tostring(root, encoding="unicode", xml_declaration=True)
+    wrapped = wrap_set_objects(root)
+    indent_xml(wrapped)
+    return ET.tostring(wrapped, encoding="unicode", xml_declaration=True)
