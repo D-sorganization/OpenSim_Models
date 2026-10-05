@@ -51,7 +51,7 @@ def test_free_root_pelvis_ty_default_is_set(exercise: str) -> None:
     assert ty > 0.1, "pelvis_ty = 0 puts the feet ~1 m inside the ground"
 
 
-@pytest.mark.parametrize("exercise", [e for e in FREE_ROOT if e != "sit_to_stand"])
+@pytest.mark.parametrize("exercise", FREE_ROOT)
 def test_lowest_sphere_surface_touches_ground(exercise: str) -> None:
     model = _model(exercise)
     lowest = _pelvis_ty(model) + lowest_contact_height_below_pelvis(model)

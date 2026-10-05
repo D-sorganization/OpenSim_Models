@@ -79,8 +79,8 @@ def attach_barbell_to_hands(
 ) -> None:
     """Weld barbell shaft to both hands at the given grip offset.
 
-    The left hand is the shaft's parent joint; the right hand is a
-    ``WeldConstraint`` because a body has a single parent in OpenSim's tree.
+    The shaft lies on the lateral Z-axis (left hand at -Z). The left hand is its
+    parent joint; the right hand is a ``WeldConstraint`` (one parent per body).
 
     DRY: extracted from four identical attach_barbell implementations
     (deadlift, snatch, clean_and_jerk, bench_press).
@@ -96,7 +96,7 @@ def attach_barbell_to_hands(
         parent_body="hand_l",
         child_body="barbell_shaft",
         location_in_parent=(0, 0, 0),
-        location_in_child=(-grip_offset, 0, 0),
+        location_in_child=(0, 0, -grip_offset),
     )
     add_weld_constraint(
         model,
@@ -104,7 +104,7 @@ def attach_barbell_to_hands(
         body_1="hand_r",
         body_2="barbell_shaft",
         location_in_body_1=(0, 0, 0),
-        location_in_body_2=(grip_offset, 0, 0),
+        location_in_body_2=(0, 0, grip_offset),
     )
 
 

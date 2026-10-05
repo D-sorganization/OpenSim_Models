@@ -83,25 +83,18 @@ class TestCreateFullBody:
         names = [j.get("name") for j in free_joints]  # type: ignore
         assert "ground_pelvis" in names
 
-    def test_hip_is_ball_joint(self, model_elements):
+    @pytest.mark.parametrize(
+        "joint", ["hip_l", "hip_r", "shoulder_l", "shoulder_r", "lumbar", "neck"]
+    )
+    def test_multi_axis_joints_are_explicit_axis_custom_joints(
+        self, model_elements, joint
+    ):
+        """Explicit axes replace BallJoint's implicit X-Y-Z order (#383)."""
         _, jointset, _ = model_elements
-        ball_joints = jointset.findall("BallJoint")
-        names = [j.get("name") for j in ball_joints]  # type: ignore
-        assert "hip_l" in names
-        assert "hip_r" in names
-
-    def test_shoulder_is_ball_joint(self, model_elements):
-        _, jointset, _ = model_elements
-        ball_joints = jointset.findall("BallJoint")
-        names = [j.get("name") for j in ball_joints]  # type: ignore
-        assert "shoulder_l" in names
-        assert "shoulder_r" in names
-
-    def test_lumbar_is_ball_joint(self, model_elements):
-        _, jointset, _ = model_elements
-        ball_joints = jointset.findall("BallJoint")
-        names = [j.get("name") for j in ball_joints]  # type: ignore
-        assert "lumbar" in names
+        names = [j.get("name") for j in jointset.findall("CustomJoint")]
+        assert joint in names
+        assert not jointset.findall("BallJoint")
+        assert not jointset.findall("PinJoint[@name='neck']")
 
     def test_ankle_is_custom_joint(self, model_elements):
         _, jointset, _ = model_elements
@@ -119,7 +112,7 @@ class TestCreateFullBody:
 
     def test_hip_has_three_coordinates(self, model_elements):
         _, jointset, _ = model_elements
-        for ball in jointset.findall("BallJoint"):
+        for ball in jointset.findall("CustomJoint"):
             if ball.get("name") == "hip_r":
                 coords = ball.findall(".//Coordinate")
                 assert len(coords) == 3
