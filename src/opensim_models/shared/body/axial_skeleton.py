@@ -56,25 +56,17 @@ def add_axial_body(
     return mass, length, radius
 
 
-def _compute_pelvis_height(spec: BodyModelSpec, p_len: float) -> float:
-    """Derive standing pelvis height from lower-limb segment lengths."""
-    _, thigh_len, _ = _seg(spec, "thigh")
-    _, shank_len, _ = _seg(spec, "shank")
-    _, foot_len, _ = _seg(spec, "foot")
-    return thigh_len + shank_len + foot_len + p_len / 2.0
+def _add_ground_pelvis_joint(jointset: ET.Element) -> None:
+    """Add the 6-DOF FreeJoint connecting the ground to the pelvis.
 
-
-def _add_ground_pelvis_joint(
-    jointset: ET.Element,
-    pelvis_height: float,
-) -> None:
-    """Add the 6-DOF FreeJoint connecting the ground to the pelvis."""
+    The frames coincide, so ``pelvis_ty`` is the absolute pelvis height. Its
+    default is set once the pose and contact spheres exist (``ground_placement``).
+    """
     add_free_joint(
         jointset,
         name="ground_pelvis",
         parent_body="ground",
         child_body="pelvis",
-        location_in_parent=(0, pelvis_height, 0),
     )
 
 
@@ -140,11 +132,8 @@ def add_axial_joints(
     skip_ground_joint: bool,
 ) -> None:
     """Add the axial skeleton joints (ground-pelvis, lumbar, neck)."""
-    pelvis_height = _compute_pelvis_height(spec, p_len)
-    logger.debug("Derived pelvis height: %.4f m", pelvis_height)
-
     if not skip_ground_joint:
-        _add_ground_pelvis_joint(jointset, pelvis_height)
+        _add_ground_pelvis_joint(jointset)
 
     _add_lumbar_joint(jointset, p_len)
     _add_neck_joint(jointset, t_len)

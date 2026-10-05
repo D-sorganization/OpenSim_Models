@@ -16,6 +16,7 @@ import logging
 import xml.etree.ElementTree as ET
 
 from opensim_models.exercises.base import ExerciseConfig, ExerciseModelBuilder
+from opensim_models.shared.body._segment_data import _seg
 from opensim_models.shared.utils.xml_helpers import (
     add_weld_joint,
     set_coordinate_defaults,
@@ -65,6 +66,11 @@ class SitToStandModelBuilder(ExerciseModelBuilder):
             location_in_parent=(0, self.seat_height, -0.3),
             location_in_child=(0, 0, 0),
         )
+
+    def _initial_pelvis_height(self, model: ET.Element) -> float:
+        """Seated start: the pelvis rests on the seat, not on its feet."""
+        _, pelvis_len, _ = _seg(self.body_spec, "pelvis")
+        return self.seat_height + pelvis_len / 2.0
 
     def attach_barbell(
         self,
