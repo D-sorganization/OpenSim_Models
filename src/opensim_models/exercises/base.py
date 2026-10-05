@@ -30,6 +30,7 @@ from opensim_models.shared.body import (
 from opensim_models.shared.contracts.postconditions import (
     ensure_coordinates_within_bounds,
 )
+from opensim_models.shared.utils.constraint_helpers import add_weld_constraint
 from opensim_models.shared.utils.contact_helpers import (
     add_contact_half_space,
     add_hunt_crossley_force,
@@ -72,8 +73,12 @@ def set_floor_pull_initial_pose(jointset: ET.Element) -> None:
 def attach_barbell_to_hands(
     jointset: ET.Element,
     grip_offset: float,
+    model: ET.Element,
 ) -> None:
     """Weld barbell shaft to both hands at the given grip offset.
+
+    The left hand is the shaft's parent joint; the right hand is a
+    ``WeldConstraint`` because a body has a single parent in OpenSim's tree.
 
     DRY: extracted from four identical attach_barbell implementations
     (deadlift, snatch, clean_and_jerk, bench_press).
@@ -81,6 +86,7 @@ def attach_barbell_to_hands(
     Args:
         jointset: XML JointSet element.
         grip_offset: distance from shaft center to each hand (metres).
+        model: XML Model element receiving the right-hand weld constraint.
     """
     add_weld_joint(
         jointset,
@@ -90,13 +96,13 @@ def attach_barbell_to_hands(
         location_in_parent=(0, 0, 0),
         location_in_child=(-grip_offset, 0, 0),
     )
-    add_weld_joint(
-        jointset,
+    add_weld_constraint(
+        model,
         name="barbell_to_right_hand",
-        parent_body="hand_r",
-        child_body="barbell_shaft",
-        location_in_parent=(0, 0, 0),
-        location_in_child=(grip_offset, 0, 0),
+        body_1="hand_r",
+        body_2="barbell_shaft",
+        location_in_body_1=(0, 0, 0),
+        location_in_body_2=(grip_offset, 0, 0),
     )
 
 
@@ -111,6 +117,9 @@ class ExerciseModelBuilder(ABC):
 
     def __init__(self, config: ExerciseConfig | None = None) -> None:
         self.config = config or ExerciseConfig()
+        # Model element under construction; set by build() so attachment
+        # hooks can add constraints (a body has only one parent joint).
+        self._model_el: ET.Element = ET.Element("Model")
 
     # --- LoD interface properties ---
     # Callers (including subclasses) should use these accessors rather than
@@ -253,6 +262,7 @@ class ExerciseModelBuilder(ABC):
         """
         logger.info("Building %s model", self.exercise_name)
         root, model = self._create_model_root()
+        self._model_el = model
         self._add_gravity_and_ground(model)
 
         bodyset, jointset, body_bodies, barbell_bodies = self._build_bodies_and_joints(

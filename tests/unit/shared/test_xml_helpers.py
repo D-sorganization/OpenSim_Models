@@ -182,7 +182,7 @@ class TestAddFreeJoint:
         child_frame = joint.find("PhysicalOffsetFrame[@name='ground_pelvis_child']")
         assert parent_frame is not None
         assert child_frame is not None
-        assert parent_frame.findtext("socket_parent") == "/bodyset/ground"
+        assert parent_frame.findtext("socket_parent") == "/ground"
         assert child_frame.findtext("socket_parent") == "/bodyset/pelvis"
         assert parent_frame.findtext("orientation") == "0.000000 0.000000 0.000000"
         assert child_frame.findtext("orientation") == "0.000000 0.000000 0.000000"

@@ -97,14 +97,30 @@ def add_hunt_crossley_force(
     dynamic_friction: float = 0.6,
     viscous_friction: float = 0.2,
 ) -> ET.Element:
-    """Add a HuntCrossleyForce between two contact geometries."""
+    """Add a Hunt-Crossley-type sphere / half-space contact force.
+
+    Emits OpenSim 4.x ``SmoothSphereHalfSpaceForce`` (Hunt-Crossley dissipation
+    with smoothed Hertz contact). The legacy ``HuntCrossleyForce`` format with
+    ``contact_geometry_N`` / flat friction fields is silently ignored by OpenSim
+    4.x (it loads with an empty ``ContactParametersSet``), and its nested
+    ``HuntCrossleyForce::ContactParameters`` tag is not well-formed for
+    ElementTree, so it cannot be used here.
+
+    *contact_geometry_1* must name a ``ContactSphere`` and *contact_geometry_2*
+    a ``ContactHalfSpace`` in the model's ContactGeometrySet.
+    """
+    require_positive(stiffness, "stiffness")
     # ⚡ Bolt Optimization: Use .find() for fast C-level child lookups.
     force_set = model.find("ForceSet")
     if force_set is None:
         force_set = ET.SubElement(model, "ForceSet")
-    force = ET.SubElement(force_set, "HuntCrossleyForce", name=name)
-    ET.SubElement(force, "contact_geometry_1").text = contact_geometry_1
-    ET.SubElement(force, "contact_geometry_2").text = contact_geometry_2
+    force = ET.SubElement(force_set, "SmoothSphereHalfSpaceForce", name=name)
+    ET.SubElement(
+        force, "socket_sphere"
+    ).text = f"/contactgeometryset/{contact_geometry_1}"
+    ET.SubElement(
+        force, "socket_half_space"
+    ).text = f"/contactgeometryset/{contact_geometry_2}"
     ET.SubElement(force, "stiffness").text = "%.1f" % stiffness  # noqa: UP031
     ET.SubElement(force, "dissipation").text = float_str(dissipation)
     ET.SubElement(force, "static_friction").text = float_str(static_friction)

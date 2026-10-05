@@ -58,7 +58,7 @@ class SnatchModelBuilder(ExerciseModelBuilder):
         Snatch grip is approximately 0.55-0.60 m from shaft center
         on each side (~1.5x shoulder width).
         """
-        attach_barbell_to_hands(jointset, _SNATCH_GRIP_HALF_WIDTH)
+        attach_barbell_to_hands(jointset, _SNATCH_GRIP_HALF_WIDTH, self._model_el)
 
     def set_initial_pose(self, jointset: ET.Element) -> None:
         """Set starting position: bar on floor, wide grip, deep hip hinge.

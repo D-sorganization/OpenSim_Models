@@ -1,88 +1,70 @@
-"""Cross-repo parity standard — canonical biomechanical parameters."""
+"""Cross-repo parity standard -- canonical biomechanical parameters.
+
+Every value is computed from the vendored canonical bundle
+(``_canonical/biomech_parity_standard.json``); nothing is duplicated here.
+"""
 
 from __future__ import annotations
 
 import logging
-import math
+from typing import Any
+
+from opensim_models.shared.parity._canonical import conformance
 
 logger = logging.getLogger(__name__)
 
+STANDARD: dict[str, Any] = conformance.load_standard()
 
-def _rad(deg: float) -> float:
-    return math.radians(deg)
+_ANTHRO: dict[str, Any] = STANDARD["anthropometrics"]
+_SEGMENTS: dict[str, dict[str, Any]] = _ANTHRO["segments"]
 
+STANDARD_BODY_MASS: float = float(_ANTHRO["body_mass_kg"])
+STANDARD_HEIGHT: float = float(_ANTHRO["height_m"])
 
-STANDARD_BODY_MASS = 80.0
-STANDARD_HEIGHT = 1.75
-
-SEGMENT_MASS_FRACTIONS = {
-    "pelvis": 0.142,
-    "torso": 0.355,
-    "head": 0.081,
-    "upper_arm": 0.028,
-    "forearm": 0.016,
-    "hand": 0.006,
-    "thigh": 0.100,
-    "shank": 0.047,
-    "foot": 0.014,
+SEGMENT_MASS_FRACTIONS: dict[str, float] = {
+    name: float(seg["mass_frac"]) for name, seg in _SEGMENTS.items()
 }
 
-SEGMENT_LENGTH_FRACTIONS = {
-    "pelvis": 0.100,
-    "torso": 0.288,
-    "head": 0.130,
-    "upper_arm": 0.186,
-    "forearm": 0.146,
-    "hand": 0.050,
-    "thigh": 0.245,
-    "shank": 0.246,
-    "foot": 0.040,
+SEGMENT_LENGTH_FRACTIONS: dict[str, float] = {
+    name: float(seg["length_frac"]) for name, seg in _SEGMENTS.items()
 }
 
-JOINT_LIMITS = {
-    "hip_flex": (_rad(-30), _rad(120)),
-    "hip_adduct": (_rad(-45), _rad(30)),
-    "hip_rotate": (_rad(-45), _rad(45)),
-    "knee_flex": (_rad(-150), _rad(0)),
-    "ankle_flex": (_rad(-20), _rad(50)),
-    "ankle_invert": (_rad(-20), _rad(20)),
-    "shoulder_flex": (_rad(-60), _rad(180)),
-    "shoulder_adduct": (_rad(-30), _rad(180)),
-    "shoulder_rotate": (_rad(-90), _rad(90)),
-    "elbow_flex": (_rad(0), _rad(150)),
-    "wrist_flex": (_rad(-70), _rad(70)),
-    "wrist_deviate": (_rad(-20), _rad(30)),
-    "lumbar_flex": (_rad(-30), _rad(45)),
-    "lumbar_lateral": (_rad(-30), _rad(30)),
-    "lumbar_rotate": (_rad(-30), _rad(30)),
-    "neck_flex": (_rad(-30), _rad(30)),
+# Side-less coordinate name (``hip_flex``) -> (lower_rad, upper_rad); the
+# bundle expresses both sides with one ``{side}`` template, so they share limits.
+_SIDE0: str = STANDARD["sides"][0]
+_EXPECTED_COORDS = conformance.expected_coordinates(STANDARD)
+JOINT_LIMITS: dict[str, tuple[float, float]] = {
+    c["name"].replace("_{side}", ""): _EXPECTED_COORDS[c["name"].format(side=_SIDE0)]
+    for c in STANDARD["coordinates"]
 }
 
-MENS_BARBELL = {
-    "total_length": 2.20,
-    "shaft_length": 1.31,
-    "shaft_diameter": 0.028,
-    "sleeve_diameter": 0.050,
-    "bar_mass": 20.0,
+_BARBELL: dict[str, float] = STANDARD["barbell"]["mens"]
+MENS_BARBELL: dict[str, float] = {
+    "total_length": float(_BARBELL["total_length_m"]),
+    "shaft_length": float(_BARBELL["shaft_length_m"]),
+    "shaft_diameter": float(_BARBELL["shaft_diameter_m"]),
+    "sleeve_diameter": float(_BARBELL["sleeve_diameter_m"]),
+    "bar_mass": float(_BARBELL["bar_mass_kg"]),
 }
 
-FOOT_CONTACT_DIMS = {
-    "length": 0.26,
-    "width": 0.10,
-    "height": 0.02,
+FOOT_CONTACT_DIMS: dict[str, float] = {
+    k: float(v) for k, v in STANDARD["contact"]["foot_box_m"].items()
 }
 
-GROUND_FRICTION = {
-    "static": 0.8,
-    "dynamic": 0.6,
+GROUND_FRICTION: dict[str, float] = {
+    k: float(v) for k, v in STANDARD["contact"]["ground_friction"].items()
 }
 
-EXERCISE_PHASE_COUNTS = {
-    "back_squat": 5,
-    "deadlift": 5,
-    "bench_press": 5,
-    "snatch": 6,
-    "clean_and_jerk": 8,
+# Keyed by this repo's legacy exercise key where the bundle defines one
+# (``back_squat``), otherwise by the exercise id.
+EXERCISE_PHASE_COUNTS: dict[str, int] = {
+    str(ex.get("legacy_key", name)): int(ex["phase_count"])
+    for name, ex in STANDARD["exercises"].items()
 }
 
-GRAVITY = (0.0, -9.80665, 0.0)
+# OpenSim is a Y-up engine: gravity points along -Y.
+GRAVITY: tuple[float, float, float] = (
+    0.0,
+    -float(STANDARD["frame"]["gravity_mps2"]),
+    0.0,
+)

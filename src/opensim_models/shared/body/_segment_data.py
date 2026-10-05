@@ -11,6 +11,10 @@ import math
 from dataclasses import dataclass
 
 from opensim_models.shared.contracts.preconditions import require_positive
+from opensim_models.shared.parity.standard import (
+    SEGMENT_LENGTH_FRACTIONS,
+    SEGMENT_MASS_FRACTIONS,
+)
 
 logger = logging.getLogger(__name__)
 
@@ -37,17 +41,11 @@ class BodyModelSpec:
         require_positive(self.height, "height")
 
 
-# Winter (2009) segment mass fractions and length fractions of total height.
+# Winter (2009) segment mass fractions and length fractions of total height,
+# derived from the vendored parity standard (single source of truth).
 _SEGMENT_TABLE: dict[str, dict[str, float]] = {
-    "pelvis": {"mass_frac": 0.142, "length_frac": 0.100},
-    "torso": {"mass_frac": 0.355, "length_frac": 0.288},
-    "head": {"mass_frac": 0.081, "length_frac": 0.130},
-    "upper_arm": {"mass_frac": 0.028, "length_frac": 0.186},
-    "forearm": {"mass_frac": 0.016, "length_frac": 0.146},
-    "hand": {"mass_frac": 0.006, "length_frac": 0.050},
-    "thigh": {"mass_frac": 0.100, "length_frac": 0.245},
-    "shank": {"mass_frac": 0.047, "length_frac": 0.246},
-    "foot": {"mass_frac": 0.014, "length_frac": 0.040},
+    name: {"mass_frac": SEGMENT_MASS_FRACTIONS[name], "length_frac": length_frac}
+    for name, length_frac in SEGMENT_LENGTH_FRACTIONS.items()
 }
 
 

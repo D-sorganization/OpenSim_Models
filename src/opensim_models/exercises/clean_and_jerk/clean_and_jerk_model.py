@@ -64,7 +64,7 @@ class CleanAndJerkModelBuilder(ExerciseModelBuilder):
 
         Clean grip: approximately shoulder width, ~0.25 m from shaft center.
         """
-        attach_barbell_to_hands(jointset, _CLEAN_GRIP_HALF_WIDTH)
+        attach_barbell_to_hands(jointset, _CLEAN_GRIP_HALF_WIDTH, self._model_el)
 
     def set_initial_pose(self, jointset: ET.Element) -> None:
         """Set starting position: bar on floor, clean grip, hip hinge.
