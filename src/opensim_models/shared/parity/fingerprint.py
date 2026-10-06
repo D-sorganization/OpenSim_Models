@@ -16,7 +16,11 @@ from typing import Any
 from opensim_models.exercises import EXERCISE_BUILDERS
 from opensim_models.model_pack import list_exercises, manifest
 from opensim_models.optimization.exercise_objectives import EXERCISE_OBJECTIVES
-from opensim_models.shared.parity._canonical import assemble, conformance
+from opensim_models.shared.parity._canonical import (
+    assemble,
+    conformance,
+    kinematics,
+)
 
 logger = logging.getLogger(__name__)
 
@@ -95,6 +99,35 @@ def _measure(model: Any, state: Any) -> tuple[dict[str, float], dict, dict]:
     return masses, limits, origins
 
 
+def _rotation(model: Any, state: Any, body: str) -> list[list[float]]:
+    model.realizePosition(state)
+    rot = model.getBodySet().get(body).getTransformInGround(state).R()
+    return [[rot.get(i, j) for j in range(3)] for i in range(3)]
+
+
+def _coordinate_axes(
+    model: Any, state: Any, std: dict[str, Any]
+) -> dict[str, tuple[float, float, float]]:
+    """Raw (engine-frame) rotation axis of every standard coordinate.
+
+    Each coordinate alone goes from the all-zero pose to the probe angle; the
+    axis is of its segment relative to the pelvis (``kinematics.segment_axis``).
+    Precondition: *state* has every coordinate at 0 (as left by ``_measure``).
+    """
+    engine_name = {canon: raw for raw, canon in COORDINATE_ALIASES.items()}
+    coords = model.getCoordinateSet()
+    angle = kinematics.probe_angle_rad(std)
+    out: dict[str, tuple[float, float, float]] = {}
+    for coord, segment in kinematics.axis_probes(std).items():
+        name = engine_name.get(coord, coord)
+        before = _rotation(model, state, "pelvis"), _rotation(model, state, segment)
+        coords.get(name).setValue(state, angle, False)
+        after = _rotation(model, state, "pelvis"), _rotation(model, state, segment)
+        coords.get(name).setValue(state, 0.0, False)
+        out[name] = kinematics.segment_axis(*before, *after)
+    return out
+
+
 def fingerprint(exercise: str) -> dict[str, Any]:
     """Build *exercise*, load it in OpenSim and report what the engine sees.
 
@@ -110,6 +143,7 @@ def fingerprint(exercise: str) -> dict[str, Any]:
     try:
         model, state = _load(exercise)
         masses, limits, origins = _measure(model, state)
+        axes = _coordinate_axes(model, state, std)
     except (RuntimeError, OSError) as exc:  # SWIG raises RuntimeError on bad models
         logger.error("OpenSim failed to load %s: %s", exercise, exc)
         return assemble.failed_fingerprint(ENGINE, version, exercise, exc)
@@ -130,6 +164,7 @@ def fingerprint(exercise: str) -> dict[str, Any]:
         segment_aliases=SEGMENT_ALIASES,
         ground_friction=_ground_friction(model),
         phase_count=None if objective is None else len(objective.phases),
+        coordinate_axes_engine=axes,
     )
 
 

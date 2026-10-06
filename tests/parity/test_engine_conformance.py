@@ -124,3 +124,15 @@ def test_capabilities_block_matches_standard() -> None:
             assert (root / entry["evidence"]).exists(), key
         else:
             assert entry["level"] == "none", f"{key}: evidence required"
+
+
+@needs_opensim
+@pytest.mark.parametrize("exercise", ["squat", "bench_press", "sit_to_stand"])
+def test_fingerprint_reports_every_coordinate_axis(exercise: str) -> None:
+    """Repository_Management#2011: axes are measured in OpenSim, not assumed."""
+    from opensim_models.shared.parity._canonical import kinematics
+
+    fp = fingerprint(exercise)
+    assert set(fp["coordinate_axes"]) == set(kinematics.expected_axes(STD))
+    assert kinematics.check_axes(fp, STD) == []
+    assert kinematics.check_sides(fp, STD) == []
