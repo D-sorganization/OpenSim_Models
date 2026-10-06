@@ -144,7 +144,9 @@ edited here and `tests/parity/` verifies their hashes against `MANIFEST.json`.
   mirrored left/right, so equal values give a symmetric pose. Lumbar lateral
   bend and axial rotation are positive toward the left. The barbell lies along
   Z. `tests/unit/shared/test_anatomical_directions.py` checks every direction
-  through the generator's forward kinematics.
+  through the generator's forward kinematics. The fingerprint also reports the
+  measured axis of all 28 coordinates (`coordinate_axes`, standard 1.1.0), so
+  conformance checks the convention in the real engine (#395).
 - `shared/parity/fingerprint.py` loads every exercise's generated .osim model in
   the real opensim engine and reports a `model-fingerprint/v1`
   (`python -m opensim_models.shared.parity.fingerprint --all --out DIR`).
