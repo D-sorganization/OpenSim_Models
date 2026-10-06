@@ -46,6 +46,19 @@ reachable from any live state and `abandoned` from `parked`.
 
 ## Shipped (Last 90 Days)
 
+### DL-#395 · Fingerprint Reports Measured Coordinate Axes
+
+- **State:** shipped
+- **Owner:** unassigned
+- **Issue:** #395
+- **Branch:** feat/issue-395-coordinate-axes
+- **PR:** #404
+- **Paths:** see #404
+- **Started:** 2026-10-06
+- **Last verified:** 2026-10-06 (`93b9e89a`; collated from changes/395-coordinate-axes.md)
+- **Summary:** Re-vendored parity bundle (standard 1.1.0, kinematics.py). The OpenSim fingerprint now measures every coordinate's rotation axis in the real engine; conformance checks axes and lateral sides with zero divergences for all seven exercises.
+- **Next step:** Shipped in PR #404.
+
 ### DL-#2019 · Vendor RM-5 Change-Fragment Tooling and Test Suite
 
 - **State:** shipped
