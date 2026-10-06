@@ -136,3 +136,14 @@ def test_fingerprint_reports_every_coordinate_axis(exercise: str) -> None:
     assert set(fp["coordinate_axes"]) == set(kinematics.expected_axes(STD))
     assert kinematics.check_axes(fp, STD) == []
     assert kinematics.check_sides(fp, STD) == []
+
+
+@needs_opensim
+@pytest.mark.parametrize("exercise", EXERCISES)
+def test_origins_match_the_reference_at_every_test_pose(exercise: str) -> None:
+    """Repository_Management#2011 slice 2: real-OpenSim FK vs the reference."""
+    from opensim_models.shared.parity._canonical import topology
+
+    fp = fingerprint(exercise)
+    assert set(fp["segment_origins_test_poses_m"]) == set(topology.standard_poses(STD))
+    assert topology.check_origins(fp, STD) == []
