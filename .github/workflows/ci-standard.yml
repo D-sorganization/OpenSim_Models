@@ -153,6 +153,10 @@ jobs:
       - pick-runner
     runs-on: ${{ github.event.pull_request && github.event.pull_request.head.repo.full_name != github.repository && 'ubuntu-latest' || fromJSON('["self-hosted","Linux","X64","d-sorg-fleet"]') }}
     timeout-minutes: 15
+    env:
+      # RM#2021: per-workspace toolchain homes; never share ~/.rustup or ~/.cargo.
+      RUSTUP_HOME: ${{ github.workspace }}/.rustup-home
+      CARGO_HOME: ${{ github.workspace }}/.cargo-home
     steps:
       - name: Checkout repository without external actions
         shell: bash
@@ -179,17 +183,12 @@ jobs:
         run: |
           set -euo pipefail
           mkdir -p $HOME/tmp && export TMPDIR=$HOME/tmp
-          if command -v rustup >/dev/null 2>&1; then
-            rustup toolchain install stable --profile minimal
-            rustup default stable
-          elif ! command -v cargo >/dev/null 2>&1; then
-            echo "Installing rustup..."
-            for i in {1..5}; do curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh -s -- -y --profile minimal --default-toolchain stable && break || sleep 5; done
-            source $HOME/.cargo/env
-          fi
-          # Ensure cargo is on PATH if just installed
-          export PATH="$HOME/.cargo/bin:$PATH"
-          echo "$HOME/.cargo/bin" >> $GITHUB_PATH
+          # RUSTUP_HOME/CARGO_HOME are per-workspace (job env), so a concurrent
+          # job's rustup update on the shared ~/.rustup cannot delete our binaries.
+          echo "Installing rustup into $RUSTUP_HOME and $CARGO_HOME..."
+          for i in {1..5}; do curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh -s -- -y --no-modify-path --profile minimal --default-toolchain stable && break || sleep 5; done
+          export PATH="$CARGO_HOME/bin:$PATH"
+          echo "$CARGO_HOME/bin" >> $GITHUB_PATH
           rustc --version
           cargo --version
       - name: cargo build

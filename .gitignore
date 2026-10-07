@@ -44,3 +44,6 @@ profile_stats2
 .gaai/project/contexts/backlog/.delivery-locks/
 .gaai/project/contexts/backlog/.delivery-logs/
 rust_core/target/
+# Per-workspace Rust toolchain homes (CI, RM#2021)
+.rustup-home/
+.cargo-home/
