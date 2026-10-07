@@ -19,10 +19,17 @@ jobs:
   guard:
     timeout-minutes: 60
     runs-on: ${{ !github.event.repository.private && vars.CI_RUNNER_MODE != 'local' && 'ubuntu-latest' || 'd-sorg-fleet' }}
+    # Fork PRs never reach the fleet (RM#1989): this job posts PR comments and
+    # needs write scopes a fork token lacks, so it is skipped for forks. Both
+    # conjuncts are required: the first satisfies the pull_request_target rule
+    # (head checkout), the second the pull_request rule.
     if: >-
-      github.event.pull_request.base.ref == 'main' &&
+      github.event.pull_request.head.repo.full_name == github.repository &&
+      (!github.event.pull_request ||
+      github.event.pull_request.head.repo.full_name == github.repository) &&
+      ((github.event.pull_request.base.ref == 'main' &&
       (github.event_name == 'pull_request' ||
-       github.event.label.name == 'phantom-guard-override') || github.event.pull_request.base.ref == 'master'
+       github.event.label.name == 'phantom-guard-override')) || github.event.pull_request.base.ref == 'master')
     steps:
       - name: Checkout PR head with full history
         uses: actions/checkout@v7
