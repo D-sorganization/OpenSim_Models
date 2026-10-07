@@ -20,6 +20,7 @@ from opensim_models.shared.parity._canonical import (
     assemble,
     conformance,
     kinematics,
+    topology,
 )
 
 logger = logging.getLogger(__name__)
@@ -88,15 +89,12 @@ def _measure(model: Any, state: Any) -> tuple[dict[str, float], dict, dict]:
         if COORDINATE_ALIASES.get(c.getName(), c.getName()) in human:
             limits[c.getName()] = (float(c.getRangeMin()), float(c.getRangeMax()))
         c.setValue(state, 0.0, False)
-    model.realizePosition(state)
-    masses, origins = {}, {}
     bodies = model.getBodySet()
-    for i in range(bodies.getSize()):
-        body = bodies.get(i)
-        p = body.getPositionInGround(state)
-        masses[body.getName()] = float(body.getMass())
-        origins[body.getName()] = (p.get(0), p.get(1), p.get(2))
-    return masses, limits, origins
+    masses = {
+        bodies.get(i).getName(): float(bodies.get(i).getMass())
+        for i in range(bodies.getSize())
+    }
+    return masses, limits, _origins(model, state)
 
 
 def _rotation(model: Any, state: Any, body: str) -> list[list[float]]:
@@ -128,6 +126,36 @@ def _coordinate_axes(
     return out
 
 
+def _origins(model: Any, state: Any) -> dict[str, tuple[float, float, float]]:
+    model.realizePosition(state)
+    bodies = model.getBodySet()
+    out = {}
+    for i in range(bodies.getSize()):
+        p = bodies.get(i).getPositionInGround(state)
+        out[bodies.get(i).getName()] = (p.get(0), p.get(1), p.get(2))
+    return out
+
+
+def _test_pose_origins(
+    model: Any, state: Any, std: dict[str, Any]
+) -> dict[str, dict[str, tuple[float, float, float]]]:
+    """Raw body origins at each of the standard's test poses (others 0).
+
+    Precondition: *state* has every coordinate at 0; it is restored after.
+    """
+    engine_name = {canon: raw for raw, canon in COORDINATE_ALIASES.items()}
+    coords = model.getCoordinateSet()
+    out = {}
+    for pose, angles in topology.standard_poses(std).items():
+        names = [engine_name.get(c, c) for c in angles]
+        for name, angle in zip(names, angles.values(), strict=True):
+            coords.get(name).setValue(state, angle, False)
+        out[pose] = _origins(model, state)
+        for name in names:
+            coords.get(name).setValue(state, 0.0, False)
+    return out
+
+
 def fingerprint(exercise: str) -> dict[str, Any]:
     """Build *exercise*, load it in OpenSim and report what the engine sees.
 
@@ -144,6 +172,8 @@ def fingerprint(exercise: str) -> dict[str, Any]:
         model, state = _load(exercise)
         masses, limits, origins = _measure(model, state)
         axes = _coordinate_axes(model, state, std)
+        poses = _test_pose_origins(model, state, std)
+        pelvis_rot = _rotation(model, state, "pelvis")
     except (RuntimeError, OSError) as exc:  # SWIG raises RuntimeError on bad models
         logger.error("OpenSim failed to load %s: %s", exercise, exc)
         return assemble.failed_fingerprint(ENGINE, version, exercise, exc)
@@ -165,6 +195,8 @@ def fingerprint(exercise: str) -> dict[str, Any]:
         ground_friction=_ground_friction(model),
         phase_count=None if objective is None else len(objective.phases),
         coordinate_axes_engine=axes,
+        pelvis_rotation_engine=pelvis_rot,
+        segment_origins_test_poses_engine_m=poses,
     )
 
 
