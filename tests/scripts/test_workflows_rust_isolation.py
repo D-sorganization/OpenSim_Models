@@ -27,7 +27,7 @@ EXPECTED_ENV = {
 
 def _rust_jobs() -> list[tuple[str, str, dict[str, Any]]]:
     found = []
-    for path in sorted(WORKFLOWS_DIR.glob("*.yml")):
+    for path in sorted([*WORKFLOWS_DIR.glob("*.yml"), *WORKFLOWS_DIR.glob("*.yaml")]):
         workflow = yaml.safe_load(path.read_text(encoding="utf-8"))
         for job_id, job in (workflow.get("jobs") or {}).items():
             if RUST_PATTERN.search(yaml.safe_dump(job.get("steps") or [])):
@@ -63,3 +63,11 @@ def test_rust_gate_puts_isolated_cargo_bin_first_on_path() -> None:
 
 def _rust_jobs_by_id() -> list[tuple[str, dict[str, Any]]]:
     return [(job_id, job) for _, job_id, job in _rust_jobs()]
+
+
+def test_rust_gate_fails_when_bootstrap_retries_are_exhausted() -> None:
+    """A `&& break || sleep` loop exits 0 after the last sleep; fail explicitly."""
+    steps = dict(_rust_jobs_by_id())["rust-gate"]["steps"]
+    install = next(s for s in steps if s.get("name") == "Install Rust toolchain")
+    assert "|| sleep" not in install["run"]
+    assert "exit 1" in install["run"]
