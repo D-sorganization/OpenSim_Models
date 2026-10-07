@@ -46,6 +46,19 @@ reachable from any live state and `abandoned` from `parked`.
 
 ## Shipped (Last 90 Days)
 
+### DL-#410 · CI: Isolate RUSTUP_HOME/CARGO_HOME per Workspace in Rust Gate (RM#2021)
+
+- **State:** shipped
+- **Owner:** unassigned
+- **Issue:** #410
+- **Branch:** merged via #411
+- **PR:** #411
+- **Paths:** see #411
+- **Started:** 2026-10-07
+- **Last verified:** 2026-10-07 (`251b7723`; collated from changes/410-ci-isolate-rustup-home-cargo-home-per-wo.md)
+- **Summary:** CI: isolate RUSTUP_HOME/CARGO_HOME per workspace in Rust Gate (RM#2021)
+- **Next step:** Shipped in PR #411.
+
 ### DL-#407 · SECURITY: Guard Fork PRs Off the Self-Hosted Fleet; Vendor Fork_Pr_Runner_Guard Checker, Fork-Route/Guard 9 Fleet-Capable Jobs, Add CI Check (RM#1989)
 
 - **State:** shipped
