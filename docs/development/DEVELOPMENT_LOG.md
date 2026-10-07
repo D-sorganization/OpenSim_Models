@@ -46,6 +46,19 @@ reachable from any live state and `abandoned` from `parked`.
 
 ## Shipped (Last 90 Days)
 
+### DL-#407 · SECURITY: Guard Fork PRs Off the Self-Hosted Fleet; Vendor Fork_Pr_Runner_Guard Checker, Fork-Route/Guard 9 Fleet-Capable Jobs, Add CI Check (RM#1989)
+
+- **State:** shipped
+- **Owner:** unassigned
+- **Issue:** #407
+- **Branch:** merged via #408
+- **PR:** #408
+- **Paths:** see #408
+- **Started:** 2026-10-07
+- **Last verified:** 2026-10-07 (`6c1fc53e`; collated from changes/407-security-guard-fork-prs-off-the-self-hos.md)
+- **Summary:** SECURITY: guard fork PRs off the self-hosted fleet; vendor fork_pr_runner_guard checker, fork-route/guard 9 fleet-capable jobs, add CI check (RM#1989)
+- **Next step:** Shipped in PR #408.
+
 ### DL-#395 · Fingerprint Reports Measured Coordinate Axes
 
 - **State:** shipped
