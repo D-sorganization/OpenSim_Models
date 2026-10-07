@@ -1,29 +1,34 @@
-name: Local-Only Workflow Runner Guard
+name: Fork PR Runner Guard
 
-# Enforces that every workflow in this repo routes its jobs to the d-sorg
-# self-hosted fleet. The guard also runs on the fleet so org-level
-# hosted-runner restrictions cannot leave main red before the policy check starts.
+# Fails when any workflow job can run fork pull-request code on the d-sorg
+# self-hosted fleet (Repository_Management#1989, Tools#4464). Fork PRs are routed to a
+# GitHub-hosted runner so they get the verdict too (public repo default: hosted). Logic: scripts/fork_pr_runner_guard.py.
 
 on:
   pull_request:
     paths:
       - ".github/workflows/**"
+      - "scripts/fork_pr_runner_guard.py"
+      - "scripts/fork_pr_guard_analysis.py"
+  merge_group:
   push:
-    branches: [main]
+    branches-ignore: ["gh-readonly-queue/**"]
     paths:
       - ".github/workflows/**"
+      - "scripts/fork_pr_runner_guard.py"
+      - "scripts/fork_pr_guard_analysis.py"
   workflow_dispatch:
 
 permissions:
   contents: read
 
 concurrency:
-  group: local-only-runner-guard-${{ github.ref }}
+  group: fork-pr-runner-guard-${{ github.ref }}
   cancel-in-progress: true
 
 jobs:
-  local-only-workflows:
-    name: Reject hosted runner routing
+  fork-pr-runner-guard:
+    name: Verify no job runs fork PR code on the self-hosted fleet
     runs-on: ${{ github.event.pull_request && github.event.pull_request.head.repo.full_name != github.repository && 'ubuntu-latest' || !github.event.repository.private && vars.CI_RUNNER_MODE != 'local' && 'ubuntu-latest' || 'd-sorg-fleet' }}
     timeout-minutes: 5
     steps:
@@ -36,21 +41,9 @@ jobs:
           auth_header="$(printf 'x-access-token:%s' "$GH_TOKEN" | base64 | tr -d '\n')"
           git init "$GITHUB_WORKSPACE"
           cd "$GITHUB_WORKSPACE"
-          if git remote get-url origin >/dev/null 2>&1; then
-            git remote set-url origin "https://github.com/${GITHUB_REPOSITORY}.git"
-          else
-            git remote add origin "https://github.com/${GITHUB_REPOSITORY}.git"
-          fi
+          git remote add origin "https://github.com/${GITHUB_REPOSITORY}.git"
           git -c "http.https://github.com/.extraheader=AUTHORIZATION: basic ${auth_header}" fetch --depth=1 origin "$GITHUB_SHA"
           git checkout --force FETCH_HEAD
-          git clean -ffdx
 
-      - name: Run local-only workflow guard
-        shell: bash
-        run: |
-          set -euo pipefail
-          if command -v python3 >/dev/null 2>&1; then
-            python3 scripts/check_local_only_workflows.py
-          else
-            python scripts/check_local_only_workflows.py
-          fi
+      - name: Verify no job runs fork PR code on the self-hosted fleet
+        run: python3 scripts/fork_pr_runner_guard.py
