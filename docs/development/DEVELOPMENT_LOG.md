@@ -18,6 +18,19 @@ reachable from any live state and `abandoned` from `parked`.
 
 ## Active
 
+### DL-#389 · Add an InverseDynamicsTool Wrapper With a Real-OpenSim Test
+
+- **State:** in_review
+- **Owner:** unassigned
+- **Issue:** #389
+- **Branch:** fix/389-inverse-dynamics-tool
+- **PR:** #417
+- **Paths:** see #417
+- **Started:** 2026-10-09
+- **Last verified:** 2026-10-09 (`74afedc4`; collated from changes/389-add-an-inversedynamicstool-wrapper-with.md)
+- **Summary:** Add an InverseDynamicsTool wrapper with a real-OpenSim test
+- **Next step:** Review and merge PR.
+
 ### DL-#383 · Anatomical Joint Axes: X Forward, Z Lateral, Mirrored Left Side
 
 - **State:** in_review
