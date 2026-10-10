@@ -1,10 +1,12 @@
 """Tests for full-body model generation."""
 
+import math
 import xml.etree.ElementTree as ET
 
 import pytest
 
 from opensim_models.shared.body import BodyModelSpec, create_full_body
+from opensim_models.shared.body.body_model import SHOULDER_ADDUCT_RANGE
 
 
 class TestBodyModelSpec:
@@ -145,3 +147,47 @@ class TestCreateFullBody:
         # Pelvis mass should scale with total mass
         pelvis_mass = float(bodies["pelvis"].find("mass").text)  # type: ignore
         assert pelvis_mass == pytest.approx(100.0 * 0.142)
+
+    def test_hip_adduct_range_already_favors_abduction(self, model_elements):
+        """Issue #424 asks whether hip_adduct has the shoulder's mirrored
+        defect. It does not: the declared range already gives abduction
+        (negative) the larger magnitude, matching Kapandji (2008) -- hip
+        abduction ROM (~45 deg) exceeds adduction ROM (~30 deg)."""
+        _, jointset, _ = model_elements
+        for cj in jointset.findall("CustomJoint"):
+            if cj.get("name") != "hip_r":
+                continue
+            for coord in cj.findall(".//Coordinate"):
+                if coord.get("name") != "hip_r_adduct":
+                    continue
+                lo, hi = (float(v) for v in coord.find("range").text.split())  # type: ignore[union-attr]
+                assert abs(lo) > hi, (
+                    f"hip_r_adduct range [{lo}, {hi}] does not favor "
+                    f"abduction over adduction"
+                )
+
+
+class TestShoulderAdductRangeIsAnatomical:
+    """shoulder_{side}_adduct: positive = adduction (toward the midline),
+    negative = abduction -- confirmed empirically with real-OpenSim forward
+    kinematics (#424: perturbing shoulder_l_adduct/shoulder_r_adduct by
+    +-0.2 rad from the neutral squat pose and reading hand_l/hand_r position
+    in the ground frame). Shoulder abduction active ROM reaches ~180 deg
+    (arm overhead), while adduction across the body is capped around 30 deg
+    (Kapandji, *The Physiology of the Joints*, Vol. 1, 6th ed., 2008) -- the
+    mirror image of what the range previously encoded (-30, 180) deg.
+    """
+
+    def test_90_degrees_abduction_is_within_range(self) -> None:
+        """90 deg of abduction (negative adduct) is an ordinary overhead
+        position and must lie inside the joint's own range."""
+        abduction_90 = math.radians(-90)
+        lo, hi = SHOULDER_ADDUCT_RANGE
+        assert lo <= abduction_90 <= hi
+
+    def test_90_degrees_pure_adduction_is_outside_range(self) -> None:
+        """90 deg of pure adduction (positive adduct) is anatomically
+        impossible and must lie outside the joint's own range."""
+        adduction_90 = math.radians(90)
+        lo, hi = SHOULDER_ADDUCT_RANGE
+        assert not (lo <= adduction_90 <= hi)
