@@ -18,6 +18,19 @@ reachable from any live state and `abandoned` from `parked`.
 
 ## Active
 
+### DL-#424 · Fix Mirrored Shoulder Adduction/Abduction Range Sign Convention
+
+- **State:** in_review
+- **Owner:** claude
+- **Issue:** #424
+- **Branch:** claude/shoulder-rom-424
+- **PR:** #427
+- **Paths:** src/opensim_models/shared/body/body_model.py,src/opensim_models/shared/body/arm_geometry.py,src/opensim_models/exercises/snatch/snatch_model.py,src/opensim_models/shared/parity/parity_divergences.json,tests/unit/shared/test_body_model.py,tests/unit/shared/test_arm_geometry.py,tests/parity/test_barbell_grip_residual.py
+- **Started:** 2026-10-10
+- **Last verified:** 2026-10-10 (`d9992adb`; collated from changes/424-fix-mirrored-shoulder-adduct-range-sign.md)
+- **Summary:** Fix mirrored shoulder-adduct range sign/direction; discover and work around the wrist's own range binding the snatch grip width
+- **Next step:** Review and merge; #426 tracks the remaining grip-width gap.
+
 ### DL-#394 · Symmetric Barbell Grip at the Neutral Pose
 
 - **State:** in_review

@@ -163,6 +163,7 @@ Rows are keyed by pull request, not by a serial spec version: `| YYYY-MM-DD | #<
 
 | Date       | PR    | Changes                                                                                                                                                                                                                                                                                                  |
 | ---------- | ----- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| 2026-10-10 | #427 | Fix mirrored shoulder-adduct range sign/direction; discover and work around the wrist's own range binding the snatch grip width |
 | 2026-10-10 | #423 | Derive shoulder adduction from the requested grip width (shared/body/arm_geometry.py) so both hand-to-bar attachments agree at the neutral pose for deadlift, clean_and_jerk, snatch and bench_press; snatch grip is narrowed to the widest width the shoulder ROM can reach. |
 | 2026-10-10 | #421 | Derive segment radius and inertia from standard radius_frac instead of uniform density |
 | 2026-10-10 | #419 | Remove stray fix.diff from repo root |
