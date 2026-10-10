@@ -67,19 +67,25 @@ class CleanAndJerkModelBuilder(ExerciseModelBuilder):
         Clean grip: approximately shoulder width, ~0.25 m from shaft center.
         The shoulders are adducted (see ``set_initial_pose``) so the hands
         actually reach that width at the neutral pose (#394); the shaft is
-        attached at the resulting feasible width, not the raw request.
+        attached at the resulting feasible width, not the raw request. The
+        grip weld's own frame orientation (``hand_tilt``) keeps the hand's
+        orientation consistent with the shaft (#426).
         """
-        _, feasible_grip = shoulder_adduct_for_grip(
+        shoulder_adduct, feasible_grip = shoulder_adduct_for_grip(
             self.body_spec, _CLEAN_GRIP_HALF_WIDTH
         )
-        attach_barbell_to_hands(jointset, feasible_grip, self._model_el)
+        attach_barbell_to_hands(
+            jointset, feasible_grip, self._model_el, hand_tilt=shoulder_adduct
+        )
 
     def set_initial_pose(self, jointset: ET.Element) -> None:
         """Set starting position: bar on floor, clean grip, hip hinge.
 
-        The shoulders are adducted so the hands reach the clean grip width;
-        an equal, opposite wrist deviation (same mirrored axis) keeps the
-        hands, and so the bar, level (#394).
+        The shoulders are adducted so the hands reach the clean grip width
+        (#394). The hand's orientation is kept consistent with the shaft by
+        the grip weld's own frame orientation (see ``attach_barbell``), not
+        a wrist counter-rotation, so the wrist stays at its neutral default
+        of 0 (#426).
         """
         set_floor_pull_initial_pose(jointset)
 
@@ -89,7 +95,6 @@ class CleanAndJerkModelBuilder(ExerciseModelBuilder):
         defaults = {}
         for side in ("l", "r"):
             defaults[f"shoulder_{side}_adduct"] = shoulder_adduct
-            defaults[f"wrist_{side}_deviation"] = -shoulder_adduct
         set_coordinate_defaults(jointset, defaults)
 
 

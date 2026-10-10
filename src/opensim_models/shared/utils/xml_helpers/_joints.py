@@ -251,8 +251,17 @@ def add_weld_joint(
     child_body: str,
     location_in_parent: tuple[float, float, float],
     location_in_child: tuple[float, float, float] = (0, 0, 0),
+    orientation_in_parent: tuple[float, float, float] = (0, 0, 0),
+    orientation_in_child: tuple[float, float, float] = (0, 0, 0),
 ) -> ET.Element:
-    """Append a <WeldJoint> (rigid attachment) to *jointset*."""
+    """Append a <WeldJoint> (rigid attachment) to *jointset*.
+
+    ``orientation_in_parent``/``orientation_in_child`` default to zero (no
+    behaviour change for existing callers). A grip exercise's barbell weld
+    can set ``orientation_in_parent`` to the inverse of the hand's own
+    abduction tilt, so the welded body ends up level without a wrist
+    counter-rotation (issue #426).
+    """
     joint = ET.SubElement(jointset, "WeldJoint", name=name)
     _add_joint_frames(
         joint,
@@ -261,8 +270,8 @@ def add_weld_joint(
         child_body,
         location_in_parent,
         location_in_child,
-        ZERO_VEC3,
-        ZERO_VEC3,
+        orientation_in_parent,
+        orientation_in_child,
     )
     return joint
 

@@ -16,7 +16,11 @@ logger = logging.getLogger(__name__)
 
 
 def _add_offset_frame(
-    model: ET.Element, name: str, body: str, location: tuple[float, float, float]
+    model: ET.Element,
+    name: str,
+    body: str,
+    location: tuple[float, float, float],
+    orientation: tuple[float, float, float] = (0.0, 0.0, 0.0),
 ) -> None:
     """Add a PhysicalOffsetFrame to the model's ``components`` property."""
     components = model.find("components")
@@ -25,7 +29,7 @@ def _add_offset_frame(
     frame = ET.SubElement(components, "PhysicalOffsetFrame", name=name)
     ET.SubElement(frame, "socket_parent").text = f"/bodyset/{body}"
     ET.SubElement(frame, "translation").text = vec3_str(*location)
-    ET.SubElement(frame, "orientation").text = vec3_str(0.0, 0.0, 0.0)
+    ET.SubElement(frame, "orientation").text = vec3_str(*orientation)
 
 
 def add_weld_constraint(
@@ -36,17 +40,25 @@ def add_weld_constraint(
     body_2: str,
     location_in_body_1: tuple[float, float, float],
     location_in_body_2: tuple[float, float, float],
+    orientation_in_body_1: tuple[float, float, float] = (0.0, 0.0, 0.0),
+    orientation_in_body_2: tuple[float, float, float] = (0.0, 0.0, 0.0),
 ) -> ET.Element:
     """Append a ``WeldConstraint`` between two bodies to the model.
 
     The constraint locks offset frames on *body_1* and *body_2* together. It is
     stored in the model's ``ConstraintSet`` (flat here, nested at serialization).
+
+    ``orientation_in_body_1``/``orientation_in_body_2`` default to zero (no
+    behaviour change for existing callers). A grip exercise's right-hand
+    weld can set ``orientation_in_body_1`` to the inverse of that hand's own
+    abduction tilt, so the constraint's orientation row is satisfied without
+    a wrist counter-rotation (issue #426).
     """
     if body_1 == body_2:
         raise ValueError("WeldConstraint requires two distinct bodies")
     frame_1, frame_2 = f"{name}_frame1", f"{name}_frame2"
-    _add_offset_frame(model, frame_1, body_1, location_in_body_1)
-    _add_offset_frame(model, frame_2, body_2, location_in_body_2)
+    _add_offset_frame(model, frame_1, body_1, location_in_body_1, orientation_in_body_1)
+    _add_offset_frame(model, frame_2, body_2, location_in_body_2, orientation_in_body_2)
     cset = model.find("ConstraintSet")
     if cset is None:
         cset = ET.SubElement(model, "ConstraintSet")

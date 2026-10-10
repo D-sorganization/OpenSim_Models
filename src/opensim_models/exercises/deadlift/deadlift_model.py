@@ -96,9 +96,15 @@ class DeadliftModelBuilder(ExerciseModelBuilder):
         The shoulders are adducted (see ``set_initial_pose``) so the hands
         actually reach ``self.grip_offset`` at the neutral pose (#394); the
         shaft is attached at that same feasible width, not the raw request.
+        The grip weld's own frame orientation (``hand_tilt``) keeps the
+        hand's orientation consistent with the shaft (#426).
         """
-        _, feasible_grip = shoulder_adduct_for_grip(self.body_spec, self.grip_offset)
-        attach_barbell_to_hands(jointset, feasible_grip, self._model_el)
+        shoulder_adduct, feasible_grip = shoulder_adduct_for_grip(
+            self.body_spec, self.grip_offset
+        )
+        attach_barbell_to_hands(
+            jointset, feasible_grip, self._model_el, hand_tilt=shoulder_adduct
+        )
 
     def set_initial_pose(self, jointset: ET.Element) -> None:
         """Set the starting position: deep hip hinge, knees flexed.
@@ -106,8 +112,10 @@ class DeadliftModelBuilder(ExerciseModelBuilder):
         The bar is on the floor at PLATE_RADIUS height, so the body
         must flex at the hips (~80 deg) and knees (~60 deg) to reach.
         The shoulders are adducted so the hands reach the shoulder-width
-        grip (#394); an equal, opposite wrist deviation (same mirrored
-        axis) keeps the hands, and so the bar, level.
+        grip (#394). The hand's orientation is kept consistent with the
+        shaft by the grip weld's own frame orientation (see
+        ``attach_barbell``), not a wrist counter-rotation, so the wrist
+        stays at its neutral default of 0 (#426).
         Runs a feasibility check and emits a warning if hands are far
         from bar height.
         """
@@ -117,7 +125,6 @@ class DeadliftModelBuilder(ExerciseModelBuilder):
         defaults = {}
         for side in ("l", "r"):
             defaults[f"shoulder_{side}_adduct"] = shoulder_adduct
-            defaults[f"wrist_{side}_deviation"] = -shoulder_adduct
         set_coordinate_defaults(jointset, defaults)
 
         self._check_pose_feasibility()

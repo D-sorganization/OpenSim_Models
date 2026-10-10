@@ -218,6 +218,42 @@ class TestAddWeldJoint:
         assert parent_frame.findtext("orientation") == "0.000000 0.000000 0.000000"
         assert child_frame.findtext("orientation") == "0.000000 0.000000 0.000000"
 
+    def test_orientation_in_parent_defaults_to_zero(self):
+        """Backward compatibility: omitting the new orientation kwargs must
+        not change any existing caller's generated XML (issue #426)."""
+        jointset = ET.Element("JointSet")
+        joint = add_weld_joint(
+            jointset,
+            name="weld",
+            parent_body="a",
+            child_body="b",
+            location_in_parent=(0, 0, 0),
+        )
+        parent_frame = joint.find("PhysicalOffsetFrame[@name='weld_parent']")
+        assert parent_frame is not None
+        assert parent_frame.findtext("orientation") == "0.000000 0.000000 0.000000"
+
+    def test_orientation_in_parent_is_set_on_the_parent_frame(self):
+        """Issue #426: a grip weld's parent (hand) frame can carry an
+        orientation offset that cancels the hand's own tilt, so the shaft
+        (child) ends up level without a wrist counter-rotation."""
+        jointset = ET.Element("JointSet")
+        joint = add_weld_joint(
+            jointset,
+            name="weld",
+            parent_body="hand_l",
+            child_body="barbell_shaft",
+            location_in_parent=(0, 0, 0),
+            orientation_in_parent=(-0.5236, 0.0, 0.0),
+        )
+        parent_frame = joint.find("PhysicalOffsetFrame[@name='weld_parent']")
+        child_frame = joint.find("PhysicalOffsetFrame[@name='weld_child']")
+        assert parent_frame is not None
+        assert child_frame is not None
+        assert parent_frame.findtext("orientation") == "-0.523600 0.000000 0.000000"
+        # The child (shaft) frame is untouched by the parent's offset.
+        assert child_frame.findtext("orientation") == "0.000000 0.000000 0.000000"
+
 
 class TestIndentXml:
     def test_formats_nested_elements(self):

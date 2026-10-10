@@ -13,12 +13,12 @@ Phases:
 6. Recovery — stand up from overhead squat to full extension
 
 Biomechanical notes:
-- Grip width: targets ~1.5x shoulder width (approx 0.55-0.65 m from center),
-  but the wrist's own range of motion caps how far the shoulder can abduct
-  without the wrist's counter-rotation (which keeps the bar level) drifting
-  off its declared default at assembly time, so this model's achieved width
-  is ~0.46 m (#424; follow-up #426) -- still the widest grip of the four
-  barbell exercises
+- Grip width: ~1.5x shoulder width (0.58 m from center), the widest grip of
+  the four barbell exercises. Reaching it needs ~45 deg of shoulder
+  abduction; the grip weld's own frame orientation (not a wrist
+  counter-rotation) keeps the hand's orientation consistent with the
+  shaft, so the shoulder's own (much larger) range of motion is the only
+  bound (#424, #426)
 - Primary movers: entire posterior chain, deltoids, trapezius
 - Requires extreme shoulder mobility for overhead position
 - Bar path is close to the body (S-curve trajectory)
@@ -61,25 +61,29 @@ class SnatchModelBuilder(ExerciseModelBuilder):
     ) -> None:
         """Weld barbell to both hands with wide (snatch) grip.
 
-        Snatch grip targets ~0.58 m from shaft center (~1.5x shoulder
-        width), but the shoulder's adduction range of motion cannot reach
-        that width (see ``set_initial_pose``); the shaft is attached at the
-        resulting feasible (narrower) width, not the raw request, so the two
-        hand-to-bar constraints agree at the neutral pose (#394).
+        Snatch grip reaches its full ~0.58 m from shaft center (~1.5x
+        shoulder width): the shoulder's adduction range of motion comfortably
+        covers the ~45 deg of abduction that needs (see ``set_initial_pose``).
+        The grip weld's own frame orientation (``hand_tilt``) keeps the hand's
+        orientation consistent with the shaft, so the two hand-to-bar
+        constraints agree at the neutral pose in both position and
+        orientation (#394, #426).
         """
-        _, feasible_grip = shoulder_adduct_for_grip(
+        shoulder_adduct, feasible_grip = shoulder_adduct_for_grip(
             self.body_spec, _SNATCH_GRIP_HALF_WIDTH
         )
-        attach_barbell_to_hands(jointset, feasible_grip, self._model_el)
+        attach_barbell_to_hands(
+            jointset, feasible_grip, self._model_el, hand_tilt=shoulder_adduct
+        )
 
     def set_initial_pose(self, jointset: ET.Element) -> None:
         """Set starting position: bar on floor, wide grip, deep hip hinge.
 
         Wide snatch grip requires shoulder abduction, clamped to the
-        shoulder's range of motion *and* to what the wrist's own range of
-        motion can exactly cancel (#424, see ``arm_geometry`` module
-        docstring); an equal, opposite wrist deviation (same mirrored
-        axis) keeps the hands, and so the bar, level.
+        shoulder's own range of motion (#424). The hand's orientation is
+        kept consistent with the shaft by the grip weld's own frame
+        orientation (see ``attach_barbell``), not a wrist counter-rotation,
+        so the wrist stays at its neutral default of 0 (#426).
         """
         set_floor_pull_initial_pose(jointset)
         shoulder_adduct, _ = shoulder_adduct_for_grip(
@@ -89,7 +93,6 @@ class SnatchModelBuilder(ExerciseModelBuilder):
         for side in ("l", "r"):
             defaults[f"shoulder_{side}_adduct"] = shoulder_adduct
             defaults[f"shoulder_{side}_rotate"] = 0.0
-            defaults[f"wrist_{side}_deviation"] = -shoulder_adduct
         set_coordinate_defaults(jointset, defaults)
 
 

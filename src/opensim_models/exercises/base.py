@@ -76,6 +76,8 @@ def attach_barbell_to_hands(
     jointset: ET.Element,
     grip_offset: float,
     model: ET.Element,
+    *,
+    hand_tilt: float = 0.0,
 ) -> None:
     """Weld barbell shaft to both hands at the given grip offset.
 
@@ -89,6 +91,20 @@ def attach_barbell_to_hands(
         jointset: XML JointSet element.
         grip_offset: distance from shaft center to each hand (metres).
         model: XML Model element receiving the right-hand weld constraint.
+        hand_tilt: the ``shoulder_{l,r}_adduct`` value (radians, equal for
+            both sides by construction of every grip exercise) a wide grip
+            abducts the shoulders by. Defaults to 0 (no behaviour change,
+            e.g. bench press). A wide grip tilts each hand about the same
+            adduct/deviation axis the shoulder and wrist coordinates use
+            (``shared/body/limb_builders.py``'s mirrored axis convention);
+            confirmed with real-OpenSim forward kinematics:
+            ``hand_l = RotX(-hand_tilt)``, ``hand_r = RotX(+hand_tilt)``.
+            Rather than cancelling that tilt with an equal, opposite wrist
+            deviation (the pre-#426 mechanism, bounded by the wrist's own
+            +30/-20 deg range), the grip weld's own frame carries the
+            exact inverse rotation, so the wrist stays at 0 and the
+            shoulder's much larger range of motion is the only bound
+            (issue #426).
     """
     add_weld_joint(
         jointset,
@@ -97,6 +113,7 @@ def attach_barbell_to_hands(
         child_body="barbell_shaft",
         location_in_parent=(0, 0, 0),
         location_in_child=(0, 0, -grip_offset),
+        orientation_in_parent=(hand_tilt, 0.0, 0.0),
     )
     add_weld_constraint(
         model,
@@ -105,6 +122,7 @@ def attach_barbell_to_hands(
         body_2="barbell_shaft",
         location_in_body_1=(0, 0, 0),
         location_in_body_2=(0, 0, grip_offset),
+        orientation_in_body_1=(-hand_tilt, 0.0, 0.0),
     )
 
 
