@@ -59,6 +59,19 @@ reachable from any live state and `abandoned` from `parked`.
 
 ## Shipped (Last 90 Days)
 
+### DL-#392 · Derive Segment Radius and Inertia From Standard Radius_Frac Instead of Uniform Density
+
+- **State:** shipped
+- **Owner:** unassigned
+- **Issue:** #392
+- **Branch:** merged via #421
+- **PR:** #421
+- **Paths:** see #421
+- **Started:** 2026-10-10
+- **Last verified:** 2026-10-10 (`185e59e2`; collated from changes/392-derive-segment-radius-and-inertia-from-s.md)
+- **Summary:** Derive segment radius and inertia from standard radius_frac instead of uniform density
+- **Next step:** Shipped in PR #421.
+
 ### DL-#398 · Remove Stray Fix.Diff From Repo Root
 
 - **State:** shipped
