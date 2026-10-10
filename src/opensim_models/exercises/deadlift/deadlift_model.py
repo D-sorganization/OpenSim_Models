@@ -32,6 +32,8 @@ from opensim_models.exercises.constants import (
     _FLOOR_PULL_KNEE_ANGLE,
     _FLOOR_PULL_LUMBAR_ANGLE,
 )
+from opensim_models.shared.body import shoulder_adduct_for_grip
+from opensim_models.shared.utils.xml_helpers import set_coordinate_defaults
 
 logger = logging.getLogger(__name__)
 
@@ -91,20 +93,32 @@ class DeadliftModelBuilder(ExerciseModelBuilder):
     ) -> None:
         """Weld barbell shaft to both hands at shoulder-width grip.
 
-        Grip is slightly outside the knees (~0.22 m from center).
+        The shoulders are adducted (see ``set_initial_pose``) so the hands
+        actually reach ``self.grip_offset`` at the neutral pose (#394); the
+        shaft is attached at that same feasible width, not the raw request.
         """
-        attach_barbell_to_hands(jointset, self.grip_offset, self._model_el)
+        _, feasible_grip = shoulder_adduct_for_grip(self.body_spec, self.grip_offset)
+        attach_barbell_to_hands(jointset, feasible_grip, self._model_el)
 
     def set_initial_pose(self, jointset: ET.Element) -> None:
         """Set the starting position: deep hip hinge, knees flexed.
 
         The bar is on the floor at PLATE_RADIUS height, so the body
         must flex at the hips (~80 deg) and knees (~60 deg) to reach.
-        Multi-DOF joints default to neutral (0) for adduction/rotation.
+        The shoulders are adducted so the hands reach the shoulder-width
+        grip (#394); an equal, opposite wrist deviation (same mirrored
+        axis) keeps the hands, and so the bar, level.
         Runs a feasibility check and emits a warning if hands are far
         from bar height.
         """
         set_floor_pull_initial_pose(jointset)
+
+        shoulder_adduct, _ = shoulder_adduct_for_grip(self.body_spec, self.grip_offset)
+        defaults = {}
+        for side in ("l", "r"):
+            defaults[f"shoulder_{side}_adduct"] = shoulder_adduct
+            defaults[f"wrist_{side}_deviation"] = -shoulder_adduct
+        set_coordinate_defaults(jointset, defaults)
 
         self._check_pose_feasibility()
 

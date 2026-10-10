@@ -26,6 +26,7 @@ from opensim_models.exercises.base import (
     ExerciseModelBuilder,
     attach_barbell_to_hands,
 )
+from opensim_models.shared.body import shoulder_adduct_for_grip
 from opensim_models.shared.utils.contact_helpers import (
     add_contact_half_space,
     add_contact_sphere,
@@ -146,9 +147,13 @@ class BenchPressModelBuilder(ExerciseModelBuilder):
         """Weld barbell to both hands at grip width.
 
         The grip is approximately shoulder-width (~0.40 m from center
-        on each side for a standard grip).
+        on each side for a standard grip). The shoulders are adducted (see
+        ``set_initial_pose``) so the hands actually reach that width at the
+        neutral pose (#394); the shaft is attached at that same feasible
+        width, not the raw request.
         """
-        attach_barbell_to_hands(jointset, self.grip_offset, self._model_el)
+        _, feasible_grip = shoulder_adduct_for_grip(self.body_spec, self.grip_offset)
+        attach_barbell_to_hands(jointset, feasible_grip, self._model_el)
 
     def _skip_ground_joint(self) -> bool:
         """Bench press supplies its own pelvis parent via WeldJoint to bench."""
@@ -185,12 +190,13 @@ class BenchPressModelBuilder(ExerciseModelBuilder):
         """Set supine lockout position.
 
         Shoulders flexed ~90 deg (arms pointing up), elbows near-extended.
-        Shoulder adduction set for bench grip width; an equal wrist deviation
-        keeps the hands, and so the bar, on the lateral axis.
+        Shoulder adduction set so the hands reach the bench grip width
+        (#394); an equal, opposite wrist deviation keeps the hands, and so
+        the bar, on the lateral axis.
         The supine orientation is enforced by the bench-pelvis weld constraint.
         """
         shoulder_flex = 1.5708  # ~90 degrees (arms vertical)
-        shoulder_adduct = -0.5236  # ~-30° (arms abducted from midline)
+        shoulder_adduct, _ = shoulder_adduct_for_grip(self.body_spec, self.grip_offset)
         defaults = {}
         for side in ("l", "r"):
             defaults[f"shoulder_{side}_flex"] = shoulder_flex

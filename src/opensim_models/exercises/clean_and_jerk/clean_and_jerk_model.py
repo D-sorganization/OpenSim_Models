@@ -39,6 +39,8 @@ from opensim_models.exercises.base import (
 from opensim_models.exercises.constants import (
     _CLEAN_GRIP_HALF_WIDTH,
 )
+from opensim_models.shared.body import shoulder_adduct_for_grip
+from opensim_models.shared.utils.xml_helpers import set_coordinate_defaults
 
 logger = logging.getLogger(__name__)
 
@@ -63,15 +65,32 @@ class CleanAndJerkModelBuilder(ExerciseModelBuilder):
         """Weld barbell to both hands at clean grip width.
 
         Clean grip: approximately shoulder width, ~0.25 m from shaft center.
+        The shoulders are adducted (see ``set_initial_pose``) so the hands
+        actually reach that width at the neutral pose (#394); the shaft is
+        attached at the resulting feasible width, not the raw request.
         """
-        attach_barbell_to_hands(jointset, _CLEAN_GRIP_HALF_WIDTH, self._model_el)
+        _, feasible_grip = shoulder_adduct_for_grip(
+            self.body_spec, _CLEAN_GRIP_HALF_WIDTH
+        )
+        attach_barbell_to_hands(jointset, feasible_grip, self._model_el)
 
     def set_initial_pose(self, jointset: ET.Element) -> None:
         """Set starting position: bar on floor, clean grip, hip hinge.
 
-        Multi-DOF joints default to neutral for adduction/rotation.
+        The shoulders are adducted so the hands reach the clean grip width;
+        an equal, opposite wrist deviation (same mirrored axis) keeps the
+        hands, and so the bar, level (#394).
         """
         set_floor_pull_initial_pose(jointset)
+
+        shoulder_adduct, _ = shoulder_adduct_for_grip(
+            self.body_spec, _CLEAN_GRIP_HALF_WIDTH
+        )
+        defaults = {}
+        for side in ("l", "r"):
+            defaults[f"shoulder_{side}_adduct"] = shoulder_adduct
+            defaults[f"wrist_{side}_deviation"] = -shoulder_adduct
+        set_coordinate_defaults(jointset, defaults)
 
 
 def build_clean_and_jerk_model(

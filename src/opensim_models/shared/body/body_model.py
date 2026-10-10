@@ -30,6 +30,11 @@ _FLEX_AXIS = "0 0 1"
 _ADDUCT_AXIS = "1 0 0"
 _ROTATE_AXIS = "0 1 0"
 
+# Shoulder adduction range of motion (radians): -30 deg abduction to 180 deg.
+# Exported so arm_geometry.shoulder_adduct_for_grip (#394) can clamp a
+# requested grip width to what this joint can actually reach.
+SHOULDER_ADDUCT_RANGE: tuple[float, float] = (-0.5236, 3.1416)
+
 
 def _three_dof_coord_defs(
     ranges: tuple[tuple[float, float], tuple[float, float], tuple[float, float]],
@@ -69,7 +74,7 @@ def _add_upper_arm(
         parent_lateral_z=shoulder_z,
         coord_prefix="shoulder",
         coord_defs=_three_dof_coord_defs(
-            ((-1.0472, 3.1416), (-0.5236, 3.1416), (-1.5708, 1.5708))
+            ((-1.0472, 3.1416), SHOULDER_ADDUCT_RANGE, (-1.5708, 1.5708))
         ),
         bodies=bodies,
     )
