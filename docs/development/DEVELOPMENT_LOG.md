@@ -18,6 +18,19 @@ reachable from any live state and `abandoned` from `parked`.
 
 ## Active
 
+### DL-#394 · Symmetric Barbell Grip at the Neutral Pose
+
+- **State:** in_review
+- **Owner:** claude
+- **Issue:** #394
+- **Branch:** claude/grip-residuals-394
+- **PR:** #423
+- **Paths:** src/opensim_models/shared/body/arm_geometry.py,src/opensim_models/shared/body/body_model.py,src/opensim_models/exercises/deadlift/deadlift_model.py,src/opensim_models/exercises/clean_and_jerk/clean_and_jerk_model.py,src/opensim_models/exercises/snatch/snatch_model.py,src/opensim_models/exercises/bench_press/bench_press_model.py,tests/parity/test_barbell_grip_residual.py
+- **Started:** 2026-10-10
+- **Last verified:** 2026-10-10 (`085ce939`; collated from changes/394-derive-shoulder-adduction-from-the-reque.md)
+- **Summary:** Derive shoulder adduction from the requested grip width (shared/body/arm_geometry.py) so both hand-to-bar attachments agree at the neutral pose for deadlift, clean_and_jerk, snatch and bench_press; snatch grip is narrowed to the widest width the shoulder ROM can reach.
+- **Next step:** Open the PR and get it reviewed/merged.
+
 ### DL-#389 · Add an InverseDynamicsTool Wrapper With a Real-OpenSim Test
 
 - **State:** in_review
