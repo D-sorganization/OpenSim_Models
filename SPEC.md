@@ -163,6 +163,7 @@ Rows are keyed by pull request, not by a serial spec version: `| YYYY-MM-DD | #<
 
 | Date       | PR    | Changes                                                                                                                                                                                                                                                                                                  |
 | ---------- | ----- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| 2026-10-10 | #419 | Remove stray fix.diff from repo root |
 | 2026-10-09 | #417 | Add an InverseDynamicsTool wrapper with a real-OpenSim test |
 | 2026-10-07 | #406 | Re-vendored parity bundle (standard 1.2.0, topology.py, Repository_Management#2011 slice 2). The OpenSim fingerprint reports the pelvis rotation and segment origins at the standard's three test poses; conformance checks them against the reference forward kinematics with zero origin and pose divergences for every exercise. |
 | 2026-10-07 | #411 | CI: isolate RUSTUP_HOME/CARGO_HOME per workspace in Rust Gate (RM#2021) |
