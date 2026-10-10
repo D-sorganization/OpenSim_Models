@@ -75,6 +75,24 @@ def _coordinate_drift(model, state) -> dict[str, float]:  # type: ignore[no-unty
     }
 
 
+def _coordinate_range_violations(model) -> dict[str, tuple[float, float, float]]:  # type: ignore[no-untyped-def]
+    """Return ``{name: (default, range_min, range_max)}`` for coordinates
+    whose own declared default lies outside that coordinate's own declared
+    ``<range>`` (issue #424). A default outside its own joint limit is
+    infeasible for any limit-aware consumer (IK, optimization, dynamics),
+    independent of what OpenSim's own ``initSystem()`` does with it.
+    """
+    coords = model.getCoordinateSet()
+    out = {}
+    for i in range(coords.getSize()):
+        c = coords.get(i)
+        default = c.getDefaultValue()
+        lo, hi = c.getRangeMin(), c.getRangeMax()
+        if not (lo - 1e-6 <= default <= hi + 1e-6):
+            out[c.getName()] = (default, lo, hi)
+    return out
+
+
 def _measure(tmp_path: Path, exercise: str):  # type: ignore[no-untyped-def]
     """Return (left_residual_m, right_residual_m, coordinate_drift) at the
     model's neutral pose, measured right after ``initSystem()``.
@@ -141,3 +159,50 @@ def test_neutral_pose_needs_no_silent_reassembly(tmp_path: Path, exercise: str) 
         f"reconcile the hand-to-bar constraints instead of the declared "
         f"pose already being feasible"
     )
+
+
+@needs_opensim
+@pytest.mark.parametrize("exercise", GRIP_EXERCISES)
+def test_initial_pose_within_its_own_joint_limits(
+    tmp_path: Path, exercise: str
+) -> None:
+    """Every barbell exercise's default coordinate values must lie within
+    that coordinate's own declared ``<range>`` (issue #424): the shoulder
+    adduction range was previously mirrored (180 deg of adduction, 30 deg
+    of abduction), which happened to be self-consistent with the clamp in
+    ``shoulder_adduct_for_grip`` so it never tripped this check -- but a
+    declared default outside its own joint limit is still infeasible for
+    any limit-aware consumer.
+    """
+    import opensim
+
+    xml_str = EXERCISE_BUILDERS[exercise]()
+    path = tmp_path / f"{exercise}.osim"
+    path.write_text(xml_str, encoding="utf-8")
+    model = opensim.Model(str(path))
+    model.initSystem()
+
+    violations = _coordinate_range_violations(model)
+    assert not violations, f"{exercise}: {violations}"
+
+
+def test_snatch_grip_width_is_bounded_by_wrist_cancellation_not_shoulder_sign() -> None:
+    """The snatch's achieved grip width is unchanged by the shoulder-range
+    sign fix (issue #424): both before and after, it is ~0.4585 m, not the
+    documented 0.58 m. Before the fix, the (mirrored) shoulder range was
+    the binding constraint; after the fix, the shoulder's own range is no
+    longer binding, but the wrist's own range of motion is -- its exact
+    counter-rotation budget (+30 deg) permits exactly the same 30 deg of
+    shoulder abduction the old, mislabeled range happened to allow, so the
+    achieved width does not change, only the reason it is capped there.
+    Reaching the full 0.58 m needs a real design change to how the wrist
+    cancels the shoulder's tilt (follow-up: #426), not a range value; this
+    test pins the current, correct, drift-free behavior.
+    """
+    from opensim_models.exercises.constants import _SNATCH_GRIP_HALF_WIDTH
+
+    xml_str = EXERCISE_BUILDERS["snatch"]()
+    root = ET.fromstring(xml_str)
+    achieved = abs(_frame_translation(root, "barbell_to_left_hand_child")[2])
+    assert achieved < _SNATCH_GRIP_HALF_WIDTH
+    assert achieved == pytest.approx(0.4585, abs=1e-3)
