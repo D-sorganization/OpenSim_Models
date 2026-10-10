@@ -14,6 +14,7 @@ from opensim_models.shared.contracts.preconditions import require_positive
 from opensim_models.shared.parity.standard import (
     SEGMENT_LENGTH_FRACTIONS,
     SEGMENT_MASS_FRACTIONS,
+    SEGMENT_RADIUS_FRACTIONS,
 )
 
 logger = logging.getLogger(__name__)
@@ -41,10 +42,14 @@ class BodyModelSpec:
         require_positive(self.height, "height")
 
 
-# Winter (2009) segment mass fractions and length fractions of total height,
-# derived from the vendored parity standard (single source of truth).
+# Winter (2009) segment mass fractions, length fractions, and radius fractions
+# of total height, derived from the vendored parity standard (single source of truth).
 _SEGMENT_TABLE: dict[str, dict[str, float]] = {
-    name: {"mass_frac": SEGMENT_MASS_FRACTIONS[name], "length_frac": length_frac}
+    name: {
+        "mass_frac": SEGMENT_MASS_FRACTIONS[name],
+        "length_frac": length_frac,
+        "radius_frac": SEGMENT_RADIUS_FRACTIONS[name],
+    }
     for name, length_frac in SEGMENT_LENGTH_FRACTIONS.items()
 }
 
@@ -79,5 +84,5 @@ def _seg(spec: BodyModelSpec, name: str) -> tuple[float, float, float]:
     s = _SEGMENT_TABLE[name]
     seg_mass = spec.total_mass * s["mass_frac"]
     seg_length = spec.height * s["length_frac"]
-    radius = _segment_radius_from_mass(seg_mass, seg_length)
+    radius = spec.height * s["radius_frac"]
     return seg_mass, seg_length, radius

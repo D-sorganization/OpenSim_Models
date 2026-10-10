@@ -36,3 +36,24 @@ class TestSegmentRadiusFromMass:
     def test_rejects_non_finite_mass(self, mass: float) -> None:
         with pytest.raises(ValueError, match="non-finite"):
             _segment_radius_from_mass(mass=mass, length=0.3)
+
+
+class TestSegmentRadiusFrac:
+    def test_segment_radius_computed_from_radius_frac(self) -> None:
+        from opensim_models.shared.body._segment_data import (
+            _SEGMENT_TABLE,
+            BodyModelSpec,
+            _seg,
+        )
+        from opensim_models.shared.parity.standard import (
+            SEGMENT_LENGTH_FRACTIONS,
+            SEGMENT_MASS_FRACTIONS,
+            SEGMENT_RADIUS_FRACTIONS,
+        )
+
+        spec = BodyModelSpec(total_mass=80.0, height=1.75)
+        for name in _SEGMENT_TABLE:
+            mass, length, radius = _seg(spec, name)
+            assert mass == pytest.approx(spec.total_mass * SEGMENT_MASS_FRACTIONS[name])
+            assert length == pytest.approx(spec.height * SEGMENT_LENGTH_FRACTIONS[name])
+            assert radius == pytest.approx(spec.height * SEGMENT_RADIUS_FRACTIONS[name])
