@@ -5,7 +5,13 @@ major body segments and joints suitable for barbell exercise simulation.
 """
 
 from opensim_models.shared.body._segment_data import BodyModelSpec
+from opensim_models.shared.body.arm_geometry import shoulder_adduct_for_grip
 from opensim_models.shared.body.body_model import create_full_body
 from opensim_models.shared.body.foot_contact import add_foot_contact_spheres
 
-__all__ = ["BodyModelSpec", "add_foot_contact_spheres", "create_full_body"]
+__all__ = [
+    "BodyModelSpec",
+    "add_foot_contact_spheres",
+    "create_full_body",
+    "shoulder_adduct_for_grip",
+]

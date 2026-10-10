@@ -13,7 +13,9 @@ Phases:
 6. Recovery — stand up from overhead squat to full extension
 
 Biomechanical notes:
-- Grip width: ~1.5x shoulder width (approx 0.55-0.65 m from center)
+- Grip width: targets ~1.5x shoulder width (approx 0.55-0.65 m from center),
+  but this model's shoulder adduction range of motion caps it at ~0.46 m
+  (#394) -- still the widest grip of the four barbell exercises
 - Primary movers: entire posterior chain, deltoids, trapezius
 - Requires extreme shoulder mobility for overhead position
 - Bar path is close to the body (S-curve trajectory)
@@ -35,6 +37,7 @@ from opensim_models.exercises.base import (
 from opensim_models.exercises.constants import (
     _SNATCH_GRIP_HALF_WIDTH,
 )
+from opensim_models.shared.body import shoulder_adduct_for_grip
 from opensim_models.shared.utils.xml_helpers import set_coordinate_defaults
 
 logger = logging.getLogger(__name__)
@@ -55,24 +58,34 @@ class SnatchModelBuilder(ExerciseModelBuilder):
     ) -> None:
         """Weld barbell to both hands with wide (snatch) grip.
 
-        Snatch grip is approximately 0.55-0.60 m from shaft center
-        on each side (~1.5x shoulder width).
+        Snatch grip targets ~0.58 m from shaft center (~1.5x shoulder
+        width), but the shoulder's adduction range of motion cannot reach
+        that width (see ``set_initial_pose``); the shaft is attached at the
+        resulting feasible (narrower) width, not the raw request, so the two
+        hand-to-bar constraints agree at the neutral pose (#394).
         """
-        attach_barbell_to_hands(jointset, _SNATCH_GRIP_HALF_WIDTH, self._model_el)
+        _, feasible_grip = shoulder_adduct_for_grip(
+            self.body_spec, _SNATCH_GRIP_HALF_WIDTH
+        )
+        attach_barbell_to_hands(jointset, feasible_grip, self._model_el)
 
     def set_initial_pose(self, jointset: ET.Element) -> None:
         """Set starting position: bar on floor, wide grip, deep hip hinge.
 
-        Wide snatch grip requires slight shoulder abduction; an equal wrist
-        deviation (same mirrored axis) keeps the hands, and so the bar, level.
+        Wide snatch grip requires shoulder abduction, clamped to the
+        shoulder's range of motion (#394); an equal, opposite wrist
+        deviation (same mirrored axis) keeps the hands, and so the bar,
+        level.
         """
         set_floor_pull_initial_pose(jointset)
-        shoulder_abduct = -0.3491  # ~-20° abduction for wide grip
+        shoulder_adduct, _ = shoulder_adduct_for_grip(
+            self.body_spec, _SNATCH_GRIP_HALF_WIDTH
+        )
         defaults = {}
         for side in ("l", "r"):
-            defaults[f"shoulder_{side}_adduct"] = shoulder_abduct
+            defaults[f"shoulder_{side}_adduct"] = shoulder_adduct
             defaults[f"shoulder_{side}_rotate"] = 0.0
-            defaults[f"wrist_{side}_deviation"] = -shoulder_abduct
+            defaults[f"wrist_{side}_deviation"] = -shoulder_adduct
         set_coordinate_defaults(jointset, defaults)
 
 
