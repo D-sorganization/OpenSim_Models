@@ -29,6 +29,11 @@ SEGMENT_LENGTH_FRACTIONS: dict[str, float] = {
     name: float(seg["length_frac"]) for name, seg in _SEGMENTS.items()
 }
 
+SEGMENT_RADIUS_FRACTIONS: dict[str, float] = {
+    name: float(seg["radius_frac"]) for name, seg in _SEGMENTS.items()
+}
+
+
 # Side-less coordinate name (``hip_flex``) -> (lower_rad, upper_rad); the
 # bundle expresses both sides with one ``{side}`` template, so they share limits.
 _SIDE0: str = STANDARD["sides"][0]
