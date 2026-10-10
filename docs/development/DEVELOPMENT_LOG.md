@@ -59,6 +59,19 @@ reachable from any live state and `abandoned` from `parked`.
 
 ## Shipped (Last 90 Days)
 
+### DL-#398 · Remove Stray Fix.Diff From Repo Root
+
+- **State:** shipped
+- **Owner:** unassigned
+- **Issue:** #398
+- **Branch:** merged via #419
+- **PR:** #419
+- **Paths:** see #419
+- **Started:** 2026-10-10
+- **Last verified:** 2026-10-10 (`96671dc5`; collated from changes/398-remove-stray-fix-diff-from-repo-root.md)
+- **Summary:** Remove stray fix.diff from repo root
+- **Next step:** Shipped in PR #419.
+
 ### DL-#2011 · Fingerprint Reports Test-Pose Origins in the Pelvis Frame
 
 - **State:** shipped
