@@ -24,21 +24,31 @@ symmetric about the shaft centre by construction, so no assembly-time
 correction is needed to satisfy the two hand-to-bar grip *position*
 constraints.
 
-The wrist counter-rotation is not merely cosmetic, though (#424): the left
-hand is welded to the barbell shaft by a rigid, zero-DOF ``WeldJoint`` (the
-shaft's orientation *is* the left hand's orientation), and the right hand
-is tied to that same shaft by a ``WeldConstraint``, which constrains
-orientation as well as position. Confirmed with real-OpenSim forward
-kinematics: the exact cancellation ``wrist_deviation = -shoulder_adduct``
-gives zero coordinate drift and zero grip residual at any angle, but
-clamping the wrist's value independently (leaving ``shoulder_adduct``
-at an angle the wrist cannot fully cancel) does not just leave the hand
-visually tilted -- it leaves the two hands' orientations mismatched, so
-OpenSim's ``initSystem()`` assembly silently redistributes the mismatch
-across *both* wrists, moving each one away from its declared default.
-``shoulder_adduct_for_grip`` therefore clamps its angle to the
-intersection of the shoulder's own range and the range the wrist can
-exactly cancel, not the shoulder's range alone.
+Keeping hand *orientation* consistent with the shaft is not merely
+cosmetic (#424): the left hand is welded to the barbell shaft by a rigid,
+zero-DOF ``WeldJoint`` (the shaft's orientation *is* the left hand's
+orientation), and the right hand is tied to that same shaft by a
+``WeldConstraint``, which constrains orientation as well as position. A
+mismatch between the two hands' orientations is not just cosmetic either:
+OpenSim's ``initSystem()`` assembly would silently redistribute it across
+whichever coordinates are free to move, moving them away from their
+declared defaults.
+
+#424 kept the two hands' orientations consistent (and so avoided that
+mismatch) with an equal, opposite wrist deviation on the same mirrored
+axis (``wrist_deviation = -shoulder_adduct``), confirmed with real-OpenSim
+forward kinematics to give zero coordinate drift and zero grip residual
+at any angle -- but only up to the wrist's own declared range (+30/-20
+deg), which the snatch's documented 0.58 m grip (~45.16 deg of abduction)
+exceeds. #426 removes that dependency on the wrist entirely: the grip
+weld's own frame now carries the exact inverse rotation of each hand's
+tilt (``exercises.base.attach_barbell_to_hands``'s ``hand_tilt``
+parameter), confirmed with real-OpenSim forward kinematics (isolated from
+every other pose coordinate): ``hand_l = RotX(-shoulder_l_adduct)``,
+``hand_r = RotX(+shoulder_r_adduct)``, both about the shoulder/wrist's
+shared mirrored axis. The wrist stays at its neutral default of 0 for
+every grip exercise, so ``shoulder_adduct_for_grip`` only needs to clamp
+its angle to the shoulder's own range of motion.
 """
 
 from __future__ import annotations
@@ -46,10 +56,7 @@ from __future__ import annotations
 import math
 
 from opensim_models.shared.body._segment_data import BodyModelSpec, _seg
-from opensim_models.shared.body.body_model import (
-    SHOULDER_ADDUCT_RANGE,
-    WRIST_DEVIATION_RANGE,
-)
+from opensim_models.shared.body.body_model import SHOULDER_ADDUCT_RANGE
 from opensim_models.shared.contracts.preconditions import require_finite
 
 # Lateral offset of the shoulder joint from the torso midline, as a multiple
@@ -79,15 +86,12 @@ def shoulder_adduct_for_grip(
 
     ``shoulder_adduct`` is the shoulder-adduction angle (radians) that puts
     the hand's lateral offset at *grip_offset* at the neutral pose. It is
-    clamped to the intersection of the shoulder's own range of motion and
-    the range the wrist's exact counter-rotation (``-shoulder_adduct``,
-    see module docstring) can reach without exceeding the wrist's own
-    declared range (#424) -- exceeding it would force OpenSim's
-    ``initSystem()`` to silently redistribute the mismatch across both
-    wrists at assembly time. ``feasible_grip_offset`` is the lateral
-    offset actually reached at that clamped angle: equal to *grip_offset*
-    unless the request exceeds this combined range, in which case it is
-    the widest grip the pose can reach without assembly-time drift.
+    clamped to the shoulder's own range of motion only (#426; see module
+    docstring for why the wrist's range no longer bounds it).
+    ``feasible_grip_offset`` is the lateral offset actually reached at that
+    clamped angle: equal to *grip_offset* unless the request exceeds the
+    shoulder's range, in which case it is the widest grip the pose can
+    reach.
 
     Callers must attach the barbell at ``feasible_grip_offset``, not the
     raw request, or the two hand-to-bar constraints fight each other at the
@@ -102,8 +106,6 @@ def shoulder_adduct_for_grip(
     sin_theta = max(-1.0, min(1.0, sin_theta))
     theta = math.asin(sin_theta)
     lo, hi = SHOULDER_ADDUCT_RANGE
-    wrist_lo, wrist_hi = WRIST_DEVIATION_RANGE
-    lo, hi = max(lo, -wrist_hi), min(hi, -wrist_lo)
     theta = max(lo, min(hi, theta))
     feasible_grip_offset = shoulder_z - arm_length * math.sin(theta)
     return theta, feasible_grip_offset

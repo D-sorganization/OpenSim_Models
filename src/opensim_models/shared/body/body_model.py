@@ -44,10 +44,12 @@ _ROTATE_AXIS = "0 1 0"
 SHOULDER_ADDUCT_RANGE: tuple[float, float] = (-3.1416, 0.5236)
 
 # Wrist deviation range of motion (radians): same axis/sign convention as
-# shoulder adduct (positive = toward the midline). Exported so
-# arm_geometry.shoulder_adduct_for_grip (#424) can clamp a grip's shoulder
-# abduction to what the wrist's exact counter-rotation can cancel without
-# exceeding this joint's own range (see arm_geometry module docstring).
+# shoulder adduct (positive = toward the midline). Bench press still uses
+# this joint's own exact counter-rotation to keep its hands level
+# (shoulder_adduct_for_grip no longer needs to protect it for the other
+# grip exercises, which instead keep the hand's orientation consistent
+# with the shaft via the grip weld's own frame, #426 -- see
+# arm_geometry module docstring).
 WRIST_DEVIATION_RANGE: tuple[float, float] = (-0.3491, 0.5236)
 
 
