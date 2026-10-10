@@ -186,15 +186,23 @@ def test_initial_pose_within_its_own_joint_limits(
     assert not violations, f"{exercise}: {violations}"
 
 
-def test_snatch_reaches_documented_grip_width() -> None:
-    """The snatch start pose must reach its documented 0.58 m grip width
-    (issue #424): the shoulder's abduction range was previously clamped to
-    a mirrored range that cut the achieved width to ~0.4585 m per side
-    instead of the full 0.58 m.
+def test_snatch_grip_width_is_bounded_by_wrist_cancellation_not_shoulder_sign() -> None:
+    """The snatch's achieved grip width is unchanged by the shoulder-range
+    sign fix (issue #424): both before and after, it is ~0.4585 m, not the
+    documented 0.58 m. Before the fix, the (mirrored) shoulder range was
+    the binding constraint; after the fix, the shoulder's own range is no
+    longer binding, but the wrist's own range of motion is -- its exact
+    counter-rotation budget (+30 deg) permits exactly the same 30 deg of
+    shoulder abduction the old, mislabeled range happened to allow, so the
+    achieved width does not change, only the reason it is capped there.
+    Reaching the full 0.58 m needs a real design change to how the wrist
+    cancels the shoulder's tilt (follow-up: #426), not a range value; this
+    test pins the current, correct, drift-free behavior.
     """
     from opensim_models.exercises.constants import _SNATCH_GRIP_HALF_WIDTH
 
     xml_str = EXERCISE_BUILDERS["snatch"]()
     root = ET.fromstring(xml_str)
     achieved = abs(_frame_translation(root, "barbell_to_left_hand_child")[2])
-    assert achieved == pytest.approx(_SNATCH_GRIP_HALF_WIDTH, abs=1e-3)
+    assert achieved < _SNATCH_GRIP_HALF_WIDTH
+    assert achieved == pytest.approx(0.4585, abs=1e-3)

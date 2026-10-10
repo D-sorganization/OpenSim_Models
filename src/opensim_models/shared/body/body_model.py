@@ -30,10 +30,25 @@ _FLEX_AXIS = "0 0 1"
 _ADDUCT_AXIS = "1 0 0"
 _ROTATE_AXIS = "0 1 0"
 
-# Shoulder adduction range of motion (radians): -30 deg abduction to 180 deg.
+# shoulder_{side}_adduct: positive = adduction (toward the midline), negative
+# = abduction -- confirmed empirically with real-OpenSim forward kinematics
+# (#424: perturbing shoulder_l_adduct/shoulder_r_adduct +-0.2 rad from the
+# neutral squat pose and reading hand_l/hand_r position in the ground frame).
+# Shoulder abduction active ROM reaches ~180 deg (arm overhead), while
+# adduction across the body is capped around 30 deg (Kapandji, *The
+# Physiology of the Joints*, Vol. 1, 6th ed., 2008). The previous range
+# (-30, 180) deg had this backwards: 180 deg of adduction but only 30 deg of
+# abduction.
 # Exported so arm_geometry.shoulder_adduct_for_grip (#394) can clamp a
 # requested grip width to what this joint can actually reach.
-SHOULDER_ADDUCT_RANGE: tuple[float, float] = (-0.5236, 3.1416)
+SHOULDER_ADDUCT_RANGE: tuple[float, float] = (-3.1416, 0.5236)
+
+# Wrist deviation range of motion (radians): same axis/sign convention as
+# shoulder adduct (positive = toward the midline). Exported so
+# arm_geometry.shoulder_adduct_for_grip (#424) can clamp a grip's shoulder
+# abduction to what the wrist's exact counter-rotation can cancel without
+# exceeding this joint's own range (see arm_geometry module docstring).
+WRIST_DEVIATION_RANGE: tuple[float, float] = (-0.3491, 0.5236)
 
 
 def _three_dof_coord_defs(
@@ -129,8 +144,8 @@ def _add_hand(
             },
             {
                 "suffix": "deviation",
-                "range_min": -0.3491,
-                "range_max": 0.5236,
+                "range_min": WRIST_DEVIATION_RANGE[0],
+                "range_max": WRIST_DEVIATION_RANGE[1],
                 "axis": "1 0 0",
                 "mirror": True,
             },

@@ -14,8 +14,11 @@ Phases:
 
 Biomechanical notes:
 - Grip width: targets ~1.5x shoulder width (approx 0.55-0.65 m from center),
-  but this model's shoulder adduction range of motion caps it at ~0.46 m
-  (#394) -- still the widest grip of the four barbell exercises
+  but the wrist's own range of motion caps how far the shoulder can abduct
+  without the wrist's counter-rotation (which keeps the bar level) drifting
+  off its declared default at assembly time, so this model's achieved width
+  is ~0.46 m (#424; follow-up #426) -- still the widest grip of the four
+  barbell exercises
 - Primary movers: entire posterior chain, deltoids, trapezius
 - Requires extreme shoulder mobility for overhead position
 - Bar path is close to the body (S-curve trajectory)
@@ -73,9 +76,10 @@ class SnatchModelBuilder(ExerciseModelBuilder):
         """Set starting position: bar on floor, wide grip, deep hip hinge.
 
         Wide snatch grip requires shoulder abduction, clamped to the
-        shoulder's range of motion (#394); an equal, opposite wrist
-        deviation (same mirrored axis) keeps the hands, and so the bar,
-        level.
+        shoulder's range of motion *and* to what the wrist's own range of
+        motion can exactly cancel (#424, see ``arm_geometry`` module
+        docstring); an equal, opposite wrist deviation (same mirrored
+        axis) keeps the hands, and so the bar, level.
         """
         set_floor_pull_initial_pose(jointset)
         shoulder_adduct, _ = shoulder_adduct_for_grip(
