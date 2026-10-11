@@ -98,6 +98,19 @@ reachable from any live state and `abandoned` from `parked`.
 
 ## Shipped (Last 90 Days)
 
+### DL-#1917 · Sync the Agent-Identity Managed Block: The Owner's Personal Token Is an Approved Agent Identity
+
+- **State:** shipped
+- **Owner:** unassigned
+- **Issue:** #1917
+- **Branch:** merged via #431
+- **PR:** #431
+- **Paths:** see #431
+- **Started:** 2026-10-11
+- **Last verified:** 2026-10-11 (`d656dee9`; collated from changes/1917-sync-the-agent-identity-managed-block-th.md)
+- **Summary:** Sync the agent-identity managed block: the owner's personal token is an approved agent identity
+- **Next step:** Shipped in PR #431.
+
 ### DL-#392 · Derive Segment Radius and Inertia From Standard Radius_Frac Instead of Uniform Density
 
 - **State:** shipped
