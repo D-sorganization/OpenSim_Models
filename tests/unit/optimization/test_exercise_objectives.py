@@ -81,9 +81,11 @@ class TestPhaseMonotonicity:
         assert obj.phases[0].time_fraction == 0.0
 
     @pytest.mark.parametrize("name", sorted(EXPECTED_EXERCISES))
-    def test_last_phase_ends_at_one(self, name: str) -> None:
+    def test_last_phase_starts_within_the_cycle(self, name: str) -> None:
+        # A fraction is the phase's start time (standard v2.0 ``t_frac``), so
+        # the last phase may start before 1.0.
         obj = get_exercise_objective(name)
-        assert obj.phases[-1].time_fraction == 1.0
+        assert obj.phases[-1].time_fraction <= 1.0
 
 
 class TestPhaseCount:

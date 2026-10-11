@@ -22,20 +22,11 @@ from opensim_models.shared.parity._canonical import (
     kinematics,
     topology,
 )
+from opensim_models.shared.parity.aliases import COORDINATE_ALIASES
 
 logger = logging.getLogger(__name__)
 
 ENGINE = "opensim"
-
-# Engine joint-coordinate name -> canonical name (only names that differ).
-COORDINATE_ALIASES: dict[str, str] = {
-    f"{joint}_{side}_{engine}": f"{joint}_{side}_{canonical}"
-    for side in ("l", "r")
-    for joint, engine, canonical in (
-        ("wrist", "deviation", "deviate"),
-        ("ankle", "inversion", "invert"),
-    )
-}
 
 # Engine body name -> canonical segment (bodies are already canonical).
 SEGMENT_ALIASES: dict[str, str] = {}
@@ -44,13 +35,16 @@ _FOOT_FORCE = "force_foot_l_heel_medial"
 
 
 def _pelvis_root_joint(model: Any) -> str:
-    """Return "free" if the pelvis hangs from a 6-DOF joint, else "fixed"."""
+    """Return "free" if the pelvis hangs from a 6-DOF joint, else "weld".
+
+    ``weld`` is the standard v2.0 root-joint vocabulary (``spec.ROOT_JOINTS``).
+    """
     joints = model.getJointSet()
     for i in range(joints.getSize()):
         joint = joints.get(i)
         if joint.getChildFrame().findBaseFrame().getName() == "pelvis":
-            return "free" if joint.numCoordinates() == 6 else "fixed"
-    return "fixed"
+            return "free" if joint.numCoordinates() == 6 else "weld"
+    return "weld"
 
 
 def _ground_friction(model: Any) -> dict[str, float] | None:
@@ -179,6 +173,10 @@ def fingerprint(exercise: str) -> dict[str, Any]:
         return assemble.failed_fingerprint(ENGINE, version, exercise, exc)
     g = model.getGravity()
     objective = EXERCISE_OBJECTIVES.get(exercise)
+    # Standard v2.0 conformance criterion 3: the ordered phase names.
+    extras = (
+        {} if objective is None else {"phase_names": [p.name for p in objective.phases]}
+    )
     return assemble.assemble_fingerprint(
         engine=ENGINE,
         engine_version=version,
@@ -194,6 +192,7 @@ def fingerprint(exercise: str) -> dict[str, Any]:
         segment_aliases=SEGMENT_ALIASES,
         ground_friction=_ground_friction(model),
         phase_count=None if objective is None else len(objective.phases),
+        extras=extras,
         coordinate_axes_engine=axes,
         pelvis_rotation_engine=pelvis_rot,
         segment_origins_test_poses_engine_m=poses,
