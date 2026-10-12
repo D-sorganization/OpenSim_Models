@@ -18,6 +18,19 @@ reachable from any live state and `abandoned` from `parked`.
 
 ## Active
 
+### DL-#434 · \ Name Gait and Sit-to-Stand Phases per Standard V2.0\
+
+- **State:** in_review
+- **Owner:** unassigned
+- **Issue:** #434
+- **Branch:** fix/434-gait-sts-phases
+- **PR:** #440
+- **Paths:** see #440
+- **Started:** 2026-10-12
+- **Last verified:** 2026-10-12 (`d9ef8ec3`; collated from changes/434-name-gait-and-sit-to-stand-phases-per-st.md)
+- **Summary:** \ Name Gait and Sit-to-Stand Phases per Standard v2.0\
+- **Next step:** \Merge the PR.\
+
 ### DL-#384 · Every Barbell Lift's Generated Model Starts at the Standard V2.1 Start Via-Pose (Coordinates, Pelvis Root, Bar, Palm Grip, Feet) With the Spec Load; Bench Start Contact Force Fixed (LIFT-3, UpstreamDrift#11743)
 
 - **State:** in_review
