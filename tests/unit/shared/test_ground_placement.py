@@ -24,6 +24,10 @@ from opensim_models.shared.body.ground_placement import (
 )
 
 FREE_ROOT = [e for e in EXERCISE_BUILDERS if e != "bench_press"]
+# The barbell lifts start at their spec via-pose, with a pitched pelvis whose
+# placement comes from the standard (tests/parity/test_spec_start_pose.py);
+# this pass assumes an upright pelvis, so it covers the other free roots.
+UPRIGHT_ROOT = ["gait", "sit_to_stand"]
 STANDING = ["squat", "gait"]
 TOL = 0.005  # 5 mm
 
@@ -51,7 +55,7 @@ def test_free_root_pelvis_ty_default_is_set(exercise: str) -> None:
     assert ty > 0.1, "pelvis_ty = 0 puts the feet ~1 m inside the ground"
 
 
-@pytest.mark.parametrize("exercise", FREE_ROOT)
+@pytest.mark.parametrize("exercise", UPRIGHT_ROOT)
 def test_lowest_sphere_surface_touches_ground(exercise: str) -> None:
     model = _model(exercise)
     lowest = _pelvis_ty(model) + lowest_contact_height_below_pelvis(model)
