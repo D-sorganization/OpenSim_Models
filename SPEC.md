@@ -163,6 +163,7 @@ Rows are keyed by pull request, not by a serial spec version: `| YYYY-MM-DD | #<
 
 | Date       | PR    | Changes                                                                                                                                                                                                                                                                                                  |
 | ---------- | ----- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| 2026-10-12 | #435 | Lift objectives consume the standard v2.0 exercise spec (phase names, timing, start/catch/lockout via-poses) with targets keyed by model coordinate names; bench_press weld root now conforms (LIFT-2, UpstreamDrift#11742) |
 | 2026-10-11 | #431 | Sync the agent-identity managed block: the owner's personal token is an approved agent identity |
 | 2026-10-10 | #429 | Reach the snatch's documented 0.58 m grip by keeping hand orientation consistent with the shaft via the grip weld's own frame instead of a wrist counter-rotation |
 | 2026-10-10 | #427 | Fix mirrored shoulder-adduct range sign/direction; discover and work around the wrist's own range binding the snatch grip width |
