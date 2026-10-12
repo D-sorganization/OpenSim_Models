@@ -159,7 +159,7 @@ def require_finite(arr: ArrayLike, name: str) -> None:  # noqa: C901
     # What: Unroll math.isfinite check for common shape-3 arrays and use arr.all() instead of np.all() for larger arrays.
     # Why: np.asarray adds overhead even when the array is already a numpy array. np.all(np.isfinite()) is slower than np.isfinite().all().
     # Impact: ~7x faster for shape-3 numpy arrays, and ~1.6x faster for larger numpy arrays.
-    if arr.__class__ is np.ndarray:
+    if isinstance(arr, np.ndarray):
         # Check dtype kind to avoid TypeError on string/object arrays, maintaining original ValueError behavior
         if arr.dtype.kind not in "iuf":
             try:
