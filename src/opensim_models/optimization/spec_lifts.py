@@ -1,4 +1,4 @@
-"""Lift objectives built from the vendored exercise spec (standard v2.0).
+"""Lift objectives built from the vendored exercise spec (standard v2.1).
 
 UpstreamDrift#11742 (LIFT-2), Repository_Management#2060 (Option A): the
 phase names, the phase timing (``t_frac``) and the start, catch and lockout
@@ -22,23 +22,18 @@ from bisect import bisect_right
 from typing import Any
 
 from opensim_models.optimization._types import ExerciseObjective, Phase
-from opensim_models.shared.parity._canonical import conformance, spec
-from opensim_models.shared.parity.aliases import engine_name
+from opensim_models.shared.parity import via_poses
+from opensim_models.shared.parity._canonical import spec
 from opensim_models.shared.parity.standard import STANDARD
 
-# The named phase each via-pose anchors.  Standard v2.0 names the poses but does
-# not bind them to phases, so the binding is recorded here (one entry per lift).
-VIA_POSE_PHASES: dict[str, dict[str, str]] = {
-    "squat": {"start": "standing", "catch": "bottom", "lockout": "lockout"},
-    "deadlift": {"start": "setup", "lockout": "lockout"},
-    "bench_press": {"start": "unrack", "catch": "chest_touch", "lockout": "lockout"},
-    "snatch": {"start": "setup", "catch": "catch", "lockout": "recovery"},
-    "clean_and_jerk": {
-        "start": "setup",
-        "catch": "rack_catch",
-        "lockout": "overhead_recovery",
-    },
-}
+# The five barbell lifts the standard gives via-poses for.
+SPEC_LIFTS: tuple[str, ...] = (
+    "squat",
+    "deadlift",
+    "bench_press",
+    "snatch",
+    "clean_and_jerk",
+)
 
 Pose = dict[str, float]
 
@@ -49,9 +44,13 @@ def via_pose(exercise: str, pose: str) -> Pose:
     Every canonical coordinate is present; those the spec does not list are 0
     (``pose_frame``).
     """
-    canonical = dict.fromkeys(conformance.expected_coordinates(STANDARD), 0.0)
-    canonical.update(spec.pose_coordinates(STANDARD, exercise, pose))
-    return {engine_name(name): value for name, value in canonical.items()}
+    return via_poses.coordinates(exercise, pose)
+
+
+def anchors(exercise: str) -> dict[str, str]:
+    """Via-pose -> the phase it anchors, from the standard (v2.1, RM#2077)."""
+    poses = spec.exercise_spec(STANDARD, exercise)["via_poses"]
+    return {pose: spec.via_pose_phase(STANDARD, exercise, pose) for pose in poses}
 
 
 def _blend(knots: list[tuple[float, Pose]], t: float) -> Pose:
@@ -72,13 +71,13 @@ def _anchor_knots(
 ) -> list[tuple[float, Pose]]:
     """(t_frac, pose) for every anchored phase, ordered by time."""
     t_of = {str(p["name"]): float(p["t_frac"]) for p in phases}
-    anchors = VIA_POSE_PHASES[exercise]
-    missing = sorted(set(anchors.values()) - set(t_of))
+    bound = anchors(exercise)
+    missing = sorted(set(bound.values()) - set(t_of))
     if missing:
         raise ValueError(f"{exercise}: anchored phases {missing} not in the spec")
-    if anchors["start"] != phases[0]["name"]:
+    if bound["start"] != phases[0]["name"]:
         raise ValueError(f"{exercise}: the start via-pose must anchor the first phase")
-    knots = [(t_of[phase], via_pose(exercise, pose)) for pose, phase in anchors.items()]
+    knots = [(t_of[phase], via_pose(exercise, pose)) for pose, phase in bound.items()]
     return sorted(knots, key=lambda k: k[0])
 
 
@@ -92,9 +91,9 @@ def lift_objective(
             missing from the spec, or a primary coordinate is not a
             coordinate the objective targets.
     """
-    if exercise not in VIA_POSE_PHASES:
+    if exercise not in SPEC_LIFTS:
         raise ValueError(
-            f"unknown exercise {exercise!r}; spec lifts: {sorted(VIA_POSE_PHASES)}"
+            f"unknown exercise {exercise!r}; spec lifts: {sorted(SPEC_LIFTS)}"
         )
     phases = spec.exercise_spec(STANDARD, exercise)["phases"]
     knots = _anchor_knots(exercise, phases)

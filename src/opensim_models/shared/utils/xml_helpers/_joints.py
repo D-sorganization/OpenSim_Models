@@ -6,6 +6,7 @@ import xml.etree.ElementTree as ET
 
 from opensim_models.shared.utils.xml_helpers._formatting import (
     ZERO_VEC3,
+    orientation_str,
     vec3_str,
 )
 from opensim_models.shared.utils.xml_helpers._spatial_transform import (
@@ -45,7 +46,7 @@ def _add_joint_frames(
         "0.000000 0.000000 0.000000"
         if orientation_in_parent.__class__ is tuple
         and orientation_in_parent == (0.0, 0.0, 0.0)
-        else vec3_str(*orientation_in_parent)
+        else orientation_str(*orientation_in_parent)
     )
 
     cf = ET.SubElement(joint, "PhysicalOffsetFrame", name=f"{name}_child")
@@ -59,7 +60,7 @@ def _add_joint_frames(
         "0.000000 0.000000 0.000000"
         if orientation_in_child.__class__ is tuple
         and orientation_in_child == (0.0, 0.0, 0.0)
-        else vec3_str(*orientation_in_child)
+        else orientation_str(*orientation_in_child)
     )
 
     ET.SubElement(joint, "socket_parent_frame").text = f"{name}_parent"

@@ -14,6 +14,7 @@ from opensim_models.shared.utils.xml_helpers import (
     add_weld_joint,
     float_str,
     indent_xml,
+    orientation_str,
     serialize_model,
     vec3_str,
     vec6_str,
@@ -21,6 +22,16 @@ from opensim_models.shared.utils.xml_helpers import (
 
 
 class TestVecFormatters:
+    def test_orientation_str_keeps_ten_decimals(self):
+        """Frame orientations need sub-micro-radian resolution: a 6-decimal
+        Euler angle tilts a 2.2 m bar by up to ~1e-6 m (UpstreamDrift#11743)."""
+        assert orientation_str(0.1234567891, 0.0, -1.0) == (
+            "0.1234567891 0.0000000000 -1.0000000000"
+        )
+
+    def test_orientation_str_zero_vector_matches_vec3_str(self):
+        assert orientation_str(0.0, 0.0, 0.0) == vec3_str(0.0, 0.0, 0.0)
+
     def test_vec3_str(self):
         assert vec3_str(1.0, 2.0, 3.0) == "1.000000 2.000000 3.000000"
 
@@ -250,7 +261,9 @@ class TestAddWeldJoint:
         child_frame = joint.find("PhysicalOffsetFrame[@name='weld_child']")
         assert parent_frame is not None
         assert child_frame is not None
-        assert parent_frame.findtext("orientation") == "-0.523600 0.000000 0.000000"
+        assert parent_frame.findtext("orientation") == (
+            "-0.5236000000 0.0000000000 0.0000000000"
+        )
         # The child (shaft) frame is untouched by the parent's offset.
         assert child_frame.findtext("orientation") == "0.000000 0.000000 0.000000"
 

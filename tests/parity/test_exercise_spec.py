@@ -1,4 +1,4 @@
-"""The lift objectives consume the vendored exercise spec (standard v2.0).
+"""The lift objectives consume the vendored exercise spec (standard v2.1).
 
 UpstreamDrift#11742 (LIFT-2), Repository_Management#2060 (Option A): phase
 names, phase timing, phase descriptions and the start, catch and lockout
@@ -23,9 +23,9 @@ STD = conformance.load_standard()
 LIFTS = ("squat", "deadlift", "bench_press", "snatch", "clean_and_jerk")
 
 # sha256 of Repository_Management/shared_scripts/model_parity/
-# biomech_parity_standard.json at v2.0.0 (Repository_Management#2069, d625a18).
-RM_STANDARD_V2_SHA256 = (
-    "351b74be85f64d70020e3e2db8d42f6a512eb876752b9bc7d11ac2253e2f784d"
+# biomech_parity_standard.json at v2.1.0 (Repository_Management#2079, 4c033bf).
+RM_STANDARD_V2_1_SHA256 = (
+    "a0eb6c2bbbfeb70011bad62cf6d21a9245ffabce757c390633b516f542eb3ef8"
 )
 
 
@@ -40,9 +40,9 @@ def _phase(objective: ExerciseObjective, name: str) -> Phase:
     return next(p for p in objective.phases if p.name == name)
 
 
-def test_vendored_standard_is_repository_management_v2() -> None:
-    assert conformance.standard_sha256() == RM_STANDARD_V2_SHA256
-    assert STD["version"] == "2.0.0"
+def test_vendored_standard_is_repository_management_v2_1() -> None:
+    assert conformance.standard_sha256() == RM_STANDARD_V2_1_SHA256
+    assert STD["version"] == "2.1.0"
 
 
 @pytest.mark.parametrize("exercise", LIFTS)
@@ -58,8 +58,9 @@ def test_phases_come_from_spec(exercise: str) -> None:
 def test_anchored_phases_hold_their_via_pose(exercise: str) -> None:
     objective = get_exercise_objective(exercise)
     poses = spec.exercise_spec(STD, exercise)["via_poses"]
-    anchors = spec_lifts.VIA_POSE_PHASES[exercise]
+    anchors = spec_lifts.anchors(exercise)
     assert set(anchors) == set(poses)
+    assert anchors == {p: spec.via_pose_phase(STD, exercise, p) for p in poses}
     assert anchors["start"] == spec.phase_names(STD, exercise)[0]
     for pose, phase in anchors.items():
         assert _phase(objective, phase).joint_targets == _full_pose(exercise, pose)

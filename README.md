@@ -41,6 +41,13 @@ See [docs/architecture/C4.md](docs/architecture/C4.md) for the authoritative Mer
 - **`exercises/`** — Exercise-specific model builders
   - Each exercise inherits from `ExerciseModelBuilder` (base class)
   - Customizes barbell attachment and initial pose
+  - The five barbell lifts inherit from `SpecLiftModelBuilder`
+    (`exercises/spec_start.py`): every generated lift starts at the vendored
+    parity standard's `start` via-pose -- joint coordinates, pelvis root, bar
+    position, palm-centre grip at the standard grip width, feet flat at the
+    standard stance -- with the standard load by default
+    (`plate_mass_per_side=None`). `shared/parity/via_poses.py` converts the
+    standard's canonical Z-up pose frame to OpenSim's Y-up frame.
 
 ## Testing
 
