@@ -9,6 +9,7 @@ pack-local tables.  Engine-free: runs without the opensim wheel.
 from __future__ import annotations
 
 import xml.etree.ElementTree as ET
+from pathlib import Path
 
 import pytest
 
@@ -45,13 +46,38 @@ def test_vendored_standard_is_repository_management_v2_1() -> None:
     assert STD["version"] == "2.1.0"
 
 
-@pytest.mark.parametrize("exercise", LIFTS)
+ALL_EXERCISES = (
+    "squat",
+    "deadlift",
+    "bench_press",
+    "snatch",
+    "clean_and_jerk",
+    "gait",
+    "sit_to_stand",
+)
+
+
+@pytest.mark.parametrize("exercise", ALL_EXERCISES)
 def test_phases_come_from_spec(exercise: str) -> None:
     objective = get_exercise_objective(exercise)
     want = spec.exercise_spec(STD, exercise)["phases"]
     assert [p.name for p in objective.phases] == [p["name"] for p in want]
     assert [p.time_fraction for p in objective.phases] == [p["t_frac"] for p in want]
     assert [p.description for p in objective.phases] == [p["definition"] for p in want]
+
+
+@pytest.mark.parametrize("exercise", ("gait", "sit_to_stand"))
+def test_functional_movement_phases_conform_to_spec(exercise: str) -> None:
+    """Fingerprint phase names match spec and ledger entry is removed (#434)."""
+    objective = get_exercise_objective(exercise)
+    names = [p.name for p in objective.phases]
+    assert names == spec.phase_names(STD, exercise)
+    fp = {"exercise": exercise, "phase_names": names}
+    assert spec.check_fingerprint(fp, STD) == []
+    ledger = conformance.load_ledger(
+        Path(conformance.__file__).parents[1] / "parity_divergences.json"
+    )
+    assert "phase_names" not in ledger.get("divergences", {})
 
 
 @pytest.mark.parametrize("exercise", LIFTS)
