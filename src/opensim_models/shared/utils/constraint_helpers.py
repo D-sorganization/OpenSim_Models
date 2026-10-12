@@ -10,7 +10,7 @@ from __future__ import annotations
 import logging
 import xml.etree.ElementTree as ET
 
-from opensim_models.shared.utils.xml_helpers import vec3_str
+from opensim_models.shared.utils.xml_helpers import orientation_str, vec3_str
 
 logger = logging.getLogger(__name__)
 
@@ -29,7 +29,7 @@ def _add_offset_frame(
     frame = ET.SubElement(components, "PhysicalOffsetFrame", name=name)
     ET.SubElement(frame, "socket_parent").text = f"/bodyset/{body}"
     ET.SubElement(frame, "translation").text = vec3_str(*location)
-    ET.SubElement(frame, "orientation").text = vec3_str(*orientation)
+    ET.SubElement(frame, "orientation").text = orientation_str(*orientation)
 
 
 def add_weld_constraint(

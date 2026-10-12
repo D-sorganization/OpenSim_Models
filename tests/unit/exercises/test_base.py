@@ -34,7 +34,7 @@ def test_attach_barbell_to_hands_writes_both_weld_frames() -> None:
 
     assert _frame(jointset, "barbell_to_left_hand_parent") == (
         "0.000000 -0.050000 0.000000",
-        "0.100000 0.200000 0.300000",
+        "0.1000000000 0.2000000000 0.3000000000",
     )
     assert _frame(jointset, "barbell_to_left_hand_child") == (
         "0.000000 0.000000 -0.200000",
@@ -42,7 +42,7 @@ def test_attach_barbell_to_hands_writes_both_weld_frames() -> None:
     )
     assert _frame(model, "barbell_to_right_hand_frame1") == (
         "0.000000 -0.050000 0.000000",
-        "-0.100000 -0.200000 0.300000",
+        "-0.1000000000 -0.2000000000 0.3000000000",
     )
     assert _frame(model, "barbell_to_right_hand_frame2")[0] == (
         "0.000000 0.000000 0.200000"

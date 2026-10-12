@@ -77,5 +77,7 @@ class TestAddWeldConstraint:
         )
         assert frame_1 is not None
         assert frame_2 is not None
-        assert frame_1.findtext("orientation") == "0.523600 0.000000 0.000000"
+        assert frame_1.findtext("orientation") == (
+            "0.5236000000 0.0000000000 0.0000000000"
+        )
         assert frame_2.findtext("orientation") == "0.000000 0.000000 0.000000"

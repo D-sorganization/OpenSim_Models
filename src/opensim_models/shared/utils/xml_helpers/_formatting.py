@@ -49,6 +49,19 @@ def vec3_str(x: float, y: float, z: float) -> str:
     return "%.6f %.6f %.6f" % (x, y, z)  # noqa: UP031
 
 
+def orientation_str(x: float, y: float, z: float) -> str:
+    """Format three frame Euler angles (rad) with 10 decimals.
+
+    Six decimals bound an angle's rounding at 5e-7 rad, which tilts a 2.2 m
+    barbell held by a grip weld frame by up to ~1e-6 m; ten decimals keep that
+    below 1e-10 m (UpstreamDrift#11743). The zero vector keeps the
+    ``vec3_str`` spelling.
+    """
+    if x == 0.0 and y == 0.0 and z == 0.0:
+        return "0.000000 0.000000 0.000000"
+    return "%.10f %.10f %.10f" % (x, y, z)  # noqa: UP031
+
+
 def vec6_str(rotation: Vec3, translation: Vec3) -> str:
     """Format a rotation Vec3 and translation Vec3 for OpenSim frames.
 

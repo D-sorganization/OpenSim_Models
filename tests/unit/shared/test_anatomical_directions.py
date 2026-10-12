@@ -193,13 +193,9 @@ def test_gripped_barbell_lies_along_the_lateral_axis(exercise: str) -> None:
     model = _exercise_model(exercise)
     left = _point(model, "barbell_left_sleeve")
     right = _point(model, "barbell_right_sleeve")
-    span = left[1] - right[1]
-    assert span > 1.0, "left sleeve must be at canonical +Y"
-    # The grip weld frames hold the inverse of the spec start-pose hand
-    # rotation as six-decimal Euler angles (UpstreamDrift#11743), so the bar
-    # may tilt by the serialization step (~1e-6 rad), not by a geometry error.
-    assert abs(left[0] - right[0]) <= 1e-6 * span
-    assert abs(left[2] - right[2]) <= 1e-6 * span
+    assert left[1] - right[1] > 1.0, "left sleeve must be at canonical +Y"
+    assert left[0] == pytest.approx(right[0], abs=1e-6)
+    assert left[2] == pytest.approx(right[2], abs=1e-6)
 
 
 def test_squat_bar_sits_behind_the_neck_across_the_shoulders() -> None:
