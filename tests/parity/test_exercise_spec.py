@@ -23,7 +23,7 @@ STD = conformance.load_standard()
 LIFTS = ("squat", "deadlift", "bench_press", "snatch", "clean_and_jerk")
 
 # sha256 of Repository_Management/shared_scripts/model_parity/
-# biomech_parity_standard.json at v2.1.0 (Repository_Management#2079).
+# biomech_parity_standard.json at v2.1.0 (Repository_Management#2079, 4c033bf).
 RM_STANDARD_V2_1_SHA256 = (
     "a0eb6c2bbbfeb70011bad62cf6d21a9245ffabce757c390633b516f542eb3ef8"
 )
