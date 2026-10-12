@@ -18,6 +18,19 @@ reachable from any live state and `abandoned` from `parked`.
 
 ## Active
 
+### DL-#384 · Every Barbell Lift's Generated Model Starts at the Standard V2.1 Start Via-Pose (Coordinates, Pelvis Root, Bar, Palm Grip, Feet) With the Spec Load; Bench Start Contact Force Fixed (LIFT-3, UpstreamDrift#11743)
+
+- **State:** in_review
+- **Owner:** unassigned
+- **Issue:** #384
+- **Branch:** claude/lift-3-spec-start-poses
+- **PR:** #437
+- **Paths:** see #437
+- **Started:** 2026-10-12
+- **Last verified:** 2026-10-12 (`cddbdecd`; collated from changes/384-every-barbell-lift-s-generated-model-sta.md)
+- **Summary:** Every barbell lift's generated model starts at the standard v2.1 start via-pose (coordinates, pelvis root, bar, palm grip, feet) with the spec load; bench start contact force fixed (LIFT-3, UpstreamDrift#11743)
+- **Next step:** Merge the PR; settled static GRF check and #434 gait/sit-to-stand phases remain.
+
 ### DL-#426 · Keep Bar Level via Weld Frame Orientation in the Tilted Hand Frame
 
 - **State:** in_review
