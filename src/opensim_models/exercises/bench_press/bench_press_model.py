@@ -1,9 +1,10 @@
 """Bench press model builder.
 
-The lifter lies supine on a bench. The barbell is gripped in the hands
-at approximately shoulder width. The model starts in the lockout position
-(arms extended) and the motion descends the bar to the chest then presses
-back to lockout.
+The lifter lies supine on a bench. The barbell is gripped at the palm
+centres at the spec grip width. The default state is the standard's bench
+press ``start`` via-pose (unrack, UpstreamDrift#11743): the bar over the
+shoulders, the feet flat on the floor at the spec stance. The motion
+descends the bar to the chest then presses back to lockout.
 
 Biomechanical notes:
 - Primary movers: pectoralis major, anterior deltoid, triceps brachii
@@ -11,8 +12,8 @@ Biomechanical notes:
 - Scapular retraction and arch are simplified (torso stays rigid on bench)
 - Grip width affects shoulder abduction angle and pec activation
 
-The bench is modelled as a ground-welded platform that constrains the
-pelvis to a supine position at bench height (0.43 m, standard IPF).
+The bench is modelled as a ground-welded platform (top at 0.43 m, standard
+IPF); the pelvis is welded to it at the spec start root pose.
 """
 
 from __future__ import annotations
@@ -21,23 +22,21 @@ import logging
 import math
 import xml.etree.ElementTree as ET
 
-from opensim_models.exercises.base import (
-    ExerciseConfig,
-    ExerciseModelBuilder,
-    attach_barbell_to_hands,
+import numpy as np
+
+from opensim_models.exercises.spec_start import (
+    START,
+    SpecLiftModelBuilder,
+    spec_lift_config,
 )
-from opensim_models.shared.body import shoulder_adduct_for_grip
+from opensim_models.shared.parity import via_poses
 from opensim_models.shared.utils.contact_helpers import (
     add_contact_half_space,
     add_contact_sphere,
     add_hunt_crossley_force,
 )
 from opensim_models.shared.utils.geometry import rectangular_prism_inertia
-from opensim_models.shared.utils.xml_helpers import (
-    add_body,
-    add_weld_joint,
-    set_coordinate_defaults,
-)
+from opensim_models.shared.utils.xml_helpers import add_body, add_weld_joint
 
 logger = logging.getLogger(__name__)
 
@@ -52,17 +51,21 @@ _BENCH_WIDTH = 0.30  # metres (Z) — lateral
 _BENCH_MASS = 1e-4  # near-zero mass (kg) — bench mass is borne by ground
 
 
-class BenchPressModelBuilder(ExerciseModelBuilder):
+class BenchPressModelBuilder(SpecLiftModelBuilder):
     """Builds a bench-press OpenSim model.
 
-    The pelvis is welded to ground in a supine orientation at bench height.
-    The barbell shaft is welded to both hands at grip width.
     A bench body is welded to ground and the pelvis is welded to the bench
-    in a supine (face-up) orientation.
+    in the supine (face-up) root pose of the spec ``start`` via-pose
+    (standard ``root_joint: weld``). The barbell shaft is welded to both
+    palm centres at the spec grip.
     """
 
     @property
     def exercise_name(self) -> str:
+        return "bench_press"
+
+    @property
+    def spec_exercise(self) -> str:
         return "bench_press"
 
     def _add_bench_body(self, bodyset: ET.Element) -> None:
@@ -92,41 +95,29 @@ class BenchPressModelBuilder(ExerciseModelBuilder):
         )
 
     def _weld_pelvis_to_bench_supine(self, jointset: ET.Element) -> None:
-        """Weld pelvis to bench and patch child frame to supine orientation.
+        """Weld the pelvis to the bench at the spec start root pose.
 
-        Supine: lifter lies face-up. The pelvis is turned +90° about the
-        lateral Z-axis, so its anterior X-axis points up (+Y) and its long
-        Y-axis points along -X (head end); the child frame holds the inverse.
+        Supine: the spec root pitch is -pi/2, so the pelvis anterior X-axis
+        points up (+Y) and its long Y-axis along -X (head end). The weld
+        holds the spec root position and orientation (UpstreamDrift#11743);
+        the bench origin sits at ``BENCH_HEIGHT`` on the ground's Y axis.
         """
-        # ⚡ Bolt Optimization: Replace findall() with direct variable assignment.
-        # What: Capture the returned Element from add_weld_joint directly.
-        # Why: ElementTree.findall() involves ElementPath parsing overhead. Returning the created Element avoids searching for it.
-        # Impact: Removes redundant XML parsing overhead in model generation.
-        joint = add_weld_joint(
+        position = via_poses.root_position(self.spec_exercise, START, self.height)
+        location = position - np.array((0.0, BENCH_HEIGHT, 0.0))
+        add_weld_joint(
             jointset,
             name="pelvis_to_bench",
             parent_body="bench",
             child_body="pelvis",
-            location_in_parent=(0, 0, 0),
-            location_in_child=(0, 0, 0),
+            location_in_parent=(
+                float(location[0]),
+                float(location[1]),
+                float(location[2]),
+            ),
+            orientation_in_parent=via_poses.body_xyz_angles(
+                via_poses.root_rotation(self.spec_exercise, START)
+            ),
         )
-        supine_orient = f"0.000000 0.000000 {-math.pi / 2:.6f}"
-        child_frame = None
-        for child in joint:
-            if (
-                child.tag == "PhysicalOffsetFrame"
-                and child.get("name") == "pelvis_to_bench_child"
-            ):
-                child_frame = child
-                break
-        if child_frame is not None:
-            # ⚡ Bolt Optimization: Use .find() for fast C-level child lookups.
-            # What: Replace manual Python loop over element children with `.find()`.
-            # Why: ElementTree's `.find()` is implemented in C and is significantly faster than manual Python loop.
-            # Impact: Speeds up XML model generation by avoiding Python iteration overhead.
-            orient_el = child_frame.find("orientation")
-            if orient_el is not None:
-                orient_el.text = supine_orient
 
     def _add_bench_and_constraint(
         self,
@@ -137,23 +128,6 @@ class BenchPressModelBuilder(ExerciseModelBuilder):
         self._add_bench_body(bodyset)
         self._weld_bench_to_ground(jointset)
         self._weld_pelvis_to_bench_supine(jointset)
-
-    def attach_barbell(
-        self,
-        jointset: ET.Element,
-        body_bodies: dict[str, ET.Element],
-        barbell_bodies: dict[str, ET.Element],
-    ) -> None:
-        """Weld barbell to both hands at grip width.
-
-        The grip is approximately shoulder-width (~0.40 m from center
-        on each side for a standard grip). The shoulders are adducted (see
-        ``set_initial_pose``) so the hands actually reach that width at the
-        neutral pose (#394); the shaft is attached at that same feasible
-        width, not the raw request.
-        """
-        _, feasible_grip = shoulder_adduct_for_grip(self.body_spec, self.grip_offset)
-        attach_barbell_to_hands(jointset, feasible_grip, self._model_el)
 
     def _skip_ground_joint(self) -> bool:
         """Bench press supplies its own pelvis parent via WeldJoint to bench."""
@@ -186,37 +160,15 @@ class BenchPressModelBuilder(ExerciseModelBuilder):
             contact_geometry_2="bench_contact",
         )
 
-    def set_initial_pose(self, jointset: ET.Element) -> None:
-        """Set supine lockout position.
-
-        Shoulders flexed ~90 deg (arms pointing up), elbows near-extended.
-        Shoulder adduction set so the hands reach the bench grip width
-        (#394); an equal, opposite wrist deviation keeps the hands, and so
-        the bar, on the lateral axis.
-        The supine orientation is enforced by the bench-pelvis weld constraint.
-        """
-        shoulder_flex = 1.5708  # ~90 degrees (arms vertical)
-        shoulder_adduct, _ = shoulder_adduct_for_grip(self.body_spec, self.grip_offset)
-        defaults = {}
-        for side in ("l", "r"):
-            defaults[f"shoulder_{side}_flex"] = shoulder_flex
-            defaults[f"shoulder_{side}_adduct"] = shoulder_adduct
-            defaults[f"shoulder_{side}_rotate"] = 0.0
-            defaults[f"wrist_{side}_deviation"] = -shoulder_adduct
-        set_coordinate_defaults(jointset, defaults)
-
 
 def build_bench_press_model(
     body_mass: float = 80.0,
     height: float = 1.75,
-    plate_mass_per_side: float = 50.0,
+    plate_mass_per_side: float | None = None,
 ) -> str:
-    """Convenience function to build a bench press model XML string."""
-    from opensim_models.shared.barbell import BarbellSpec
-    from opensim_models.shared.body import BodyModelSpec
+    """Convenience function to build a bench press model XML string.
 
-    config = ExerciseConfig(
-        body_spec=BodyModelSpec(total_mass=body_mass, height=height),
-        barbell_spec=BarbellSpec.mens_olympic(plate_mass_per_side=plate_mass_per_side),
-    )
+    ``plate_mass_per_side=None`` is the spec load.
+    """
+    config = spec_lift_config("bench_press", body_mass, height, plate_mass_per_side)
     return BenchPressModelBuilder(config).build()

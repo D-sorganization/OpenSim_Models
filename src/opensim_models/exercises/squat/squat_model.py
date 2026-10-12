@@ -1,9 +1,9 @@
 """Back squat model builder.
 
-The barbell rests across the upper trapezius / rear deltoids (high-bar
-position) and is rigidly welded to the torso at shoulder height. The
-initial pose places the model in a standing position with ~5 degrees
-of hip and knee flexion (the "unrack" position).
+The barbell rests across the upper back and is rigidly welded to the torso
+where the standard's squat ``start`` via-pose places it (UpstreamDrift#11743).
+The default state is that via-pose: standing at the unrack position with the
+hands on the bar, feet flat at the spec stance.
 
 Biomechanical notes:
 - Primary movers: quadriceps, gluteus maximus, hamstrings, erector spinae
@@ -16,26 +16,25 @@ from __future__ import annotations
 import logging
 import xml.etree.ElementTree as ET
 
-from opensim_models.exercises.base import ExerciseConfig, ExerciseModelBuilder
-from opensim_models.shared.utils.xml_helpers import (
-    add_weld_joint,
-    set_coordinate_defaults,
-)
+from opensim_models.exercises.spec_start import SpecLiftModelBuilder, spec_lift_config
 
 logger = logging.getLogger(__name__)
 
 
-class SquatModelBuilder(ExerciseModelBuilder):
-    """Builds a back-squat OpenSim model.
+class SquatModelBuilder(SpecLiftModelBuilder):
+    """Builds a back-squat OpenSim model at the spec ``start`` via-pose.
 
-    The barbell is welded to the torso at the approximate position of the
-    upper trapezius (high-bar squat). For a low-bar variant, the attachment
-    point would be shifted ~5 cm inferior.
+    The hands rest on the bar at the spec grip but are not welded: the torso
+    carries the bar, so the bar has one parent.
     """
 
     @property
     def exercise_name(self) -> str:
         return "back_squat"
+
+    @property
+    def spec_exercise(self) -> str:
+        return "squat"
 
     def attach_barbell(
         self,
@@ -43,59 +42,23 @@ class SquatModelBuilder(ExerciseModelBuilder):
         body_bodies: dict[str, ET.Element],
         barbell_bodies: dict[str, ET.Element],
     ) -> None:
-        """Weld barbell shaft to torso at upper trap position.
+        """Weld the barbell shaft to the torso at the spec start bar position.
 
         Precondition: 'torso' exists in body_bodies.
         Precondition: 'barbell_shaft' exists in barbell_bodies.
         """
-        # Torso length from spec (approx 0.504 m for 1.75 m person)
-        torso_len = self.body_spec.height * 0.288
-        # High-bar position: top of torso minus ~3 cm
-        trap_height = torso_len - 0.03
-
-        add_weld_joint(
-            jointset,
-            name="barbell_to_torso",
-            parent_body="torso",
-            child_body="barbell_shaft",
-            location_in_parent=(-0.02, trap_height, 0),  # 2 cm posterior
-            location_in_child=(0, 0, 0),
-        )
-
-    def set_initial_pose(self, jointset: ET.Element) -> None:
-        """Set standing unrack position: slight hip/knee flexion (~5 deg).
-
-        Multi-DOF defaults: slight hip external rotation for squat stance.
-        """
-        hip_flex = 0.0873  # ~5 degrees
-        knee_flex = -0.0873  # ~5 degrees
-        hip_rotate = -0.1745  # ~10° external rotation (positive is internal)
-        defaults = {}
-        for side in ("l", "r"):
-            defaults[f"hip_{side}_flex"] = hip_flex
-            defaults[f"hip_{side}_adduct"] = 0.0
-            defaults[f"hip_{side}_rotate"] = hip_rotate
-            defaults[f"knee_{side}_flex"] = knee_flex
-            defaults[f"ankle_{side}_flex"] = 0.0
-            defaults[f"ankle_{side}_inversion"] = 0.0
-        set_coordinate_defaults(jointset, defaults)
+        self.weld_bar_to_segment(jointset, "torso")
 
 
 def build_squat_model(
     body_mass: float = 80.0,
     height: float = 1.75,
-    plate_mass_per_side: float = 60.0,
+    plate_mass_per_side: float | None = None,
 ) -> str:
     """Convenience function to build a squat model XML string.
 
-    Default: 80 kg person, 1.75 m tall, 140 kg total barbell
-    (20 kg bar + 60 kg per side).
+    Default: 80 kg person, 1.75 m tall, the spec load (``None``: 20 kg bar +
+    the standard's plates per side).
     """
-    from opensim_models.shared.barbell import BarbellSpec
-    from opensim_models.shared.body import BodyModelSpec
-
-    config = ExerciseConfig(
-        body_spec=BodyModelSpec(total_mass=body_mass, height=height),
-        barbell_spec=BarbellSpec.mens_olympic(plate_mass_per_side=plate_mass_per_side),
-    )
+    config = spec_lift_config("squat", body_mass, height, plate_mass_per_side)
     return SquatModelBuilder(config).build()

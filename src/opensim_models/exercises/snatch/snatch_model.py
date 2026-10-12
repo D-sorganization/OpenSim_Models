@@ -13,103 +13,46 @@ Phases:
 6. Recovery — stand up from overhead squat to full extension
 
 Biomechanical notes:
-- Grip width: ~1.5x shoulder width (0.58 m from center), the widest grip of
-  the four barbell exercises. Reaching it needs ~45 deg of shoulder
-  abduction; the grip weld's own frame orientation (not a wrist
-  counter-rotation) keeps the hand's orientation consistent with the
-  shaft, so the shoulder's own (much larger) range of motion is the only
-  bound (#424, #426)
+- Grip width: the standard's snatch grip (``grip.width_m``), the widest of
+  the barbell lifts; the shoulder abduction it needs comes from the spec
+  ``start`` via-pose, within the shoulder's corrected range (#424)
 - Primary movers: entire posterior chain, deltoids, trapezius
 - Requires extreme shoulder mobility for overhead position
 - Bar path is close to the body (S-curve trajectory)
 
-The barbell is welded to both hands with a wide grip offset.
+The barbell is welded to both palm centres. The default state is the
+standard's snatch ``start`` via-pose (UpstreamDrift#11743).
 """
 
 from __future__ import annotations
 
 import logging
-import xml.etree.ElementTree as ET
 
-from opensim_models.exercises.base import (
-    ExerciseConfig,
-    ExerciseModelBuilder,
-    attach_barbell_to_hands,
-    set_floor_pull_initial_pose,
-)
-from opensim_models.exercises.constants import (
-    _SNATCH_GRIP_HALF_WIDTH,
-)
-from opensim_models.shared.body import shoulder_adduct_for_grip
-from opensim_models.shared.utils.xml_helpers import set_coordinate_defaults
+from opensim_models.exercises.spec_start import SpecLiftModelBuilder, spec_lift_config
 
 logger = logging.getLogger(__name__)
 
 
-class SnatchModelBuilder(ExerciseModelBuilder):
+class SnatchModelBuilder(SpecLiftModelBuilder):
     """Builds a snatch OpenSim model with wide grip."""
 
     @property
     def exercise_name(self) -> str:
         return "snatch"
 
-    def attach_barbell(
-        self,
-        jointset: ET.Element,
-        body_bodies: dict[str, ET.Element],
-        barbell_bodies: dict[str, ET.Element],
-    ) -> None:
-        """Weld barbell to both hands with wide (snatch) grip.
-
-        Snatch grip reaches its full ~0.58 m from shaft center (~1.5x
-        shoulder width): the shoulder's adduction range of motion comfortably
-        covers the ~45 deg of abduction that needs (see ``set_initial_pose``).
-        The grip weld's own frame orientation (``hand_tilt``) keeps the hand's
-        orientation consistent with the shaft, so the two hand-to-bar
-        constraints agree at the neutral pose in both position and
-        orientation (#394, #426).
-        """
-        shoulder_adduct, feasible_grip = shoulder_adduct_for_grip(
-            self.body_spec, _SNATCH_GRIP_HALF_WIDTH
-        )
-        attach_barbell_to_hands(
-            jointset, feasible_grip, self._model_el, hand_tilt=shoulder_adduct
-        )
-
-    def set_initial_pose(self, jointset: ET.Element) -> None:
-        """Set starting position: bar on floor, wide grip, deep hip hinge.
-
-        Wide snatch grip requires shoulder abduction, clamped to the
-        shoulder's own range of motion (#424). The hand's orientation is
-        kept consistent with the shaft by the grip weld's own frame
-        orientation (see ``attach_barbell``), not a wrist counter-rotation,
-        so the wrist stays at its neutral default of 0 (#426).
-        """
-        set_floor_pull_initial_pose(jointset)
-        shoulder_adduct, _ = shoulder_adduct_for_grip(
-            self.body_spec, _SNATCH_GRIP_HALF_WIDTH
-        )
-        defaults = {}
-        for side in ("l", "r"):
-            defaults[f"shoulder_{side}_adduct"] = shoulder_adduct
-            defaults[f"shoulder_{side}_rotate"] = 0.0
-        set_coordinate_defaults(jointset, defaults)
+    @property
+    def spec_exercise(self) -> str:
+        return "snatch"
 
 
 def build_snatch_model(
     body_mass: float = 80.0,
     height: float = 1.75,
-    plate_mass_per_side: float = 40.0,
+    plate_mass_per_side: float | None = None,
 ) -> str:
     """Convenience function to build a snatch model XML string.
 
-    Default: 80 kg person, 100 kg total barbell (20 kg bar + 2 × 40 kg plates).
+    ``plate_mass_per_side=None`` is the spec load.
     """
-    from opensim_models.shared.barbell import BarbellSpec
-    from opensim_models.shared.body import BodyModelSpec
-
-    config = ExerciseConfig(
-        body_spec=BodyModelSpec(total_mass=body_mass, height=height),
-        barbell_spec=BarbellSpec.mens_olympic(plate_mass_per_side=plate_mass_per_side),
-    )
+    config = spec_lift_config("snatch", body_mass, height, plate_mass_per_side)
     return SnatchModelBuilder(config).build()

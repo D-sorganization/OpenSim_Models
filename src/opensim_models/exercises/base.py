@@ -16,11 +16,6 @@ import xml.etree.ElementTree as ET
 from abc import ABC, abstractmethod
 from dataclasses import dataclass, field
 
-from opensim_models.exercises.constants import (
-    _FLOOR_PULL_HIP_ANGLE,
-    _FLOOR_PULL_KNEE_ANGLE,
-    _FLOOR_PULL_LUMBAR_ANGLE,
-)
 from opensim_models.shared.barbell import BarbellSpec, create_barbell_bodies
 from opensim_models.shared.body import (
     BodyModelSpec,
@@ -31,15 +26,12 @@ from opensim_models.shared.body.ground_placement import standing_pelvis_height
 from opensim_models.shared.contracts.postconditions import (
     ensure_coordinates_within_bounds,
 )
-from opensim_models.shared.utils.constraint_helpers import add_weld_constraint
 from opensim_models.shared.utils.contact_helpers import (
     add_contact_half_space,
     add_hunt_crossley_force,
 )
 from opensim_models.shared.utils.xml_helpers import (
-    add_weld_joint,
     serialize_model,
-    set_coordinate_default,
     set_coordinate_defaults,
 )
 
@@ -53,77 +45,9 @@ class ExerciseConfig:
     body_spec: BodyModelSpec = field(default_factory=BodyModelSpec)
     barbell_spec: BarbellSpec = field(default_factory=BarbellSpec.mens_olympic)
     gravity: tuple[float, float, float] = (0.0, -9.80665, 0.0)
-    grip_offset: float = 0.40  # meters from shaft center to hand (half-width)
-
-
-def set_floor_pull_initial_pose(jointset: ET.Element) -> None:
-    """Set the shared floor-pull initial pose (deadlift, snatch, clean-and-jerk).
-
-    DRY: extracted from three identical loops in deadlift, snatch, and
-    clean_and_jerk set_initial_pose methods.
-    """
-    defaults = {}
-    for side in ("l", "r"):
-        defaults[f"hip_{side}_flex"] = _FLOOR_PULL_HIP_ANGLE
-        defaults[f"hip_{side}_adduct"] = 0.0
-        defaults[f"hip_{side}_rotate"] = 0.0
-        defaults[f"knee_{side}_flex"] = _FLOOR_PULL_KNEE_ANGLE
-    defaults["lumbar_flex"] = _FLOOR_PULL_LUMBAR_ANGLE
-    set_coordinate_defaults(jointset, defaults)
-
-
-def attach_barbell_to_hands(
-    jointset: ET.Element,
-    grip_offset: float,
-    model: ET.Element,
-    *,
-    hand_tilt: float = 0.0,
-) -> None:
-    """Weld barbell shaft to both hands at the given grip offset.
-
-    The shaft lies on the lateral Z-axis (left hand at -Z). The left hand is its
-    parent joint; the right hand is a ``WeldConstraint`` (one parent per body).
-
-    DRY: extracted from four identical attach_barbell implementations
-    (deadlift, snatch, clean_and_jerk, bench_press).
-
-    Args:
-        jointset: XML JointSet element.
-        grip_offset: distance from shaft center to each hand (metres).
-        model: XML Model element receiving the right-hand weld constraint.
-        hand_tilt: the ``shoulder_{l,r}_adduct`` value (radians, equal for
-            both sides by construction of every grip exercise) a wide grip
-            abducts the shoulders by. Defaults to 0 (no behaviour change,
-            e.g. bench press). A wide grip tilts each hand about the same
-            adduct/deviation axis the shoulder and wrist coordinates use
-            (``shared/body/limb_builders.py``'s mirrored axis convention);
-            confirmed with real-OpenSim forward kinematics:
-            ``hand_l = RotX(-hand_tilt)``, ``hand_r = RotX(+hand_tilt)``.
-            Rather than cancelling that tilt with an equal, opposite wrist
-            deviation (the pre-#426 mechanism, bounded by the wrist's own
-            +30/-20 deg range), the grip weld's own frame carries the
-            exact inverse rotation, so the wrist stays at 0 and the
-            shoulder's much larger range of motion is the only bound
-            (issue #426).
-    """
-    add_weld_joint(
-        jointset,
-        name="barbell_to_left_hand",
-        parent_body="hand_l",
-        child_body="barbell_shaft",
-        location_in_parent=(0, 0, 0),
-        location_in_child=(0, 0, -grip_offset),
-        orientation_in_parent=(hand_tilt, 0.0, 0.0),
-    )
-    add_weld_constraint(
-        model,
-        name="barbell_to_right_hand",
-        body_1="hand_r",
-        body_2="barbell_shaft",
-        location_in_body_1=(0, 0, 0),
-        location_in_body_2=(0, 0, grip_offset),
-        orientation_in_body_1=(-hand_tilt, 0.0, 0.0),
-    )
+    # Shaft centre to palm centre (metres). None: the exercise's own grip; a
+    # spec lift (``spec_start.py``) accepts only its standard grip width.
+    grip_offset: float | None = None
 
 
 class ExerciseModelBuilder(ABC):
@@ -161,7 +85,7 @@ class ExerciseModelBuilder(ABC):
         return self.config.gravity
 
     @property
-    def grip_offset(self) -> float:
+    def grip_offset(self) -> float | None:
         """Grip offset in metres (LoD: avoids self.config.grip_offset)."""
         return self.config.grip_offset
 
@@ -213,6 +137,13 @@ class ExerciseModelBuilder(ABC):
     def _initial_pelvis_height(self, model: ET.Element) -> float:
         """Default ``pelvis_ty``: lowest foot sphere touches y = 0 (#381)."""
         return standing_pelvis_height(model)
+
+    def _initial_root_coordinates(self, model: ET.Element) -> dict[str, float]:
+        """Default pelvis FreeJoint coordinates (upright, feet on the floor).
+
+        Spec lifts override this with their ``start`` via-pose root.
+        """
+        return {"pelvis_ty": self._initial_pelvis_height(model)}
 
     def _post_contact_hook(  # noqa: B027 -- intentional no-op hook, not a missing abstract
         self, model: ET.Element
@@ -304,9 +235,7 @@ class ExerciseModelBuilder(ABC):
         self._add_ground_contact(model)
         self._post_contact_hook(model)
         if not self._skip_ground_joint():
-            set_coordinate_default(
-                jointset, "pelvis_ty", self._initial_pelvis_height(model)
-            )
+            set_coordinate_defaults(jointset, self._initial_root_coordinates(model))
 
         # Postconditions: coordinate defaults within bounds
         # ⚡ Bolt Optimization: Validate before serialization

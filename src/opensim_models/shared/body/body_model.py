@@ -39,17 +39,12 @@ _ROTATE_AXIS = "0 1 0"
 # Physiology of the Joints*, Vol. 1, 6th ed., 2008). The previous range
 # (-30, 180) deg had this backwards: 180 deg of adduction but only 30 deg of
 # abduction.
-# Exported so arm_geometry.shoulder_adduct_for_grip (#394) can clamp a
-# requested grip width to what this joint can actually reach.
 SHOULDER_ADDUCT_RANGE: tuple[float, float] = (-3.1416, 0.5236)
 
 # Wrist deviation range of motion (radians): same axis/sign convention as
-# shoulder adduct (positive = toward the midline). Bench press still uses
-# this joint's own exact counter-rotation to keep its hands level
-# (shoulder_adduct_for_grip no longer needs to protect it for the other
-# grip exercises, which instead keep the hand's orientation consistent
-# with the shaft via the grip weld's own frame, #426 -- see
-# arm_geometry module docstring).
+# shoulder adduct (positive = toward the midline). The grip exercises keep
+# the hand's orientation consistent with the shaft via the grip weld's own
+# frame (#426, exercises/spec_start.py).
 WRIST_DEVIATION_RANGE: tuple[float, float] = (-0.3491, 0.5236)
 
 

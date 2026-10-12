@@ -17,38 +17,28 @@ The clean and jerk is a two-part lift:
 4. Recovery — bring feet together, stand with bar overhead
 
 Biomechanical notes:
-- Grip width: shoulder width or slightly outside (~0.25-0.30 m from center)
+- Grip width: the standard's clean grip (``grip.width_m``)
 - Front rack requires significant wrist/elbow flexibility
 - Jerk phase requires rapid coordination of upper and lower body
 - Primary movers: entire posterior chain + quadriceps + deltoids + triceps
 
-The barbell is welded to both hands at clean grip width.
+The barbell is welded to both palm centres. The default state is the
+standard's clean-and-jerk ``start`` via-pose (UpstreamDrift#11743).
 """
 
 from __future__ import annotations
 
 import logging
-import xml.etree.ElementTree as ET
 
-from opensim_models.exercises.base import (
-    ExerciseConfig,
-    ExerciseModelBuilder,
-    attach_barbell_to_hands,
-    set_floor_pull_initial_pose,
-)
-from opensim_models.exercises.constants import (
-    _CLEAN_GRIP_HALF_WIDTH,
-)
-from opensim_models.shared.body import shoulder_adduct_for_grip
-from opensim_models.shared.utils.xml_helpers import set_coordinate_defaults
+from opensim_models.exercises.spec_start import SpecLiftModelBuilder, spec_lift_config
 
 logger = logging.getLogger(__name__)
 
 
-class CleanAndJerkModelBuilder(ExerciseModelBuilder):
+class CleanAndJerkModelBuilder(SpecLiftModelBuilder):
     """Builds a clean-and-jerk OpenSim model.
 
-    Uses shoulder-width grip. The model supports both the clean
+    Uses the spec clean grip. The model supports both the clean
     (floor to shoulders) and jerk (shoulders to overhead) phases.
     """
 
@@ -56,62 +46,19 @@ class CleanAndJerkModelBuilder(ExerciseModelBuilder):
     def exercise_name(self) -> str:
         return "clean_and_jerk"
 
-    def attach_barbell(
-        self,
-        jointset: ET.Element,
-        body_bodies: dict[str, ET.Element],
-        barbell_bodies: dict[str, ET.Element],
-    ) -> None:
-        """Weld barbell to both hands at clean grip width.
-
-        Clean grip: approximately shoulder width, ~0.25 m from shaft center.
-        The shoulders are adducted (see ``set_initial_pose``) so the hands
-        actually reach that width at the neutral pose (#394); the shaft is
-        attached at the resulting feasible width, not the raw request. The
-        grip weld's own frame orientation (``hand_tilt``) keeps the hand's
-        orientation consistent with the shaft (#426).
-        """
-        shoulder_adduct, feasible_grip = shoulder_adduct_for_grip(
-            self.body_spec, _CLEAN_GRIP_HALF_WIDTH
-        )
-        attach_barbell_to_hands(
-            jointset, feasible_grip, self._model_el, hand_tilt=shoulder_adduct
-        )
-
-    def set_initial_pose(self, jointset: ET.Element) -> None:
-        """Set starting position: bar on floor, clean grip, hip hinge.
-
-        The shoulders are adducted so the hands reach the clean grip width
-        (#394). The hand's orientation is kept consistent with the shaft by
-        the grip weld's own frame orientation (see ``attach_barbell``), not
-        a wrist counter-rotation, so the wrist stays at its neutral default
-        of 0 (#426).
-        """
-        set_floor_pull_initial_pose(jointset)
-
-        shoulder_adduct, _ = shoulder_adduct_for_grip(
-            self.body_spec, _CLEAN_GRIP_HALF_WIDTH
-        )
-        defaults = {}
-        for side in ("l", "r"):
-            defaults[f"shoulder_{side}_adduct"] = shoulder_adduct
-        set_coordinate_defaults(jointset, defaults)
+    @property
+    def spec_exercise(self) -> str:
+        return "clean_and_jerk"
 
 
 def build_clean_and_jerk_model(
     body_mass: float = 80.0,
     height: float = 1.75,
-    plate_mass_per_side: float = 50.0,
+    plate_mass_per_side: float | None = None,
 ) -> str:
-    """Convenience function to build a clean-and-jerk model XML string.
+    """Convenience function to build a clean and jerk model XML string.
 
-    Default: 80 kg person, 120 kg total barbell.
+    ``plate_mass_per_side=None`` is the spec load.
     """
-    from opensim_models.shared.barbell import BarbellSpec
-    from opensim_models.shared.body import BodyModelSpec
-
-    config = ExerciseConfig(
-        body_spec=BodyModelSpec(total_mass=body_mass, height=height),
-        barbell_spec=BarbellSpec.mens_olympic(plate_mass_per_side=plate_mass_per_side),
-    )
+    config = spec_lift_config("clean_and_jerk", body_mass, height, plate_mass_per_side)
     return CleanAndJerkModelBuilder(config).build()

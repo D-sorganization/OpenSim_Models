@@ -5,10 +5,6 @@
       "issue": "#434",
       "reason": "Standard v2.0 names the gait and sit-to-stand phases; these functional movements still use pack-local names. The five lifts consume the spec (LIFT-2, UpstreamDrift#11742).",
       "exercises": ["gait", "sit_to_stand"]
-    },
-    "coordinate.shoulder_*_adduct.limits_rad": {
-      "issue": "#424",
-      "reason": "the vendored standard's shoulder_{side}_adduct limits_deg [-30, 180] mirror the anatomical abduction/adduction convention (positive = adduction toward the midline); this model uses the corrected [-180, 30] range (abduction to ~180 deg, adduction capped near 30 deg, Kapandji 2008). Tracked upstream as Repository_Management#2062; the standard itself is not edited here."
     }
   }
 }
