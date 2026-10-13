@@ -64,7 +64,7 @@ reachable from any live state and `abandoned` from `parked`.
 - **Issue:** #426
 - **Branch:** claude/grip-weld-orientation-426
 - **PR:** #429
-- **Paths:** src/opensim_models/exercises/base.py,src/opensim_models/exercises/clean_and_jerk/clean_and_jerk_model.py,src/opensim_models/exercises/deadlift/deadlift_model.py,src/opensim_models/exercises/snatch/snatch_model.py,src/opensim_models/shared/body/arm_geometry.py,src/opensim_models/shared/body/body_model.py,src/opensim_models/shared/utils/constraint_helpers.py,src/opensim_models/shared/utils/xml_helpers/_joints.py,tests/parity/test_barbell_grip_residual.py,tests/unit/shared/test_arm_geometry.py,tests/unit/shared/test_xml_helpers.py,tests/unit/exercises/test_base.py,tests/unit/shared/test_constraint_helpers.py
+- **Paths:** src/opensim_models/exercises/base.py,src/opensim_models/exercises/clean_and_jerk/clean_and_jerk_model.py,src/opensim_models/exercises/deadlift/deadlift_model.py,src/opensim_models/exercises/snatch/snatch_model.py,src/opensim_models/shared/body/arm_geometry.py,src/opensim_models/shared/body/body_model.py,src/opensim_models/shared/utils/constraint_helpers.py,src/opensim_models/shared/utils/xml_helpers/\_joints.py,tests/parity/test_barbell_grip_residual.py,tests/unit/shared/test_arm_geometry.py,tests/unit/shared/test_xml_helpers.py,tests/unit/exercises/test_base.py,tests/unit/shared/test_constraint_helpers.py
 - **Started:** 2026-10-10
 - **Last verified:** 2026-10-10 (`5430b753`; collated from changes/426-reach-the-snatch-s-documented-0-58-m-gri.md)
 - **Summary:** Reach the snatch's documented 0.58 m grip by keeping hand orientation consistent with the shaft via the grip weld's own frame instead of a wrist counter-rotation
