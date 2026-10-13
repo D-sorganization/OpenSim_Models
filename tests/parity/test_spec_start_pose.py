@@ -230,7 +230,7 @@ def test_floor_pull_bar_height_above_lowest_sole(exercise: str) -> None:
         centre = sphere.getFrame().findStationLocationInGround(
             state, sphere.get_location()
         )
-        bottom_y = centre.get(1) - sphere.get_radius()
+        bottom_y = centre.get(1) - sphere.getRadius()
         if bottom_y < lowest_y:
             lowest_y = bottom_y
 
