@@ -117,6 +117,9 @@ jobs:
             exit 1
           fi
 
+      - name: Enforce Monolith Line Budget (<300 lines)
+        run: python scripts/check_line_budget.py
+
       - name: Security Audit
         timeout-minutes: 5
         run: |
