@@ -191,3 +191,92 @@ def test_validate_marker_weights() -> None:
 
     valid = validate_marker_weights({"m1": 2.0, "m2": 0.0}, model_markers)
     assert valid == {"m1": 2.0, "m2": 0.0}
+
+
+def test_offline_tool_initialization_and_helpers(tmp_path: Path) -> None:
+    """Exercise InverseKinematicsTool initialization, TRC creation, and coordinate types."""
+    from unittest.mock import MagicMock
+
+    mock_opensim = MagicMock()
+    mock_model = MagicMock()
+    mock_marker_set = MagicMock()
+    mock_marker_set.getSize.return_value = 2
+    m1 = MagicMock()
+    m1.getName.return_value = "m1"
+    m2 = MagicMock()
+    m2.getName.return_value = "m2"
+    mock_marker_set.get.side_effect = [m1, m2, m1, m2]
+    mock_model.getMarkerSet.return_value = mock_marker_set
+
+    # Coordinate set
+    mock_coord_set = MagicMock()
+    mock_coord_set.hasComponent.side_effect = lambda name: name == "rot_coord"
+    coord_rot = MagicMock()
+    coord_rot.getMotionType.return_value = 1
+    mock_coord_set.get.return_value = coord_rot
+    mock_model.getCoordinateSet.return_value = mock_coord_set
+
+    with patch("opensim_models.tools.inverse_kinematics.opensim", mock_opensim):
+        tool = InverseKinematicsTool(
+            model=mock_model,
+            times=[0.0, 0.01],
+            marker_trajectories={"m1": [[0, 1, 0], [0, 1, 0]]},
+            results_dir=tmp_path / "ik_res",
+        )
+        assert tool.model is mock_model
+        assert tool.output_file == "inverse_kinematics.mot"
+
+        # _is_rotational_coord
+        assert tool._is_rotational_coord("rot_coord") is True
+        assert tool._is_rotational_coord("pelvis_tx") is False
+        assert tool._is_rotational_coord("pelvis_tilt") is True
+
+        # _create_trc_storage
+        trc_file = tool._create_trc_storage(tmp_path)
+        assert trc_file.is_file()
+
+        # _configure_tool
+        mock_ik_tool = MagicMock()
+        mock_task_set = MagicMock()
+        mock_task_set.getSize.return_value = 0
+        mock_ik_tool.getIKTaskSet.return_value = mock_task_set
+        tool._configure_tool(mock_ik_tool, trc_file, tmp_path)
+        assert mock_task_set.cloneAndAppend.call_count == 2
+
+        # _parse_results
+        mot_path = tmp_path / "inverse_kinematics.mot"
+        mot_path.write_text("dummy storage content", encoding="utf-8")
+        mock_storage = MagicMock()
+        mock_storage.getSize.return_value = 2
+        labels = MagicMock()
+        labels.getSize.return_value = 2
+        labels.get.side_effect = lambda i: ["time", "rot_coord"][i]
+        mock_storage.getColumnLabels.return_value = labels
+        sv1 = MagicMock()
+        sv1.getTime.return_value = 0.0
+        data1 = MagicMock()
+        data1.get.return_value = 45.0  # degrees
+        sv1.getData.return_value = data1
+
+        sv2 = MagicMock()
+        sv2.getTime.return_value = 0.01
+        data2 = MagicMock()
+        data2.get.return_value = 90.0
+        sv2.getData.return_value = data2
+
+        mock_storage.getStateVector.side_effect = [sv1, sv2]
+        mock_opensim.Storage.return_value = mock_storage
+
+        res = tool._parse_results(mot_path)
+        assert len(res.time) == 2
+        assert "rot_coord" in res.coordinates
+        np.testing.assert_allclose(
+            res.get_coordinate_values("rot_coord"),
+            [math.radians(45.0), math.radians(90.0)],
+        )
+
+        # run()
+        mock_opensim.InverseKinematicsTool.return_value = mock_ik_tool
+        mock_ik_tool.run.return_value = True
+        run_res = tool.run()
+        assert isinstance(run_res, InverseKinematicsResult)

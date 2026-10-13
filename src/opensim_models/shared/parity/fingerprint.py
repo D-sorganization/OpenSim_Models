@@ -173,10 +173,9 @@ def fingerprint(exercise: str) -> dict[str, Any]:
         return assemble.failed_fingerprint(ENGINE, version, exercise, exc)
     g = model.getGravity()
     objective = EXERCISE_OBJECTIVES.get(exercise)
-    # Standard v2.0 conformance criterion 3: the ordered phase names.
-    extras = (
-        {} if objective is None else {"phase_names": [p.name for p in objective.phases]}
-    )
+    # Standard v2.0 conformance criterion 3: the ordered phase names, a core
+    # assemble_fingerprint field since Repository_Management#2089.
+    phase_names = None if objective is None else [p.name for p in objective.phases]
     return assemble.assemble_fingerprint(
         engine=ENGINE,
         engine_version=version,
@@ -192,7 +191,7 @@ def fingerprint(exercise: str) -> dict[str, Any]:
         segment_aliases=SEGMENT_ALIASES,
         ground_friction=_ground_friction(model),
         phase_count=None if objective is None else len(objective.phases),
-        extras=extras,
+        phase_names=phase_names,
         coordinate_axes_engine=axes,
         pelvis_rotation_engine=pelvis_rot,
         segment_origins_test_poses_engine_m=poses,

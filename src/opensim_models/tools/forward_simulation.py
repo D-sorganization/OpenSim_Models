@@ -42,22 +42,18 @@ __all__ = [
 ]
 
 
+def _has_coord(coord_set: Any, name: str) -> bool:
+    if hasattr(coord_set, "getIndex"):
+        return bool(coord_set.getIndex(name) != -1)
+    return bool(getattr(coord_set, "hasComponent", lambda _: True)(name))
+
+
 def add_coordinate_actuators(
     model: Any,
     optimal_force: float = 1000.0,
     coordinates: Sequence[str] | None = None,
 ) -> list[str]:
-    """Add CoordinateActuator to model coordinates.
-
-    Args:
-        model: OpenSim Model instance.
-        optimal_force: Maximum generalized force scale (N or N*m).
-        coordinates: Optional list of coordinate names to actuate.
-            Defaults to all rotational coordinates (excluding root pelvis translations).
-
-    Returns:
-        List of added actuator names.
-    """
+    """Add CoordinateActuator to model coordinates."""
     if opensim is None:
         raise RuntimeError(ERR_OPENSIM_NOT_INSTALLED)
     if not math.isfinite(optimal_force) or optimal_force <= 0:
@@ -72,18 +68,18 @@ def add_coordinate_actuators(
     if coordinates is not None:
         target_names = list(coordinates)
     else:
-        target_names = []
-        for i in range(coord_set.getSize()):
-            name = coord_set.get(i).getName()
-            if not name.startswith("pelvis_t"):
-                target_names.append(name)
+        target_names = [
+            coord_set.get(i).getName()
+            for i in range(coord_set.getSize())
+            if not coord_set.get(i).getName().startswith("pelvis_t")
+        ]
 
     added: list[str] = []
     for name in target_names:
         act_name = f"{name}_actuator"
         if act_name in existing_actuators:
             continue
-        if not coord_set.hasComponent(name):
+        if not _has_coord(coord_set, name):
             raise ValueError(ERR_COORDINATE_NOT_IN_MODEL.format(name=name))
 
         coord = coord_set.get(name)
@@ -176,12 +172,12 @@ class ForwardSimulationTool:
         coord_set = self._model.getCoordinateSet()
         if self._initial_coordinates:
             for name, val in self._initial_coordinates.items():
-                if not coord_set.hasComponent(name):
+                if not _has_coord(coord_set, name):
                     raise ValueError(ERR_COORDINATE_NOT_IN_MODEL.format(name=name))
                 coord_set.get(name).setValue(state, float(val))
         if self._initial_speeds:
             for name, spd in self._initial_speeds.items():
-                if not coord_set.hasComponent(name):
+                if not _has_coord(coord_set, name):
                     raise ValueError(ERR_COORDINATE_NOT_IN_MODEL.format(name=name))
                 coord_set.get(name).setSpeedValue(state, float(spd))
         self._model.realizePosition(state)

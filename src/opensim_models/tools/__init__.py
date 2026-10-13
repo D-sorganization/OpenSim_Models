@@ -6,6 +6,8 @@ from opensim_models.tools.forward_simulation import (
     add_coordinate_actuators,
     run_forward_simulation,
 )
+from opensim_models.tools.ground_reaction import FootReaction, GroundReaction
+from opensim_models.tools.ground_reaction_opensim import ground_reaction_from_model
 from opensim_models.tools.inverse_dynamics import (
     InverseDynamicsResult,
     InverseDynamicsTool,
@@ -19,13 +21,16 @@ from opensim_models.tools.inverse_kinematics import (
 )
 
 __all__ = [
+    "FootReaction",
     "ForwardSimulationResult",
     "ForwardSimulationTool",
+    "GroundReaction",
     "InverseDynamicsResult",
     "InverseDynamicsTool",
     "InverseKinematicsResult",
     "InverseKinematicsTool",
     "add_coordinate_actuators",
+    "ground_reaction_from_model",
     "run_forward_simulation",
     "run_inverse_dynamics",
     "run_inverse_kinematics",

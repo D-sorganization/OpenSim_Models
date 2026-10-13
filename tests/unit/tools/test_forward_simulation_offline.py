@@ -100,3 +100,79 @@ def test_forward_simulation_input_validation() -> None:
         # collapse_threshold NaN
         with pytest.raises(ValueError, match="collapse_threshold must be finite"):
             ForwardSimulationTool("gait", duration=1.0, collapse_threshold=float("nan"))
+
+
+def test_offline_add_coordinate_actuators_and_run(tmp_path: Path) -> None:
+    """Test add_coordinate_actuators and ForwardSimulationTool with mock OpenSim."""
+    from unittest.mock import MagicMock
+
+    mock_osim = MagicMock()
+    class DummyModel:
+        pass
+    mock_osim.Model = DummyModel
+    mock_model = DummyModel()
+    mock_model.getCoordinateSet = MagicMock()
+    mock_model.getActuators = MagicMock()
+    mock_model.addForce = MagicMock()
+    mock_model.initSystem = MagicMock()
+    mock_model.realizePosition = MagicMock()
+    mock_model.addController = MagicMock()
+    coord_set = MagicMock()
+    c1 = MagicMock()
+    c1.getName.return_value = "knee_r_flex"
+    coord_set.getSize.return_value = 1
+    coord_set.get.return_value = c1
+    coord_set.getIndex.return_value = 0
+    mock_model.getCoordinateSet.return_value = coord_set
+
+    act_set = MagicMock()
+    act_set.getSize.return_value = 0
+    mock_model.getActuators.return_value = act_set
+
+    with (
+        patch("opensim_models.tools.forward_simulation.opensim", mock_osim),
+        patch("opensim_models.tools._validation.opensim", mock_osim),
+    ):
+        # Negative force
+        with pytest.raises(ValueError, match="optimal_force must be positive"):
+            add_coordinate_actuators(mock_model, optimal_force=-10.0)
+
+        # Coordinate not in model
+        coord_set.getIndex.return_value = -1
+        with pytest.raises(ValueError, match="is not in the model"):
+            add_coordinate_actuators(mock_model, coordinates=["missing_coord"])
+
+        coord_set.getIndex.return_value = 0
+        added = add_coordinate_actuators(mock_model, optimal_force=500.0)
+        assert added == ["knee_r_flex_actuator"]
+        assert mock_model.addForce.call_count == 1
+
+        # Test tool run
+        mock_state = MagicMock()
+        mock_model.initSystem.return_value = mock_state
+        mock_state.getTime.return_value = 0.05
+        coord_val = MagicMock()
+        coord_val.getName.return_value = "knee_r_flex"
+        coord_val.getValue.return_value = 0.1
+        coord_val.getSpeedValue.return_value = 0.2
+        coord_set.get.return_value = coord_val
+
+        # Manager mock
+        mock_manager = MagicMock()
+        mock_manager.integrate.return_value = mock_state
+        mock_osim.Manager.return_value = mock_manager
+
+        tool = ForwardSimulationTool(
+            mock_model,
+            duration=0.05,
+            dt=0.01,
+            holding_controls={"knee_r_flex_actuator": 0.5},
+            initial_coordinates={"knee_r_flex": 0.0},
+            initial_speeds={"knee_r_flex": 0.0},
+            results_dir=tmp_path,
+        )
+        res = tool.run()
+        assert isinstance(res, ForwardSimulationResult)
+        assert len(res.time) == 6
+        assert "knee_r_flex" in res.coordinates
+        assert (tmp_path / "forward_simulation_states.sto").is_file()
