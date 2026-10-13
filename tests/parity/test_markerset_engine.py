@@ -49,9 +49,9 @@ def test_markerset_loads_and_initializes_in_real_opensim(
     assert marker_set.get("head") is not None
 
     if exercise in BARBELL_EXERCISES:
-        bar_marker = (
-            marker_set.get("bar")
-            if marker_set.hasKey("bar")
-            else marker_set.get("barbell_shaft")
-        )
-        assert bar_marker is not None, f"{exercise} should have bar marker"
+        marker_names = {
+            marker_set.get(i).getName() for i in range(marker_set.getSize())
+        }
+        bar_name = "bar" if "bar" in marker_names else "barbell_shaft"
+        assert bar_name in marker_names, f"{exercise} should have bar marker"
+        assert marker_set.get(bar_name) is not None
