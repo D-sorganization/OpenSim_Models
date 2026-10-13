@@ -14,6 +14,7 @@ import logging
 import xml.etree.ElementTree as ET
 
 from opensim_models.shared.body._segment_data import BodyModelSpec, _seg
+from opensim_models.shared.parity.standard import JOINT_LIMITS
 from opensim_models.shared.utils.geometry import (
     cylinder_inertia,
     rectangular_prism_inertia,
@@ -89,22 +90,22 @@ def _add_lumbar_joint(
             {
                 "name": "lumbar_flex",
                 "default_value": 0.0,
-                "range_min": -0.5236,
-                "range_max": 0.7854,
+                "range_min": JOINT_LIMITS["lumbar_flex"][0],
+                "range_max": JOINT_LIMITS["lumbar_flex"][1],
                 "axis": "0 0 -1",
             },
             {
                 "name": "lumbar_lateral",
                 "default_value": 0.0,
-                "range_min": -0.5236,
-                "range_max": 0.5236,
+                "range_min": JOINT_LIMITS["lumbar_lateral"][0],
+                "range_max": JOINT_LIMITS["lumbar_lateral"][1],
                 "axis": "-1 0 0",
             },
             {
                 "name": "lumbar_rotate",
                 "default_value": 0.0,
-                "range_min": -0.5236,
-                "range_max": 0.5236,
+                "range_min": JOINT_LIMITS["lumbar_rotate"][0],
+                "range_max": JOINT_LIMITS["lumbar_rotate"][1],
                 "axis": "0 1 0",
             },
         ],
@@ -127,8 +128,8 @@ def _add_neck_joint(
             {
                 "name": "neck_flex",
                 "default_value": 0.0,
-                "range_min": -0.5236,
-                "range_max": 0.5236,
+                "range_min": JOINT_LIMITS["neck_flex"][0],
+                "range_max": JOINT_LIMITS["neck_flex"][1],
                 "axis": "0 0 -1",
             }
         ],

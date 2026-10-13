@@ -241,9 +241,9 @@ class TestAddBilateralCustomJointLimb:
                 f"ankle_{side}_invert",
             ]
             assert coords[0].find("default_value").text == "0.100000"  # type: ignore[union-attr]
-            assert coords[0].find("range").text == "-0.200000 0.800000"  # type: ignore[union-attr]
+            assert coords[0].find("range").text == "-0.2000000000 0.8000000000"  # type: ignore[union-attr]
             assert coords[1].find("default_value").text == "0.000000"  # type: ignore[union-attr]
-            assert coords[1].find("range").text == "-0.300000 0.300000"  # type: ignore[union-attr]
+            assert coords[1].find("range").text == "-0.3000000000 0.3000000000"  # type: ignore[union-attr]
 
             axes = [
                 axis.find("axis").text

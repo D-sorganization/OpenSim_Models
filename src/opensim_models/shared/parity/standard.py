@@ -42,6 +42,10 @@ JOINT_LIMITS: dict[str, tuple[float, float]] = {
     c["name"].replace("_{side}", ""): _EXPECTED_COORDS[c["name"].format(side=_SIDE0)]
     for c in STANDARD["coordinates"]
 }
+if "wrist_deviate" in JOINT_LIMITS and "wrist_deviation" not in JOINT_LIMITS:
+    JOINT_LIMITS["wrist_deviation"] = JOINT_LIMITS["wrist_deviate"]
+if "ankle_invert" in JOINT_LIMITS and "ankle_inversion" not in JOINT_LIMITS:
+    JOINT_LIMITS["ankle_inversion"] = JOINT_LIMITS["ankle_invert"]
 
 _BARBELL: dict[str, float] = STANDARD["barbell"]["mens"]
 MENS_BARBELL: dict[str, float] = {

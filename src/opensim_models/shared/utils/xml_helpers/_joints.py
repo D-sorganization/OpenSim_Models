@@ -83,7 +83,7 @@ def _add_coordinate_set(
         # What: Replace f"{float_str(min)} {float_str(max)}" with "%.6f %.6f" % (min, max)
         # Why: In hot paths, old-style % formatting is significantly faster (~50%) than f-strings with multiple float_str calls.
         # Impact: Reduces XML string formatting overhead during model generation.
-        ET.SubElement(coord, "range").text = "%.6f %.6f" % (  # noqa: UP031
+        ET.SubElement(coord, "range").text = "%.10f %.10f" % (  # noqa: UP031
             float(c["range_min"]),
             float(c["range_max"]),
         )
@@ -125,7 +125,7 @@ def add_pin_joint(
         "0.000000" if default_value == 0.0 else "%.6f" % default_value  # noqa: UP031
     )
     # ⚡ Bolt Optimization: Use % formatting instead of f-strings.
-    ET.SubElement(coord, "range").text = "%.6f %.6f" % (  # noqa: UP031
+    ET.SubElement(coord, "range").text = "%.10f %.10f" % (  # noqa: UP031
         range_min,
         range_max,
     )
