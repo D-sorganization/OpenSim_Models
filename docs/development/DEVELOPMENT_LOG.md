@@ -18,6 +18,19 @@ reachable from any live state and `abandoned` from `parked`.
 
 ## Active
 
+### DL-#393 · \ Derive Joint Limits From the Bundle,Not Rounded-Radian Literals\
+
+- **State:** in_review
+- **Owner:** unassigned
+- **Issue:** #393
+- **Branch:** feat/393-derive-joint-limits
+- **PR:** #446
+- **Paths:** see #446
+- **Started:** 2026-10-13
+- **Last verified:** 2026-10-13 (`981a6435`; collated from changes/393-derive-joint-limits-from-the-bundle-not.md)
+- **Summary:** \ Derive joint limits from the bundle,not rounded-radian literals\
+- **Next step:** \Merge the PR.\
+
 ### DL-#434 · \ Name Gait and Sit-to-Stand Phases per Standard V2.0\
 
 - **State:** in_review
