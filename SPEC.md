@@ -163,6 +163,8 @@ Rows are keyed by pull request, not by a serial spec version: `| YYYY-MM-DD | #<
 
 | Date       | PR    | Changes                                                                                                                                                                                                                                                                                                                                                                 |
 | ---------- | ----- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| 2026-10-13 | #452 | Export per-foot and total GRF with CoP from SmoothSphereHalfSpaceForce, with a real-OpenSim standing test |
+| 2026-10-13 | #451 | Add MarkerSet with standard human and equipment markers (#387) |
 | 2026-10-13 | #447 | Add tests measuring floor-pull bar height above the lowest sole (#416) |
 | 2026-10-13 | #445 | Bring src files under the 300-line budget and enforce it in CI |
 | 2026-10-13 | #446 | \ Derive joint limits from the bundle,not rounded-radian literals\ |
