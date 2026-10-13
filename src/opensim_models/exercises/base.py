@@ -20,6 +20,7 @@ from opensim_models.shared.barbell import BarbellSpec, create_barbell_bodies
 from opensim_models.shared.body import (
     BodyModelSpec,
     add_foot_contact_spheres,
+    add_standard_markers,
     create_full_body,
 )
 from opensim_models.shared.body.ground_placement import standing_pelvis_height
@@ -236,6 +237,9 @@ class ExerciseModelBuilder(ABC):
         self._post_contact_hook(model)
         if not self._skip_ground_joint():
             set_coordinate_defaults(jointset, self._initial_root_coordinates(model))
+
+        # Standard MarkerSet (#387)
+        add_standard_markers(model, self.body_spec, uses_barbell=self.uses_barbell)
 
         # Postconditions: coordinate defaults within bounds
         # ⚡ Bolt Optimization: Validate before serialization

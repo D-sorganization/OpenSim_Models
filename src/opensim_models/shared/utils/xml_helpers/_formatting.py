@@ -107,6 +107,7 @@ _OBJECT_SETS: tuple[str, ...] = (
     "ForceSet",
     "ContactGeometrySet",
     "ConstraintSet",
+    "MarkerSet",
 )
 
 
