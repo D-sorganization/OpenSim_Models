@@ -67,3 +67,22 @@ ERR_NO_COORDINATES_SPECIFIED = (
 )
 ERR_ID_TOOL_RUN_FAILED = "OpenSim InverseDynamicsTool execution failed"
 ERR_LOWPASS_CUTOFF_FINITE = "lowpass_cutoff_frequency must be finite, got {value}"
+
+# Inverse Kinematics Tool errors
+ERR_MARKER_FILE_NOT_FOUND = "Marker file not found: {path}"
+ERR_NO_MARKERS_SPECIFIED = (
+    "Must specify marker_file or marker_trajectories to run inverse kinematics"
+)
+ERR_MARKER_NOT_IN_MODEL = "Marker '{name}' is not in the model marker set"
+ERR_MARKER_LENGTH_MISMATCH = (
+    "Marker '{name}' trajectory length {length} does not match times length {expected}"
+)
+ERR_MARKER_POINT_INVALID = (
+    "Marker '{name}' point at frame {frame} must have 3 coordinates (x, y, z)"
+)
+ERR_MARKER_WEIGHT_NEGATIVE = (
+    "Marker weight for '{name}' must be non-negative, got {value}"
+)
+ERR_MODEL_HAS_NO_MARKERS = "Model has no markers in its MarkerSet"
+ERR_IK_TOOL_RUN_FAILED = "OpenSim InverseKinematicsTool execution failed"
+ERR_TIMES_EMPTY = "times sequence must not be empty"
