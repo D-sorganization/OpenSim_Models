@@ -124,6 +124,19 @@ reachable from any live state and `abandoned` from `parked`.
 
 ## Shipped (Last 90 Days)
 
+### DL-#396 · Rename Wrist Deviation and Ankle Inversion Coordinates to Deviate and Invert per Standard V2.0
+
+- **State:** shipped
+- **Owner:** unassigned
+- **Issue:** #396
+- **Branch:** merged via #443
+- **PR:** #443
+- **Paths:** see #443
+- **Started:** 2026-10-13
+- **Last verified:** 2026-10-13 (`77942b8e`; collated from changes/396-rename-wrist-deviation-and-ankle-inversi.md)
+- **Summary:** Rename wrist deviation and ankle inversion coordinates to deviate and invert per standard v2.0
+- **Next step:** Shipped in PR #443.
+
 ### DL-#414 · Lift Objectives Consume the Standard V2.0 Exercise Spec (Phase Names, Timing, Start/Catch/Lockout Via-Poses) With Targets Keyed by Model Coordinate Names; Bench_Press Weld Root Now Conforms (LIFT-2, UpstreamDrift#11742)
 
 - **State:** shipped
