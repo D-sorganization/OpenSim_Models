@@ -118,20 +118,7 @@ jobs:
           fi
 
       - name: Enforce Monolith Line Budget (<300 lines)
-        run: |
-          python -c '
-          from pathlib import Path
-          violations = [
-              f"{p} ({len(p.read_text(encoding=\"utf-8\").splitlines())} lines)"
-              for p in sorted(Path("src").rglob("*.py"))
-              if len(p.read_text(encoding="utf-8").splitlines()) > 300
-          ]
-          if violations:
-              print("Files in src/ exceeding 300-line budget:")
-              for v in violations:
-                  print(f"  {v}")
-              raise SystemExit(1)
-          '
+        run: python scripts/check_line_budget.py
 
       - name: Security Audit
         timeout-minutes: 5
