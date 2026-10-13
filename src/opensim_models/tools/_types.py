@@ -2,7 +2,7 @@
 
 from __future__ import annotations
 
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 from pathlib import Path
 
 import numpy as np
@@ -84,3 +84,52 @@ class InverseKinematicsResult:
     ) -> np.ndarray:
         """Alias for get_coordinate_values."""
         return self.get_coordinate_values(coordinate_name, in_degrees=in_degrees)
+
+
+@dataclass(frozen=True)
+class ForwardSimulationResult:
+    """Result of forward dynamics simulation rollout.
+
+    Attributes:
+        time: 1D array of simulation time stamps (seconds).
+        coordinates: Mapping from coordinate names to 1D value arrays
+            (radians for rotational coordinates, meters for translational coordinates).
+        speeds: Mapping from coordinate names to 1D speed arrays
+            (rad/s for rotational coordinates, m/s for translational coordinates).
+        min_pelvis_height: Minimum vertical position of pelvis (metres).
+        collapsed: Whether pelvis vertical position fell below collapse threshold.
+        states_file: Optional path to written states .sto file.
+        column_labels: List of coordinate column names recorded.
+    """
+
+    time: np.ndarray
+    coordinates: dict[str, np.ndarray]
+    speeds: dict[str, np.ndarray]
+    min_pelvis_height: float
+    collapsed: bool
+    states_file: Path | None = None
+    column_labels: list[str] = field(default_factory=list)
+
+    def get_coordinate_values(
+        self, coordinate_name: str, *, in_degrees: bool = False
+    ) -> np.ndarray:
+        """Return values for a named coordinate."""
+        if coordinate_name in self.coordinates:
+            vals = self.coordinates[coordinate_name]
+            return np.rad2deg(vals) if in_degrees else vals
+        raise KeyError(
+            f"Coordinate '{coordinate_name}' not found in results. "
+            f"Available: {list(self.coordinates.keys())}"
+        )
+
+    def get_coordinate_speeds(
+        self, coordinate_name: str, *, in_degrees: bool = False
+    ) -> np.ndarray:
+        """Return speeds for a named coordinate."""
+        if coordinate_name in self.speeds:
+            vals = self.speeds[coordinate_name]
+            return np.rad2deg(vals) if in_degrees else vals
+        raise KeyError(
+            f"Coordinate '{coordinate_name}' not found in results. "
+            f"Available: {list(self.speeds.keys())}"
+        )

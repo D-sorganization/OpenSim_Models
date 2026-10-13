@@ -86,3 +86,11 @@ ERR_MARKER_WEIGHT_NEGATIVE = (
 ERR_MODEL_HAS_NO_MARKERS = "Model has no markers in its MarkerSet"
 ERR_IK_TOOL_RUN_FAILED = "OpenSim InverseKinematicsTool execution failed"
 ERR_TIMES_EMPTY = "times sequence must not be empty"
+
+# Forward Simulation errors
+ERR_DURATION_POSITIVE = "duration must be strictly greater than initial_time, got duration={duration} and initial_time={initial_time}"
+ERR_DT_POSITIVE = "dt must be positive and <= duration - initial_time, got {dt}"
+ERR_COLLAPSE_THRESHOLD_FINITE = "collapse_threshold must be finite, got {value}"
+ERR_ACCURACY_POSITIVE = "accuracy must be positive, got {value}"
+ERR_OPTIMAL_FORCE_POSITIVE = "actuator_optimal_force must be positive, got {value}"
+ERR_SIMULATION_BLOWN_UP = "Forward simulation produced non-finite state values"
