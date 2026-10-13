@@ -138,7 +138,7 @@ class SitToStandModelBuilder(ExerciseModelBuilder):
             defaults[f"hip_{side}_rotate"] = 0.0
             defaults[f"knee_{side}_flex"] = knee_flex
             defaults[f"ankle_{side}_flex"] = 0.1745  # ~10 deg
-            defaults[f"ankle_{side}_inversion"] = 0.0
+            defaults[f"ankle_{side}_invert"] = 0.0
         set_coordinate_defaults(jointset, defaults)
 
 

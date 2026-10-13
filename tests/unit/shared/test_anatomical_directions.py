@@ -168,7 +168,7 @@ def test_hip_internal_rotation_turns_the_toes_medially(side: str) -> None:
 @pytest.mark.parametrize("side", SIDES)
 def test_ankle_inversion_turns_the_sole_medially(side: str) -> None:
     model = _body_model()
-    _set(model, {f"ankle_{side}_inversion": math.radians(20.0)})
+    _set(model, {f"ankle_{side}_invert": math.radians(20.0)})
     sole_y = _direction(model, f"foot_{side}", (0, -1, 0))[1]
     assert -SIDES[side] * sole_y > 0.3
 
