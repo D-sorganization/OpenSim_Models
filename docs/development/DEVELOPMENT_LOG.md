@@ -18,6 +18,19 @@ reachable from any live state and `abandoned` from `parked`.
 
 ## Active
 
+### DL-#391 · Export Per-Foot and Total GRF With CoP From SmoothSphereHalfSpaceForce, With a Real-OpenSim Standing Test
+
+- **State:** in_review
+- **Owner:** unassigned
+- **Issue:** #391
+- **Branch:** feat/391-grf-cop
+- **PR:** #452
+- **Paths:** see #452
+- **Started:** 2026-10-13
+- **Last verified:** 2026-10-13 (`42393b8a`; collated from changes/391-export-per-foot-and-total-grf-with-cop-f.md)
+- **Summary:** Export per-foot and total GRF with CoP from SmoothSphereHalfSpaceForce, with a real-OpenSim standing test
+- **Next step:** Merge the PR after CI's real-OpenSim lane passes.
+
 ### DL-#386 · Bring Src Files Under the 300-Line Budget and Enforce It in CI
 
 - **State:** in_review
@@ -149,6 +162,19 @@ reachable from any live state and `abandoned` from `parked`.
 - **Summary:** Establish and enforce the maintainable Mermaid C4 architecture-map contract for OpenSim_Models per Repository_Management Epic #1594.
 
 ## Shipped (Last 90 Days)
+
+### DL-#387 · Add MarkerSet With Standard Human and Equipment Markers (#387)
+
+- **State:** shipped
+- **Owner:** unassigned
+- **Issue:** #387
+- **Branch:** merged via #451
+- **PR:** #451
+- **Paths:** see #451
+- **Started:** 2026-10-13
+- **Last verified:** 2026-10-13 (`cb1018f1`; collated from changes/387-add-markerset-with-standard-human-and-eq.md)
+- **Summary:** Add MarkerSet with standard human and equipment markers (#387)
+- **Next step:** Shipped in PR #451.
 
 ### DL-#416 · Add Tests Measuring Floor-Pull Bar Height Above the Lowest Sole (#416)
 
