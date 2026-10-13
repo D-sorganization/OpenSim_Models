@@ -163,6 +163,7 @@ Rows are keyed by pull request, not by a serial spec version: `| YYYY-MM-DD | #<
 
 | Date       | PR    | Changes                                                                                                                                                                                                                                                                                                  |
 | ---------- | ----- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| 2026-10-13 | #443 | Rename wrist deviation and ankle inversion coordinates to deviate and invert per standard v2.0 |
 | 2026-10-13 | #442 | Map gait and sit-to-stand phase targets and primary coordinates to bilateral model coordinate names, with test verifying all EXERCISE_OBJECTIVES resolve to model coordinates |
 | 2026-10-12 | #440 | \ Name Gait and Sit-to-Stand Phases per Standard v2.0\ |
 | 2026-10-12 | #437 | Every barbell lift's generated model starts at the standard v2.1 start via-pose (coordinates, pelvis root, bar, palm grip, feet) with the spec load; bench start contact force fixed (LIFT-3, UpstreamDrift#11743) |
