@@ -210,21 +210,27 @@ def test_offline_tool_initialization_and_helpers(tmp_path: Path) -> None:
 
     # Coordinate set
     mock_coord_set = MagicMock()
-    mock_coord_set.hasComponent.side_effect = lambda name: name == "rot_coord"
+    mock_coord_set.getIndex.side_effect = lambda name: 0 if name == "rot_coord" else -1
     coord_rot = MagicMock()
     coord_rot.getMotionType.return_value = 1
     mock_coord_set.get.return_value = coord_rot
     mock_model.getCoordinateSet.return_value = mock_coord_set
 
-    with patch("opensim_models.tools.inverse_kinematics.opensim", mock_opensim):
+    with (
+        patch(
+            "opensim_models.tools.inverse_kinematics.validate_and_load_model",
+            return_value=mock_model,
+        ),
+        patch("opensim_models.tools.inverse_kinematics.opensim", mock_opensim),
+    ):
         tool = InverseKinematicsTool(
             model=mock_model,
             times=[0.0, 0.01],
             marker_trajectories={"m1": [[0, 1, 0], [0, 1, 0]]},
             results_dir=tmp_path / "ik_res",
         )
-        assert tool.model is mock_model
-        assert tool.output_file == "inverse_kinematics.mot"
+        assert tool._model is mock_model
+        assert tool._output_file == "inverse_kinematics.mot"
 
         # _is_rotational_coord
         assert tool._is_rotational_coord("rot_coord") is True
@@ -244,7 +250,9 @@ def test_offline_tool_initialization_and_helpers(tmp_path: Path) -> None:
         assert mock_task_set.cloneAndAppend.call_count == 2
 
         # _parse_results
-        mot_path = tmp_path / "inverse_kinematics.mot"
+        res_dir = tmp_path / "ik_res"
+        res_dir.mkdir(parents=True, exist_ok=True)
+        mot_path = res_dir / "inverse_kinematics.mot"
         mot_path.write_text("dummy storage content", encoding="utf-8")
         mock_storage = MagicMock()
         mock_storage.getSize.return_value = 2
@@ -264,7 +272,7 @@ def test_offline_tool_initialization_and_helpers(tmp_path: Path) -> None:
         data2.get.return_value = 90.0
         sv2.getData.return_value = data2
 
-        mock_storage.getStateVector.side_effect = [sv1, sv2]
+        mock_storage.getStateVector.side_effect = lambda r: sv1 if r == 0 else sv2
         mock_opensim.Storage.return_value = mock_storage
 
         res = tool._parse_results(mot_path)

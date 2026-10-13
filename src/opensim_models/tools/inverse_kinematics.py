@@ -153,7 +153,7 @@ class InverseKinematicsTool:
 
     def _is_rotational_coord(self, coord_name: str) -> bool:
         coord_set = self._model.getCoordinateSet()
-        if coord_set.hasComponent(coord_name):
+        if coord_set.getIndex(coord_name) != -1:
             coord = coord_set.get(coord_name)
             try:
                 trans_type = opensim.Coordinate.MotionType_Translational
