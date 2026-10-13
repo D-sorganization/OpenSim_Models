@@ -45,7 +45,8 @@ SHOULDER_ADDUCT_RANGE: tuple[float, float] = (-3.1416, 0.5236)
 # shoulder adduct (positive = toward the midline). The grip exercises keep
 # the hand's orientation consistent with the shaft via the grip weld's own
 # frame (#426, exercises/spec_start.py).
-WRIST_DEVIATION_RANGE: tuple[float, float] = (-0.3491, 0.5236)
+WRIST_DEVIATE_RANGE: tuple[float, float] = (-0.3491, 0.5236)
+WRIST_DEVIATION_RANGE = WRIST_DEVIATE_RANGE
 
 
 def _three_dof_coord_defs(
@@ -140,9 +141,9 @@ def _add_hand(
                 "axis": "0 0 1",
             },
             {
-                "suffix": "deviation",
-                "range_min": WRIST_DEVIATION_RANGE[0],
-                "range_max": WRIST_DEVIATION_RANGE[1],
+                "suffix": "deviate",
+                "range_min": WRIST_DEVIATE_RANGE[0],
+                "range_max": WRIST_DEVIATE_RANGE[1],
                 "axis": "1 0 0",
                 "mirror": True,
             },
@@ -240,7 +241,7 @@ def _add_foot(
                 "axis": "0 0 1",
             },
             {
-                "suffix": "inversion",
+                "suffix": "invert",
                 "range_min": -0.3491,
                 "range_max": 0.3491,
                 "axis": "1 0 0",

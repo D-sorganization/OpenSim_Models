@@ -131,7 +131,17 @@ class TestCreateFullBody:
                 assert len(coords) == 2
                 coord_names = {c.get("name") for c in coords}
                 assert "ankle_r_flex" in coord_names
-                assert "ankle_r_inversion" in coord_names
+                assert "ankle_r_invert" in coord_names
+
+    def test_wrist_has_two_coordinates(self, model_elements):
+        _, jointset, _ = model_elements
+        for cj in jointset.findall("CustomJoint"):
+            if cj.get("name") == "wrist_r":
+                coords = cj.findall(".//Coordinate")
+                assert len(coords) == 2
+                coord_names = {c.get("name") for c in coords}
+                assert "wrist_r_flex" in coord_names
+                assert "wrist_r_deviate" in coord_names
 
     def test_all_masses_positive(self, model_elements):
         bodyset, _, _ = model_elements
