@@ -18,6 +18,19 @@ reachable from any live state and `abandoned` from `parked`.
 
 ## Active
 
+### DL-#386 · Bring Src Files Under the 300-Line Budget and Enforce It in CI
+
+- **State:** in_review
+- **Owner:** unassigned
+- **Issue:** #386
+- **Branch:** fix/386-300-line-budget
+- **PR:** #445
+- **Paths:** see #445
+- **Started:** 2026-10-13
+- **Last verified:** 2026-10-13 (`f847d1df`; collated from changes/386-bring-src-files-under-the-300-line-budge.md)
+- **Summary:** Bring src files under the 300-line budget and enforce it in CI
+- **Next step:** Merge the PR.
+
 ### DL-#393 · \ Derive Joint Limits From the Bundle,Not Rounded-Radian Literals\
 
 - **State:** in_review
@@ -136,6 +149,19 @@ reachable from any live state and `abandoned` from `parked`.
 - **Summary:** Establish and enforce the maintainable Mermaid C4 architecture-map contract for OpenSim_Models per Repository_Management Epic #1594.
 
 ## Shipped (Last 90 Days)
+
+### DL-#416 · Add Tests Measuring Floor-Pull Bar Height Above the Lowest Sole (#416)
+
+- **State:** shipped
+- **Owner:** unassigned
+- **Issue:** #416
+- **Branch:** merged via #447
+- **PR:** #447
+- **Paths:** see #447
+- **Started:** 2026-10-13
+- **Last verified:** 2026-10-13 (`e9ff9511`; collated from changes/416-add-tests-measuring-floor-pull-bar-heigh.md)
+- **Summary:** Add tests measuring floor-pull bar height above the lowest sole (#416)
+- **Next step:** Shipped in PR #447.
 
 ### DL-#396 · Rename Wrist Deviation and Ankle Inversion Coordinates to Deviate and Invert per Standard V2.0
 
