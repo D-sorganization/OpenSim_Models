@@ -112,9 +112,10 @@ class InverseKinematicsTool:
         )
 
     def _configure_tool(self, tool: Any, marker_path: Path, work_dir: Path) -> None:
+        out_path = work_dir / self._output_file
         tool.setModel(self._model)
         tool.setMarkerDataFileName(str(marker_path))
-        tool.setOutputMotionFileName(self._output_file)
+        tool.setOutputMotionFileName(str(out_path))
         tool.setResultsDir(str(work_dir))
         tool.set_report_errors(self._report_errors)
         tool.set_report_marker_locations(self._report_marker_locations)
@@ -128,7 +129,8 @@ class InverseKinematicsTool:
             tool.setStartTime(self._times[0])
             tool.setEndTime(self._times[-1])
 
-        task_set = tool.get_IKTaskSet()
+        task_set = getattr(tool, "getIKTaskSet", None)
+        task_set = task_set() if task_set is not None else tool.get_IKTaskSet()
         if task_set.getSize() == 0:
             for name in sorted(self._model_marker_names):
                 task = opensim.IKMarkerTask()
@@ -136,7 +138,10 @@ class InverseKinematicsTool:
                 weight = self._marker_weights.get(name, 1.0)
                 task.setWeight(weight)
                 task.setApply(weight > 0.0)
-                task_set.adoptAndAppend(task)
+                if hasattr(task_set, "cloneAndAppend"):
+                    task_set.cloneAndAppend(task)
+                else:
+                    task_set.adoptAndAppend(task)
         else:
             for i in range(task_set.getSize()):
                 task = task_set.get(i)
@@ -158,6 +163,17 @@ class InverseKinematicsTool:
         return not coord_name.endswith(("_tx", "_ty", "_tz"))
 
     def _parse_results(self, out_path: Path) -> InverseKinematicsResult:
+        if not out_path.is_file():
+            candidates = [
+                out_path.parent / self._output_file,
+                out_path.parent / Path(self._output_file).name,
+                Path(self._output_file),
+                Path(Path(self._output_file).name),
+            ]
+            for cand in candidates:
+                if cand.is_file():
+                    out_path = cand
+                    break
         if not out_path.is_file():
             raise FileNotFoundError(f"Expected output file not written: {out_path}")
 

@@ -197,7 +197,7 @@ def test_inverse_kinematics_with_marker_weights(tmp_path: Path) -> None:
             [loc.get(0), loc.get(1), loc.get(2)] for _ in times
         ]
 
-    weights = {"m_head": 10.0, "m_sternum": 5.0}
+    weights = {"head": 10.0, "torso": 5.0}
     result = run_inverse_kinematics(
         model="gait",
         marker_trajectories=synthetic_markers,
@@ -212,7 +212,7 @@ def test_inverse_kinematics_with_marker_weights(tmp_path: Path) -> None:
 def test_inverse_kinematics_input_validation(tmp_path: Path) -> None:
     """Input validation rejects invalid parameters with descriptive errors."""
     times = [0.0, 0.01, 0.02]
-    markers = {"m_head": [[0, 1.6, 0]] * 3}
+    markers = {"head": [[0, 1.6, 0]] * 3}
 
     # Invalid model
     with pytest.raises(ValueError, match="Model must be an opensim.Model"):
@@ -241,7 +241,7 @@ def test_inverse_kinematics_input_validation(tmp_path: Path) -> None:
         InverseKinematicsTool(
             model="gait",
             times=times,
-            marker_trajectories={"m_head": [[0, 1.6, 0]] * 5},
+            marker_trajectories={"head": [[0, 1.6, 0]] * 5},
         )
 
     # Marker weight negative
@@ -250,7 +250,7 @@ def test_inverse_kinematics_input_validation(tmp_path: Path) -> None:
             model="gait",
             times=times,
             marker_trajectories=markers,
-            marker_weights={"m_head": -1.0},
+            marker_weights={"head": -1.0},
         )
 
     # Unknown coordinate raises KeyError
