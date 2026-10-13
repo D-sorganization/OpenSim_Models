@@ -26,8 +26,10 @@ capabilities:
     { level: full, evidence: tests/parity/test_engine_conformance.py }
   forward_kinematics:
     { level: partial, evidence: tests/parity/test_engine_conformance.py }
-  inverse_kinematics: { level: none, evidence: null }
-  forward_dynamics: { level: none, evidence: null }
+  inverse_kinematics:
+    { level: partial, evidence: tests/parity/test_inverse_kinematics_tool.py }
+  forward_dynamics:
+    { level: partial, evidence: tests/parity/test_forward_simulation.py }
   inverse_dynamics:
     { level: partial, evidence: tests/parity/test_inverse_dynamics.py }
   contact_grf: { level: full, evidence: tests/parity/test_grf_engine.py }

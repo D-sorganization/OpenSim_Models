@@ -14,6 +14,11 @@ from opensim_models._messages import (
     ERR_INVALID_MODEL,
     ERR_INVALID_TIME_RANGE,
     ERR_LOWPASS_CUTOFF_FINITE,
+    ERR_MARKER_LENGTH_MISMATCH,
+    ERR_MARKER_NOT_IN_MODEL,
+    ERR_MARKER_POINT_INVALID,
+    ERR_MARKER_WEIGHT_NEGATIVE,
+    ERR_TIMES_EMPTY,
     ERR_TIMES_NOT_INCREASING,
     ERR_TIMES_REQUIRED,
     ERR_TIMES_TOO_SHORT,
@@ -131,3 +136,71 @@ def resolve_excluded_forces(
     if excluded is not None:
         return [str(f) for f in excluded]
     return None
+
+
+def validate_ik_times(
+    times: Sequence[float] | None,
+    markers: Mapping[str, Sequence[Sequence[float]]] | None,
+) -> list[float] | None:
+    """Validate times sequence for inverse kinematics."""
+    if times is None:
+        if markers is not None:
+            raise ValueError(ERR_TIMES_REQUIRED)
+        return None
+    if len(times) == 0:
+        raise ValueError(ERR_TIMES_EMPTY)
+    require_finite(times, "times")
+    for i in range(1, len(times)):
+        if times[i] <= times[i - 1]:
+            raise ValueError(ERR_TIMES_NOT_INCREASING)
+    return [float(t) for t in times]
+
+
+def validate_marker_trajectories(
+    markers: Mapping[str, Sequence[Sequence[float]]] | None,
+    times: list[float] | None,
+    model_marker_names: set[str],
+) -> dict[str, list[list[float]]] | None:
+    """Validate marker trajectories against times and model marker set."""
+    if markers is None:
+        return None
+    assert times is not None
+    out: dict[str, list[list[float]]] = {}
+    for name, pts in markers.items():
+        if name not in model_marker_names:
+            raise ValueError(ERR_MARKER_NOT_IN_MODEL.format(name=name))
+        if len(pts) != len(times):
+            raise ValueError(
+                ERR_MARKER_LENGTH_MISMATCH.format(
+                    name=name, length=len(pts), expected=len(times)
+                )
+            )
+        marker_pts: list[list[float]] = []
+        for f_idx, pt in enumerate(pts):
+            if len(pt) != 3:
+                raise ValueError(
+                    ERR_MARKER_POINT_INVALID.format(name=name, frame=f_idx)
+                )
+            pt_list = [float(c) for c in pt]
+            require_finite(pt_list, f"marker {name} frame {f_idx}")
+            marker_pts.append(pt_list)
+        out[name] = marker_pts
+    return out
+
+
+def validate_marker_weights(
+    weights: Mapping[str, float] | None,
+    model_marker_names: set[str],
+) -> dict[str, float] | None:
+    """Validate marker weights dictionary."""
+    if weights is None:
+        return None
+    out: dict[str, float] = {}
+    for name, w in weights.items():
+        if name not in model_marker_names:
+            raise ValueError(ERR_MARKER_NOT_IN_MODEL.format(name=name))
+        val = float(w)
+        if not math.isfinite(val) or val < 0:
+            raise ValueError(ERR_MARKER_WEIGHT_NEGATIVE.format(name=name, value=w))
+        out[name] = val
+    return out
