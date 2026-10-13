@@ -107,8 +107,10 @@ def test_offline_add_coordinate_actuators_and_run(tmp_path: Path) -> None:
     from unittest.mock import MagicMock
 
     mock_osim = MagicMock()
+
     class DummyModel:
         pass
+
     mock_osim.Model = DummyModel
     mock_model = DummyModel()
     mock_model.getCoordinateSet = MagicMock()
@@ -131,6 +133,10 @@ def test_offline_add_coordinate_actuators_and_run(tmp_path: Path) -> None:
 
     with (
         patch("opensim_models.tools.forward_simulation.opensim", mock_osim),
+        patch(
+            "opensim_models.tools.forward_simulation.validate_and_load_model",
+            return_value=mock_model,
+        ),
         patch("opensim_models.tools._validation.opensim", mock_osim),
     ):
         # Negative force
