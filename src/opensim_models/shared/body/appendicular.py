@@ -14,6 +14,7 @@ from opensim_models.shared.body.limb_builders import (
     add_bilateral_custom_joint_limb,
     add_bilateral_limb,
 )
+from opensim_models.shared.parity.standard import JOINT_LIMITS
 
 # Right-side axes of a 3-DOF limb root (hip, shoulder) in the Y-up, X-forward,
 # Z-lateral body frame: flexion about Z (distal segment forward), adduction
@@ -24,21 +25,12 @@ _ADDUCT_AXIS = "1 0 0"
 _ROTATE_AXIS = "0 1 0"
 
 # shoulder_{side}_adduct: positive = adduction (toward the midline), negative
-# = abduction -- confirmed empirically with real-OpenSim forward kinematics
-# (#424: perturbing shoulder_l_adduct/shoulder_r_adduct +-0.2 rad from the
-# neutral squat pose and reading hand_l/hand_r position in the ground frame).
-# Shoulder abduction active ROM reaches ~180 deg (arm overhead), while
-# adduction across the body is capped around 30 deg (Kapandji, *The
-# Physiology of the Joints*, Vol. 1, 6th ed., 2008). The previous range
-# (-30, 180) deg had this backwards: 180 deg of adduction but only 30 deg of
-# abduction.
-SHOULDER_ADDUCT_RANGE: tuple[float, float] = (-3.1416, 0.5236)
+# = abduction -- derived from parity standard bundle (issue #393).
+SHOULDER_ADDUCT_RANGE: tuple[float, float] = JOINT_LIMITS["shoulder_adduct"]
 
-# Wrist deviation range of motion (radians): same axis/sign convention as
-# shoulder adduct (positive = toward the midline). The grip exercises keep
-# the hand's orientation consistent with the shaft via the grip weld's own
-# frame (#426, exercises/spec_start.py).
-WRIST_DEVIATION_RANGE: tuple[float, float] = (-0.3491, 0.5236)
+# Wrist deviation range of motion (radians): derived from parity standard bundle (issue #393).
+WRIST_DEVIATE_RANGE: tuple[float, float] = JOINT_LIMITS["wrist_deviate"]
+WRIST_DEVIATION_RANGE: tuple[float, float] = WRIST_DEVIATE_RANGE
 
 
 def _three_dof_coord_defs(
@@ -79,7 +71,11 @@ def _add_upper_arm(
         parent_lateral_z=shoulder_z,
         coord_prefix="shoulder",
         coord_defs=_three_dof_coord_defs(
-            ((-1.0472, 3.1416), SHOULDER_ADDUCT_RANGE, (-1.5708, 1.5708))
+            (
+                JOINT_LIMITS["shoulder_flex"],
+                SHOULDER_ADDUCT_RANGE,
+                JOINT_LIMITS["shoulder_rotate"],
+            )
         ),
         bodies=bodies,
     )
@@ -102,8 +98,8 @@ def _add_forearm(
         parent_offset_y=-ua_len,
         parent_lateral_z=0,
         coord_prefix="elbow",
-        range_min=0,
-        range_max=2.618,
+        range_min=JOINT_LIMITS["elbow_flex"][0],
+        range_max=JOINT_LIMITS["elbow_flex"][1],
         bodies=bodies,
     )
 
@@ -128,14 +124,14 @@ def _add_hand(
         coord_defs=[
             {
                 "suffix": "flex",
-                "range_min": -1.2217,
-                "range_max": 1.2217,
+                "range_min": JOINT_LIMITS["wrist_flex"][0],
+                "range_max": JOINT_LIMITS["wrist_flex"][1],
                 "axis": "0 0 1",
             },
             {
-                "suffix": "deviation",
-                "range_min": WRIST_DEVIATION_RANGE[0],
-                "range_max": WRIST_DEVIATION_RANGE[1],
+                "suffix": "deviate",
+                "range_min": WRIST_DEVIATE_RANGE[0],
+                "range_max": WRIST_DEVIATE_RANGE[1],
                 "axis": "1 0 0",
                 "mirror": True,
             },
@@ -179,7 +175,11 @@ def _add_thigh(
         parent_lateral_z=hip_z,
         coord_prefix="hip",
         coord_defs=_three_dof_coord_defs(
-            ((-0.5236, 2.0944), (-0.7854, 0.5236), (-0.7854, 0.7854))
+            (
+                JOINT_LIMITS["hip_flex"],
+                JOINT_LIMITS["hip_adduct"],
+                JOINT_LIMITS["hip_rotate"],
+            )
         ),
         bodies=bodies,
     )
@@ -202,8 +202,8 @@ def _add_shank(
         parent_offset_y=-th_len,
         parent_lateral_z=0,
         coord_prefix="knee",
-        range_min=-2.618,
-        range_max=0,
+        range_min=JOINT_LIMITS["knee_flex"][0],
+        range_max=JOINT_LIMITS["knee_flex"][1],
         bodies=bodies,
     )
 
@@ -228,14 +228,14 @@ def _add_foot(
         coord_defs=[
             {
                 "suffix": "flex",
-                "range_min": -0.3491,
-                "range_max": 0.8727,
+                "range_min": JOINT_LIMITS["ankle_flex"][0],
+                "range_max": JOINT_LIMITS["ankle_flex"][1],
                 "axis": "0 0 1",
             },
             {
-                "suffix": "inversion",
-                "range_min": -0.3491,
-                "range_max": 0.3491,
+                "suffix": "invert",
+                "range_min": JOINT_LIMITS["ankle_invert"][0],
+                "range_max": JOINT_LIMITS["ankle_invert"][1],
                 "axis": "1 0 0",
                 "mirror": True,
             },

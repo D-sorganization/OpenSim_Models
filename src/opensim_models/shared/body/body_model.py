@@ -16,6 +16,7 @@ import xml.etree.ElementTree as ET
 from opensim_models.shared.body._segment_data import BodyModelSpec
 from opensim_models.shared.body.appendicular import (
     SHOULDER_ADDUCT_RANGE,
+    WRIST_DEVIATE_RANGE,
     WRIST_DEVIATION_RANGE,
     add_lower_limbs,
     add_upper_limbs,
@@ -27,6 +28,7 @@ logger = logging.getLogger(__name__)
 __all__ = [
     "BodyModelSpec",
     "SHOULDER_ADDUCT_RANGE",
+    "WRIST_DEVIATE_RANGE",
     "WRIST_DEVIATION_RANGE",
     "create_full_body",
 ]

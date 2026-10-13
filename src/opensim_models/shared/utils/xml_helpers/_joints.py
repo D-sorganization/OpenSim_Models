@@ -44,7 +44,7 @@ def _add_joint_frames(
     orientation_in_child: tuple[float, float, float],
 ) -> None:
     """Append parent and child PhysicalOffsetFrame elements to a joint."""
-    # ⚡ Bolt Optimization: Fast-path tuple equality before function calls.
+    # âš¡ Bolt Optimization: Fast-path tuple equality before function calls.
     # What: Use CPython's highly efficient tuple equality check `== (0.0, 0.0, 0.0)` to bypass `vec3_str` function call overhead.
     # Why: Zero vectors are extremely common for orientations and translations. Avoiding the function call provides a measurable speedup.
     # Impact: Reduces overhead in the heavily used `_add_joint_frames` function.
@@ -93,11 +93,11 @@ def _add_coordinate_set(
         ET.SubElement(coord, "default_value").text = (
             "0.000000" if v == 0.0 else "%.6f" % v  # noqa: UP031
         )
-        # ⚡ Bolt Optimization: Use % formatting instead of f-strings.
+        # âš¡ Bolt Optimization: Use % formatting instead of f-strings.
         # What: Replace f"{float_str(min)} {float_str(max)}" with "%.6f %.6f" % (min, max)
         # Why: In hot paths, old-style % formatting is significantly faster (~50%) than f-strings with multiple float_str calls.
         # Impact: Reduces XML string formatting overhead during model generation.
-        ET.SubElement(coord, "range").text = "%.6f %.6f" % (  # noqa: UP031
+        ET.SubElement(coord, "range").text = "%.10f %.10f" % (  # noqa: UP031
             float(c["range_min"]),
             float(c["range_max"]),
         )
@@ -138,8 +138,8 @@ def add_pin_joint(
     ET.SubElement(coord, "default_value").text = (
         "0.000000" if default_value == 0.0 else "%.6f" % default_value  # noqa: UP031
     )
-    # ⚡ Bolt Optimization: Use % formatting instead of f-strings.
-    ET.SubElement(coord, "range").text = "%.6f %.6f" % (  # noqa: UP031
+    # âš¡ Bolt Optimization: Use % formatting instead of f-strings.
+    ET.SubElement(coord, "range").text = "%.10f %.10f" % (  # noqa: UP031
         range_min,
         range_max,
     )
