@@ -163,6 +163,19 @@ reachable from any live state and `abandoned` from `parked`.
 
 ## Shipped (Last 90 Days)
 
+### DL-#380 · Re-Sync Vendored Model-Parity Bundle to Repository_Management Main (Standard V2.1, assemble.py Phase_Names From RM#2089)
+
+- **State:** shipped
+- **Owner:** unassigned
+- **Issue:** #380
+- **Branch:** merged via #456
+- **PR:** #456
+- **Paths:** see #456
+- **Started:** 2026-10-13
+- **Last verified:** 2026-10-13 (`4d82e996`; collated from changes/380-parity-bundle-resync.md)
+- **Summary:** Re-sync vendored model-parity bundle to Repository_Management main (standard v2.1, assemble.py phase_names from RM#2089)
+- **Next step:** Shipped in PR #456.
+
 ### DL-#387 · Add MarkerSet With Standard Human and Equipment Markers (#387)
 
 - **State:** shipped

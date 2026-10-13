@@ -163,6 +163,7 @@ Rows are keyed by pull request, not by a serial spec version: `| YYYY-MM-DD | #<
 
 | Date       | PR    | Changes                                                                                                                                                                                                                                                                                                                                                                 |
 | ---------- | ----- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| 2026-10-13 | #456 | Re-sync vendored model-parity bundle to Repository_Management main (standard v2.1, assemble.py phase_names from RM#2089) |
 | 2026-10-13 | #452 | Export per-foot and total GRF with CoP from SmoothSphereHalfSpaceForce, with a real-OpenSim standing test |
 | 2026-10-13 | #451 | Add MarkerSet with standard human and equipment markers (#387) |
 | 2026-10-13 | #447 | Add tests measuring floor-pull bar height above the lowest sole (#416) |
