@@ -2,9 +2,12 @@
 
 from __future__ import annotations
 
+import xml.etree.ElementTree as ET
+
 import numpy as np
 import pytest
 
+from opensim_models.exercises import EXERCISE_BUILDERS
 from opensim_models.optimization.exercise_objectives import (
     EXERCISE_OBJECTIVES,
     ExerciseObjective,
@@ -60,6 +63,22 @@ class TestExerciseObjectiveRegistry:
     def test_primary_coordinates_not_empty(self, name: str) -> None:
         obj = get_exercise_objective(name)
         assert len(obj.primary_coordinates) >= 1
+
+    @pytest.mark.parametrize("name", sorted(EXPECTED_EXERCISES))
+    def test_phase_keys_match_generated_model_coordinates(self, name: str) -> None:
+        """Every joint target key and primary coordinate resolves to a coordinate in the generated model (#414)."""
+        root = ET.fromstring(EXERCISE_BUILDERS[name]())
+        coordinates = {c.get("name", "") for c in root.iter("Coordinate")}
+        obj = get_exercise_objective(name)
+        for phase in obj.phases:
+            assert set(phase.joint_targets) <= coordinates, (
+                f"{name} phase {phase.name} has keys not in model: "
+                f"{set(phase.joint_targets) - coordinates}"
+            )
+        assert set(obj.primary_coordinates) <= coordinates, (
+            f"{name} primary coordinates not in model: "
+            f"{set(obj.primary_coordinates) - coordinates}"
+        )
 
 
 class TestPhaseMonotonicity:

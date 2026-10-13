@@ -13,80 +13,101 @@ from opensim_models.optimization._types import ExerciseObjective, Phase
 from opensim_models.shared.parity._canonical import spec
 from opensim_models.shared.parity.standard import STANDARD
 
+_HIP_KNEE_ANKLE = (
+    "hip_l_flex",
+    "hip_r_flex",
+    "knee_l_flex",
+    "knee_r_flex",
+    "ankle_l_flex",
+    "ankle_r_flex",
+)
+
+
+def _bilateral(hip: float, knee: float, ankle: float) -> dict[str, float]:
+    return {
+        "hip_l_flex": hip,
+        "hip_r_flex": hip,
+        "knee_l_flex": knee,
+        "knee_r_flex": knee,
+        "ankle_l_flex": ankle,
+        "ankle_r_flex": ankle,
+    }
+
+
 _GAIT_TARGETS: dict[str, dict[str, float]] = {
-    "initial_contact": {
-        "hip_flexion": math.radians(30),
-        "knee_flexion": math.radians(-5),
-        "ankle_flexion": math.radians(0),
-    },
-    "loading_response": {
-        "hip_flexion": math.radians(25),
-        "knee_flexion": math.radians(-15),
-        "ankle_flexion": math.radians(-5),
-    },
-    "mid_stance": {
-        "hip_flexion": math.radians(0),
-        "knee_flexion": math.radians(-5),
-        "ankle_flexion": math.radians(10),
-    },
-    "terminal_stance": {
-        "hip_flexion": math.radians(-10),
-        "knee_flexion": math.radians(-5),
-        "ankle_flexion": math.radians(15),
-    },
-    "pre_swing": {
-        "hip_flexion": math.radians(0),
-        "knee_flexion": math.radians(-35),
-        "ankle_flexion": math.radians(-15),
-    },
-    "initial_swing": {
-        "hip_flexion": math.radians(15),
-        "knee_flexion": math.radians(-60),
-        "ankle_flexion": math.radians(-5),
-    },
-    "mid_swing": {
-        "hip_flexion": math.radians(25),
-        "knee_flexion": math.radians(-25),
-        "ankle_flexion": math.radians(0),
-    },
-    "terminal_swing": {
-        "hip_flexion": math.radians(30),
-        "knee_flexion": math.radians(-5),
-        "ankle_flexion": math.radians(0),
-    },
+    "initial_contact": _bilateral(
+        hip=math.radians(30),
+        knee=math.radians(-5),
+        ankle=math.radians(0),
+    ),
+    "loading_response": _bilateral(
+        hip=math.radians(25),
+        knee=math.radians(-15),
+        ankle=math.radians(-5),
+    ),
+    "mid_stance": _bilateral(
+        hip=math.radians(0),
+        knee=math.radians(-5),
+        ankle=math.radians(10),
+    ),
+    "terminal_stance": _bilateral(
+        hip=math.radians(-10),
+        knee=math.radians(-5),
+        ankle=math.radians(15),
+    ),
+    "pre_swing": _bilateral(
+        hip=math.radians(0),
+        knee=math.radians(-35),
+        ankle=math.radians(-15),
+    ),
+    "initial_swing": _bilateral(
+        hip=math.radians(15),
+        knee=math.radians(-60),
+        ankle=math.radians(-5),
+    ),
+    "mid_swing": _bilateral(
+        hip=math.radians(25),
+        knee=math.radians(-25),
+        ankle=math.radians(0),
+    ),
+    "terminal_swing": _bilateral(
+        hip=math.radians(30),
+        knee=math.radians(-5),
+        ankle=math.radians(0),
+    ),
 }
 
 _SIT_TO_STAND_TARGETS: dict[str, dict[str, float]] = {
-    "seated": {
-        "hip_flexion": math.radians(90),
-        "knee_flexion": math.radians(-90),
-        "ankle_flexion": math.radians(10),
-    },
-    "trunk_flexion": {
-        "hip_flexion": math.radians(110),
-        "knee_flexion": math.radians(-90),
-        "ankle_flexion": math.radians(15),
-    },
-    "seat_off": {
-        "hip_flexion": math.radians(90),
-        "knee_flexion": math.radians(-75),
-        "ankle_flexion": math.radians(20),
-    },
-    "rising": {
-        "hip_flexion": math.radians(45),
-        "knee_flexion": math.radians(-40),
-        "ankle_flexion": math.radians(10),
-    },
-    "extension_end": {
-        "hip_flexion": math.radians(10),
-        "knee_flexion": math.radians(-10),
-        "ankle_flexion": math.radians(5),
-    },
-    "stabilisation": {
-        "hip_flexion": math.radians(0),
-        "knee_flexion": math.radians(0),
-        "ankle_flexion": math.radians(0),
-    },
+    "seated": _bilateral(
+        hip=math.radians(90),
+        knee=math.radians(-90),
+        ankle=math.radians(10),
+    ),
+    "trunk_flexion": _bilateral(
+        hip=math.radians(110),
+        knee=math.radians(-90),
+        ankle=math.radians(15),
+    ),
+    "seat_off": _bilateral(
+        hip=math.radians(90),
+        knee=math.radians(-75),
+        ankle=math.radians(20),
+    ),
+    "rising": _bilateral(
+        hip=math.radians(45),
+        knee=math.radians(-40),
+        ankle=math.radians(10),
+    ),
+    "extension_end": _bilateral(
+        hip=math.radians(10),
+        knee=math.radians(-10),
+        ankle=math.radians(5),
+    ),
+    "stabilisation": _bilateral(
+        hip=math.radians(0),
+        knee=math.radians(0),
+        ankle=math.radians(0),
+    ),
 }
 
 
@@ -109,13 +130,13 @@ def _build_phases(
 GAIT = ExerciseObjective(
     name="gait",
     description="Walking gait cycle: heel strike through toe-off and swing.",
-    primary_coordinates=("hip_flexion", "knee_flexion", "ankle_flexion"),
+    primary_coordinates=_HIP_KNEE_ANKLE,
     phases=_build_phases("gait", _GAIT_TARGETS),
 )
 
 SIT_TO_STAND = ExerciseObjective(
     name="sit_to_stand",
     description="Sit-to-stand transfer from chair to upright standing.",
-    primary_coordinates=("hip_flexion", "knee_flexion", "ankle_flexion"),
+    primary_coordinates=_HIP_KNEE_ANKLE,
     phases=_build_phases("sit_to_stand", _SIT_TO_STAND_TARGETS),
 )
