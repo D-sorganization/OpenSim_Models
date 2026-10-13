@@ -32,10 +32,22 @@ def _generated_coordinates(exercise: str) -> set[str]:
     return {n for n in names if not n.startswith(ROOT_COORDINATE_PREFIX)}
 
 
+LEGACY_COORDINATE_NAMES = {
+    "wrist_l_deviation",
+    "wrist_r_deviation",
+    "ankle_l_inversion",
+    "ankle_r_inversion",
+}
+
+
 @pytest.mark.parametrize("exercise", list_exercises())
-def test_aliases_map_generated_coordinates_onto_canonical_set(exercise: str) -> None:
-    canonical = {COORDINATE_ALIASES.get(n, n) for n in _generated_coordinates(exercise)}
-    assert canonical == set(conformance.expected_coordinates(STD))
+def test_generated_coordinates_match_canonical_set(exercise: str) -> None:
+    """Generated coordinates match canonical coordinates directly without legacy names (#396)."""
+    generated = _generated_coordinates(exercise)
+    assert not (generated & LEGACY_COORDINATE_NAMES), (
+        f"{exercise} has legacy names: {generated & LEGACY_COORDINATE_NAMES}"
+    )
+    assert generated == set(conformance.expected_coordinates(STD))
 
 
 def test_ledger_is_valid_and_cites_issues() -> None:

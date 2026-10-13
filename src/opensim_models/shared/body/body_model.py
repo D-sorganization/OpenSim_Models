@@ -36,7 +36,8 @@ _ROTATE_AXIS = "0 1 0"
 SHOULDER_ADDUCT_RANGE: tuple[float, float] = JOINT_LIMITS["shoulder_adduct"]
 
 # Wrist deviation range of motion (radians): derived from parity standard bundle (issue #393).
-WRIST_DEVIATION_RANGE: tuple[float, float] = JOINT_LIMITS["wrist_deviation"]
+WRIST_DEVIATE_RANGE: tuple[float, float] = JOINT_LIMITS["wrist_deviate"]
+WRIST_DEVIATION_RANGE: tuple[float, float] = WRIST_DEVIATE_RANGE
 
 
 def _three_dof_coord_defs(
@@ -135,9 +136,9 @@ def _add_hand(
                 "axis": "0 0 1",
             },
             {
-                "suffix": "deviation",
-                "range_min": WRIST_DEVIATION_RANGE[0],
-                "range_max": WRIST_DEVIATION_RANGE[1],
+                "suffix": "deviate",
+                "range_min": WRIST_DEVIATE_RANGE[0],
+                "range_max": WRIST_DEVIATE_RANGE[1],
                 "axis": "1 0 0",
                 "mirror": True,
             },
@@ -239,9 +240,9 @@ def _add_foot(
                 "axis": "0 0 1",
             },
             {
-                "suffix": "inversion",
-                "range_min": JOINT_LIMITS["ankle_inversion"][0],
-                "range_max": JOINT_LIMITS["ankle_inversion"][1],
+                "suffix": "invert",
+                "range_min": JOINT_LIMITS["ankle_invert"][0],
+                "range_max": JOINT_LIMITS["ankle_invert"][1],
                 "axis": "1 0 0",
                 "mirror": True,
             },

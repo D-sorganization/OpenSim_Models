@@ -58,14 +58,14 @@ class GaitModelBuilder(ExerciseModelBuilder):
             "hip_r_rotate": 0.0,
             "knee_r_flex": -0.0873,  # ~5 deg flexion
             "ankle_r_flex": 0.0,
-            "ankle_r_inversion": 0.0,
+            "ankle_r_invert": 0.0,
             # Swing leg (left): moderate flexion
             "hip_l_flex": 0.3491,  # ~20 deg
             "hip_l_adduct": 0.0,
             "hip_l_rotate": 0.0,
             "knee_l_flex": -0.5236,  # ~30 deg
             "ankle_l_flex": 0.0873,  # ~5 deg dorsiflexion
-            "ankle_l_inversion": 0.0,
+            "ankle_l_invert": 0.0,
         }
         set_coordinate_defaults(jointset, defaults)
 
