@@ -67,8 +67,8 @@ def test_positions_scale_with_height_and_angles_do_not() -> None:
 def test_coordinates_cover_every_canonical_coordinate_under_opensim_names() -> None:
     pose = via_poses.coordinates("snatch", "start")
     assert len(pose) == len(conformance.expected_coordinates(STD))
-    assert "wrist_l_deviation" in pose
-    assert "ankle_r_inversion" in pose
+    assert "wrist_l_deviate" in pose
+    assert "ankle_r_invert" in pose
 
 
 @pytest.mark.parametrize(
