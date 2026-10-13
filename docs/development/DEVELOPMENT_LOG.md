@@ -130,10 +130,10 @@ reachable from any live state and `abandoned` from `parked`.
 - **Owner:** unassigned
 - **Issue:** #414
 - **Branch:** claude/lift-2-standard-v2
-- **PR:** #435
+- **PR:** #435, #442
 - **Paths:** see #435
 - **Started:** 2026-10-12
-- **Last verified:** 2026-10-12 (`14703c30`; collated from changes/414-lift-objectives-consume-the-standard-v2.md)
+- **Last verified:** 2026-10-13 (`b904780d`; collated from changes/414-map-gait-and-sit-to-stand-phase-targets.md)
 - **Summary:** Lift objectives consume the standard v2.0 exercise spec (phase names, timing, start/catch/lockout via-poses) with targets keyed by model coordinate names; bench_press weld root now conforms (LIFT-2, UpstreamDrift#11742)
 - **Next step:** Shipped in PR #435.
 
