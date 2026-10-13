@@ -214,6 +214,32 @@ def test_pulls_start_with_the_plates_on_the_floor(exercise: str) -> None:
 
 
 @needs_opensim
+@pytest.mark.parametrize("exercise", PULLS)
+def test_floor_pull_bar_height_above_lowest_sole(exercise: str) -> None:
+    """The bar centre in floor-pull lifts is plate-radius above the lowest sole (#416)."""
+    import opensim
+
+    model, state = _engine(exercise)
+    bar = model.getBodySet().get("barbell_shaft").getTransformInGround(state).p()
+    geoms = model.getContactGeometrySet()
+    lowest_y = float("inf")
+    for i in range(geoms.getSize()):
+        sphere = opensim.ContactSphere.safeDownCast(geoms.get(i))
+        if sphere is None or not sphere.getName().startswith("foot_"):
+            continue
+        centre = sphere.getFrame().findStationLocationInGround(
+            state, sphere.get_location()
+        )
+        bottom_y = centre.get(1) - sphere.getRadius()
+        if bottom_y < lowest_y:
+            lowest_y = bottom_y
+
+    bar_height_above_sole = bar.get(1) - lowest_y
+    plate_radius = spec.exercise_spec(STD, exercise)["load"]["plate_diameter_m"] / 2
+    assert bar_height_above_sole == pytest.approx(plate_radius, abs=POSITION_TOL_M)
+
+
+@needs_opensim
 @pytest.mark.parametrize("exercise", LIFTS)
 def test_palm_centres_close_on_the_bar(exercise: str) -> None:
     bar = _start(exercise)["bar_position_m"]
