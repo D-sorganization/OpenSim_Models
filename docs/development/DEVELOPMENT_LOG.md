@@ -163,6 +163,32 @@ reachable from any live state and `abandoned` from `parked`.
 
 ## Shipped (Last 90 Days)
 
+### DL-#390 · Integrate a Manager Forward Simulation With CoordinateActuators (#390)
+
+- **State:** shipped
+- **Owner:** unassigned
+- **Issue:** #390
+- **Branch:** merged via #454
+- **PR:** #454
+- **Paths:** see #454
+- **Started:** 2026-10-13
+- **Last verified:** 2026-10-13 (`0340d65e`; collated from changes/390-forward-simulation-manager.md)
+- **Summary:** Integrate a Manager forward simulation with CoordinateActuators (#390)
+- **Next step:** Shipped in PR #454.
+
+### DL-#388 · Add InverseKinematicsTool Wrapper With Real-OpenSim Test (#388)
+
+- **State:** shipped
+- **Owner:** unassigned
+- **Issue:** #388
+- **Branch:** merged via #454
+- **PR:** #454
+- **Paths:** see #454
+- **Started:** 2026-10-13
+- **Last verified:** 2026-10-13 (`0340d65e`; collated from changes/388-inverse-kinematics-tool-wrapper.md)
+- **Summary:** Add InverseKinematicsTool wrapper with real-OpenSim test (#388)
+- **Next step:** Shipped in PR #454.
+
 ### DL-#380 · Re-Sync Vendored Model-Parity Bundle to Repository_Management Main (Standard V2.1, assemble.py Phase_Names From RM#2089)
 
 - **State:** shipped
@@ -182,10 +208,10 @@ reachable from any live state and `abandoned` from `parked`.
 - **Owner:** unassigned
 - **Issue:** #387
 - **Branch:** merged via #451
-- **PR:** #451
+- **PR:** #451, #454
 - **Paths:** see #451
 - **Started:** 2026-10-13
-- **Last verified:** 2026-10-13 (`cb1018f1`; collated from changes/387-add-markerset-with-standard-human-and-eq.md)
+- **Last verified:** 2026-10-13 (`0340d65e`; collated from changes/387-add-markerset-with-standard-human-and-eq.md)
 - **Summary:** Add MarkerSet with standard human and equipment markers (#387)
 - **Next step:** Shipped in PR #451.
 
