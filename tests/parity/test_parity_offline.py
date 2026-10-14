@@ -98,3 +98,10 @@ def test_y_up_measurements_assemble_into_a_conforming_fingerprint() -> None:
     )
     assert conformance.check_fingerprint(fp, STD) == []
     assert math.isclose(fp["segment_origins_neutral_m"]["head"][2], 0.6)
+
+
+def test_bench_press_mass_parity_convention() -> None:
+    """Bench press bench mass follows standard 1e-4 kg convention (#415)."""
+    from opensim_models.exercises.bench_press.bench_press_model import BENCH_MASS
+
+    assert math.isclose(BENCH_MASS, 1e-4, rel_tol=1e-6)

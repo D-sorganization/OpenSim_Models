@@ -6,6 +6,7 @@ import pytest
 
 from opensim_models.exercises.bench_press.bench_press_model import (
     BENCH_HEIGHT,
+    BENCH_MASS,
     BenchPressModelBuilder,
     build_bench_press_model,
 )
@@ -38,6 +39,18 @@ class TestBenchPressModelBuilder:
 
     def test_bench_height_constant(self):
         assert pytest.approx(0.43) == BENCH_HEIGHT
+
+    def test_bench_mass_constant(self):
+        assert pytest.approx(1e-4) == BENCH_MASS
+
+    def test_bench_body_mass(self):
+        xml_str = BenchPressModelBuilder().build()
+        root = ET.fromstring(xml_str)
+        bench = root.find(".//Body[@name='bench']")
+        assert bench is not None
+        mass_elem = bench.find("mass")
+        assert mass_elem is not None
+        assert pytest.approx(1e-4) == float(mass_elem.text or "0")
 
 
 class TestBuildBenchPressModel:
