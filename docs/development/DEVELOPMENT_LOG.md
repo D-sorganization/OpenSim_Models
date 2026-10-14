@@ -182,10 +182,10 @@ reachable from any live state and `abandoned` from `parked`.
 - **Owner:** unassigned
 - **Issue:** #388
 - **Branch:** merged via #454
-- **PR:** #454
+- **PR:** #454, #453
 - **Paths:** see #454
 - **Started:** 2026-10-13
-- **Last verified:** 2026-10-13 (`0340d65e`; collated from changes/388-inverse-kinematics-tool-wrapper.md)
+- **Last verified:** 2026-10-14 (`2675a351`; collated from changes/388-inverse-kinematics-tool-wrapper.md)
 - **Summary:** Add InverseKinematicsTool wrapper with real-OpenSim test (#388)
 - **Next step:** Shipped in PR #454.
 
@@ -208,10 +208,10 @@ reachable from any live state and `abandoned` from `parked`.
 - **Owner:** unassigned
 - **Issue:** #387
 - **Branch:** merged via #451
-- **PR:** #451, #454
+- **PR:** #451, #454, #453
 - **Paths:** see #451
 - **Started:** 2026-10-13
-- **Last verified:** 2026-10-13 (`0340d65e`; collated from changes/387-add-markerset-with-standard-human-and-eq.md)
+- **Last verified:** 2026-10-14 (`2675a351`; collated from changes/387-add-markerset-with-standard-human-and-eq.md)
 - **Summary:** Add MarkerSet with standard human and equipment markers (#387)
 - **Next step:** Shipped in PR #451.
 
