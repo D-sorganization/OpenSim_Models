@@ -48,7 +48,8 @@ _BENCH_HEIGHT_DIM = 0.05  # metres (Y) — thickness of the padded top
 _BENCH_WIDTH = 0.30  # metres (Z) — lateral
 
 # Inertia for bench (treated as massless rigid constraint body)
-_BENCH_MASS = 1e-4  # near-zero mass (kg) — bench mass is borne by ground
+BENCH_MASS: float = 1e-4  # near-zero mass (kg) — bench mass is borne by ground
+_BENCH_MASS = BENCH_MASS  # near-zero mass (kg) — bench mass is borne by ground
 
 
 class BenchPressModelBuilder(SpecLiftModelBuilder):
