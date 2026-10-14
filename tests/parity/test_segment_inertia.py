@@ -7,7 +7,6 @@ the shared standard within 1e-6 relative.
 
 from __future__ import annotations
 
-import sys
 import xml.etree.ElementTree as ET
 from pathlib import Path
 
@@ -27,8 +26,8 @@ except ImportError:
     opensim = None
 
 needs_opensim = pytest.mark.skipif(
-    opensim is None or sys.version_info < (3, 11),
-    reason="the opensim pip wheel is published for CPython 3.11+ only",
+    opensim is None,
+    reason="opensim is not installed in this Python environment",
 )
 
 STD = conformance.load_standard()

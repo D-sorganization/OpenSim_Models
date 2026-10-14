@@ -5,7 +5,6 @@ from __future__ import annotations
 import hashlib
 import importlib.resources
 import json
-import sys
 import xml.etree.ElementTree as ET
 from pathlib import Path
 
@@ -16,9 +15,14 @@ from opensim_models.model_pack import list_exercises, manifest
 from opensim_models.shared.parity._canonical import conformance
 from opensim_models.shared.parity.fingerprint import fingerprint
 
+try:
+    import opensim
+except ImportError:
+    opensim = None
+
 needs_opensim = pytest.mark.skipif(
-    sys.version_info < (3, 11),
-    reason="the opensim pip wheel is published for CPython 3.11+ only",
+    opensim is None,
+    reason="opensim is not installed in this Python environment",
 )
 
 EXERCISES = list_exercises()

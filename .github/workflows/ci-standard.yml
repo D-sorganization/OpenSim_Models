@@ -215,7 +215,7 @@ jobs:
       fail-fast: false
       max-parallel: 3
       matrix:
-        python: ["3.10", "3.11", "3.12"]
+        python: ["3.11", "3.12"]
     steps:
       - name: Checkout repository without external actions
         shell: bash
@@ -268,7 +268,7 @@ jobs:
           if [ -z "$PYTHON" ]; then
             echo "::error::Python ${WANT} is not available on this runner ($(hostname)) even after setup-python."
             echo "Available interpreters:"
-            for CAND in python3.10 python3.11 python3.12 python3 python; do
+            for CAND in python3.11 python3.12 python3 python; do
               if command -v "$CAND" >/dev/null 2>&1; then
                 echo "  - $CAND -> $("$CAND" --version 2>&1)"
               fi
@@ -335,7 +335,7 @@ jobs:
           git clean -ffdx
       - name: Set up Python venv
         run: |
-          for PYTHON in python3.11 python3.12 python3.10 python; do
+          for PYTHON in python3.11 python3.12 python; do
             if command -v "$PYTHON" &>/dev/null; then
               echo "Using $PYTHON ($($PYTHON --version))"
               "$PYTHON" -m venv "$RUNNER_TEMP/ci-venv"

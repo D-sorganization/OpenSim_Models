@@ -13,7 +13,6 @@ contact equilibrium, not a constructed one.
 
 from __future__ import annotations
 
-import sys
 from pathlib import Path
 from typing import Any
 
@@ -22,9 +21,14 @@ import pytest
 from opensim_models.exercises import EXERCISE_BUILDERS
 from opensim_models.tools.ground_reaction import inside_polygon, support_polygon
 
+try:
+    import opensim
+except ImportError:
+    opensim = None
+
 needs_opensim = pytest.mark.skipif(
-    sys.version_info < (3, 11),
-    reason="the opensim pip wheel is published for CPython 3.11+ only",
+    opensim is None,
+    reason="opensim is not installed in this Python environment",
 )
 
 G = 9.80665
