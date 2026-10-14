@@ -163,6 +163,7 @@ Rows are keyed by pull request, not by a serial spec version: `| YYYY-MM-DD | #<
 
 | Date       | PR    | Changes                                                                                                                                                                                                                                                                                                                                                                 |
 | ---------- | ----- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| 2026-10-14 | #453 | Add MarkerSet with standard human and equipment markers (#387); Add InverseKinematicsTool wrapper with real-OpenSim test (#388) |
 | 2026-10-13 | #454 | Add MarkerSet with standard human and equipment markers (#387); Add InverseKinematicsTool wrapper with real-OpenSim test (#388); Integrate a Manager forward simulation with CoordinateActuators (#390) |
 | 2026-10-13 | #456 | Re-sync vendored model-parity bundle to Repository_Management main (standard v2.1, assemble.py phase_names from RM#2089) |
 | 2026-10-13 | #452 | Export per-foot and total GRF with CoP from SmoothSphereHalfSpaceForce, with a real-OpenSim standing test |
