@@ -18,6 +18,19 @@ reachable from any live state and `abandoned` from `parked`.
 
 ## Active
 
+### DL-#397 · Drop Python 3.10 From CI Matrix and Pyproject.Toml
+
+- **State:** in_review
+- **Owner:** unassigned
+- **Issue:** #397
+- **Branch:** fix/397-drop-py310
+- **PR:** #460
+- **Paths:** see #460
+- **Started:** 2026-10-14
+- **Last verified:** 2026-10-14 (`3e7063c8`; collated from changes/397-drop-python-3-10-from-ci-matrix-and-pypr.md)
+- **Summary:** Drop Python 3.10 from CI matrix and pyproject.toml
+- **Next step:** Merge the PR.
+
 ### DL-#391 · Export Per-Foot and Total GRF With CoP From SmoothSphereHalfSpaceForce, With a Real-OpenSim Standing Test
 
 - **State:** in_review
