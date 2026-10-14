@@ -18,6 +18,19 @@ reachable from any live state and `abandoned` from `parked`.
 
 ## Active
 
+### DL-#415 · Verify-Bench-Mass-Cross-Engine-Parity
+
+- **State:** in_review
+- **Owner:** unassigned
+- **Issue:** #415
+- **Branch:** fix/415-bench-mass-parity
+- **PR:** #462
+- **Paths:** see #462
+- **Started:** 2026-10-14
+- **Last verified:** 2026-10-14 (`6f4d660e`; collated from changes/415-verify-bench-mass-cross-engine-parity.md)
+- **Summary:** verify-bench-mass-cross-engine-parity
+- **Next step:** merge-the-pr
+
 ### DL-#397 · Drop Python 3.10 From CI Matrix and Pyproject.Toml
 
 - **State:** in_review
