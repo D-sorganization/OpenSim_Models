@@ -2,7 +2,6 @@
 
 from __future__ import annotations
 
-import sys
 from pathlib import Path
 
 import pytest
@@ -21,8 +20,8 @@ except ImportError:
     opensim = None
 
 needs_opensim = pytest.mark.skipif(
-    opensim is None or sys.version_info < (3, 11),
-    reason="the opensim pip wheel is published for CPython 3.11+ only",
+    opensim is None,
+    reason="opensim is not installed in this Python environment",
 )
 
 

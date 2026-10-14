@@ -3,16 +3,20 @@
 from __future__ import annotations
 
 import math
-import sys
 from pathlib import Path
 
 import pytest
 
 from opensim_models.exercises import EXERCISE_BUILDERS
 
+try:
+    import opensim
+except ImportError:
+    opensim = None
+
 needs_opensim = pytest.mark.skipif(
-    sys.version_info < (3, 11),
-    reason="the opensim pip wheel is published for CPython 3.11+ only",
+    opensim is None,
+    reason="opensim is not installed in this Python environment",
 )
 
 FREE_ROOT = [e for e in EXERCISE_BUILDERS if e != "bench_press"]
