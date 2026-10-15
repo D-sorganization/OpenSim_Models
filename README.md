@@ -29,6 +29,34 @@ with open("squat.osim", "w") as f:
     f.write(xml)
 ```
 
+### Optional segmental lumbar chain (#464)
+
+By default the trunk has one 3-DOF `lumbar` joint. Passing a coupling law in
+`ExerciseConfig(lumbar_chain=...)` (or `lumbar_chain=` and `constraintset=` to
+`create_full_body`) replaces it with five CustomJoints (`lumbar_L5_S1` ..
+`lumbar_L1_L2`, caudal first) and twelve `CoordinateCouplerConstraint`s:
+
+```python
+from opensim_models.exercises.base import ExerciseConfig
+from opensim_models.exercises.deadlift.deadlift_model import DeadliftModelBuilder
+from opensim_models.shared.body.lumbar_chain import LumbarCouplingLaw
+
+law = LumbarCouplingLaw(
+    law_id="my_law", version="1", source="<full citation of the data>",
+    ratios={"flex": (...), "lateral": (...), "rotate": (...)},  # 5 shares each
+)
+xml = DeadliftModelBuilder(ExerciseConfig(lumbar_chain=law)).build()
+```
+
+Each motion's five shares (caudal first) are positive and sum to 1, so
+`lumbar_flex`, `lumbar_lateral` and `lumbar_rotate` stay the total-motion
+drivers with their original ranges. The law's `law_id`, `version` and `source`
+are written to the model's `<publications>` property. The default model is
+byte-identical. No published ratios are bundled yet (they belong in a shared
+package, not copied between repositories); `uniform_lumbar_law()` is an equal
+split and is labelled as not published. Levels are co-located with no neutral
+lordosis and the link bodies carry negligible regularising mass.
+
 ## Architecture
 
 See [docs/architecture/C4.md](docs/architecture/C4.md) for the authoritative Mermaid C4 architecture map and feature-to-component traceability matrix.

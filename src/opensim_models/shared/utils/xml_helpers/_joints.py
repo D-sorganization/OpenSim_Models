@@ -208,6 +208,8 @@ def add_custom_joint(
       - ``range_max`` (float): upper bound in radians
       - ``axis`` (str, optional): rotation axis, e.g. "1 0 0" (defaults to
         "0 0 1", "1 0 0", "0 1 0" for the 1st, 2nd, 3rd coordinate)
+      - ``scale`` (float, optional): rotation coordinates only; the joint
+        angle is ``scale * coordinate`` (defaults to 1)
     """
     if len(coordinates) < 1:
         raise ValueError("CustomJoint requires at least 1 coordinate")

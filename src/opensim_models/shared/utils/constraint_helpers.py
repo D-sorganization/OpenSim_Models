@@ -8,6 +8,7 @@ second rigid attachment (the barbell gripped by the other hand) must be a
 from __future__ import annotations
 
 import logging
+import math
 import xml.etree.ElementTree as ET
 
 from opensim_models.shared.utils.xml_helpers import orientation_str, vec3_str
@@ -30,6 +31,41 @@ def _add_offset_frame(
     ET.SubElement(frame, "socket_parent").text = f"/bodyset/{body}"
     ET.SubElement(frame, "translation").text = vec3_str(*location)
     ET.SubElement(frame, "orientation").text = orientation_str(*orientation)
+
+
+def get_constraint_set(model: ET.Element) -> ET.Element:
+    """Return the model's ``ConstraintSet``, creating it when absent."""
+    cset = model.find("ConstraintSet")
+    if cset is None:
+        cset = ET.SubElement(model, "ConstraintSet")
+    return cset
+
+
+def add_coordinate_coupler(
+    constraintset: ET.Element,
+    *,
+    name: str,
+    independent: str,
+    dependent: str,
+    slope: float,
+) -> ET.Element:
+    """Append a linear ``CoordinateCouplerConstraint`` to *constraintset*.
+
+    Enforces ``dependent = slope * independent`` (no offset). This prescribes
+    kinematics only; it is not a force or stiffness element.
+    """
+    if independent == dependent:
+        raise ValueError("CoordinateCouplerConstraint needs two distinct coordinates")
+    if not math.isfinite(slope):
+        raise ValueError(f"coupler slope must be finite, got {slope}")
+    coupler = ET.SubElement(constraintset, "CoordinateCouplerConstraint", name=name)
+    ET.SubElement(coupler, "isEnforced").text = "true"
+    ET.SubElement(coupler, "independent_coordinate_names").text = independent
+    ET.SubElement(coupler, "dependent_coordinate_name").text = dependent
+    func = ET.SubElement(coupler, "coupled_coordinates_function")
+    lin = ET.SubElement(func, "LinearFunction")
+    ET.SubElement(lin, "coefficients").text = f"{slope:.12g} 0"
+    return coupler
 
 
 def add_weld_constraint(
@@ -59,9 +95,7 @@ def add_weld_constraint(
     frame_1, frame_2 = f"{name}_frame1", f"{name}_frame2"
     _add_offset_frame(model, frame_1, body_1, location_in_body_1, orientation_in_body_1)
     _add_offset_frame(model, frame_2, body_2, location_in_body_2, orientation_in_body_2)
-    cset = model.find("ConstraintSet")
-    if cset is None:
-        cset = ET.SubElement(model, "ConstraintSet")
+    cset = get_constraint_set(model)
     weld = ET.SubElement(cset, "WeldConstraint", name=name)
     ET.SubElement(weld, "socket_frame1").text = f"/{frame_1}"
     ET.SubElement(weld, "socket_frame2").text = f"/{frame_2}"

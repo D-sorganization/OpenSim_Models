@@ -6,7 +6,11 @@ import xml.etree.ElementTree as ET
 
 import pytest
 
-from opensim_models.shared.utils.constraint_helpers import add_weld_constraint
+from opensim_models.shared.utils.constraint_helpers import (
+    add_coordinate_coupler,
+    add_weld_constraint,
+    get_constraint_set,
+)
 
 
 class TestAddWeldConstraint:
@@ -81,3 +85,40 @@ class TestAddWeldConstraint:
             "0.5236000000 0.0000000000 0.0000000000"
         )
         assert frame_2.findtext("orientation") == "0.000000 0.000000 0.000000"
+
+
+class TestCoordinateCoupler:
+    def test_get_constraint_set_is_idempotent(self) -> None:
+        model = ET.Element("Model")
+        assert get_constraint_set(model) is get_constraint_set(model)
+        assert len(model.findall("ConstraintSet")) == 1
+
+    def test_writes_linear_coupler(self) -> None:
+        cset = ET.Element("ConstraintSet")
+        c = add_coordinate_coupler(
+            cset, name="c", independent="a", dependent="b", slope=0.25
+        )
+        assert c.findtext("independent_coordinate_names") == "a"
+        assert c.findtext("dependent_coordinate_name") == "b"
+        assert c.findtext(".//LinearFunction/coefficients") == "0.25 0"
+
+    def test_rejects_same_coordinate(self) -> None:
+        with pytest.raises(ValueError, match="distinct"):
+            add_coordinate_coupler(
+                ET.Element("ConstraintSet"),
+                name="c",
+                independent="a",
+                dependent="a",
+                slope=1.0,
+            )
+
+    @pytest.mark.parametrize("slope", [float("nan"), float("inf")])
+    def test_rejects_non_finite_slope(self, slope: float) -> None:
+        with pytest.raises(ValueError, match="finite"):
+            add_coordinate_coupler(
+                ET.Element("ConstraintSet"),
+                name="c",
+                independent="a",
+                dependent="b",
+                slope=slope,
+            )
