@@ -18,6 +18,19 @@ reachable from any live state and `abandoned` from `parked`.
 
 ## Active
 
+### DL-#464 · Add Opt-In Segmental Lumbar Chain (L5/S1..L1/L2) With Coupling-Law Constraints; Default Model Unchanged
+
+- **State:** in_review
+- **Owner:** unassigned
+- **Issue:** #464
+- **Branch:** feat/464-segmental-lumbar
+- **PR:** #465
+- **Paths:** see #465
+- **Started:** 2026-10-15
+- **Last verified:** 2026-10-15 (`05f8ba03`; collated from changes/464-add-opt-in-segmental-lumbar-chain-l5-s1.md)
+- **Summary:** Add opt-in segmental lumbar chain (L5/S1..L1/L2) with coupling-law constraints; default model unchanged
+- **Next step:** Merge the PR, then add cited coupling data from the shared package.
+
 ### DL-#415 · Verify-Bench-Mass-Cross-Engine-Parity
 
 - **State:** in_review
