@@ -14,6 +14,11 @@ import logging
 import xml.etree.ElementTree as ET
 
 from opensim_models.shared.body._segment_data import BodyModelSpec, _seg
+from opensim_models.shared.body.lumbar_chain import (
+    LUMBAR_MOTIONS,
+    LumbarCouplingLaw,
+    add_lumbar_chain,
+)
 from opensim_models.shared.parity.standard import JOINT_LIMITS
 from opensim_models.shared.utils.geometry import (
     cylinder_inertia,
@@ -88,26 +93,13 @@ def _add_lumbar_joint(
         location_in_child=(0, 0, 0),
         coordinates=[
             {
-                "name": "lumbar_flex",
+                "name": f"lumbar_{motion}",
                 "default_value": 0.0,
-                "range_min": JOINT_LIMITS["lumbar_flex"][0],
-                "range_max": JOINT_LIMITS["lumbar_flex"][1],
-                "axis": "0 0 -1",
-            },
-            {
-                "name": "lumbar_lateral",
-                "default_value": 0.0,
-                "range_min": JOINT_LIMITS["lumbar_lateral"][0],
-                "range_max": JOINT_LIMITS["lumbar_lateral"][1],
-                "axis": "-1 0 0",
-            },
-            {
-                "name": "lumbar_rotate",
-                "default_value": 0.0,
-                "range_min": JOINT_LIMITS["lumbar_rotate"][0],
-                "range_max": JOINT_LIMITS["lumbar_rotate"][1],
-                "axis": "0 1 0",
-            },
+                "range_min": JOINT_LIMITS[f"lumbar_{motion}"][0],
+                "range_max": JOINT_LIMITS[f"lumbar_{motion}"][1],
+                "axis": axis,
+            }
+            for motion, axis in LUMBAR_MOTIONS.items()
         ],
     )
 
@@ -143,10 +135,21 @@ def add_axial_joints(
     t_len: float,
     *,
     skip_ground_joint: bool,
+    lumbar_chain: LumbarCouplingLaw | None = None,
+    constraintset: ET.Element | None = None,
 ) -> None:
-    """Add the axial skeleton joints (ground-pelvis, lumbar, neck)."""
+    """Add the axial skeleton joints (ground-pelvis, lumbar, neck).
+
+    With ``lumbar_chain`` the single lumbar joint is replaced by the five-level
+    segmental chain, whose couplers go into ``constraintset`` (required then).
+    """
     if not skip_ground_joint:
         _add_ground_pelvis_joint(jointset)
 
-    _add_lumbar_joint(jointset, p_len)
+    if lumbar_chain is None:
+        _add_lumbar_joint(jointset, p_len)
+    else:
+        if constraintset is None:
+            raise ValueError("lumbar_chain requires a constraintset")
+        add_lumbar_chain(jointset, constraintset, p_len, lumbar_chain)
     _add_neck_joint(jointset, t_len)

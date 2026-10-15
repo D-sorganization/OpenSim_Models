@@ -22,6 +22,10 @@ from opensim_models.shared.body.appendicular import (
     add_upper_limbs,
 )
 from opensim_models.shared.body.axial_skeleton import add_axial_body, add_axial_joints
+from opensim_models.shared.body.lumbar_chain import (
+    LumbarCouplingLaw,
+    add_lumbar_chain_bodies,
+)
 
 logger = logging.getLogger(__name__)
 
@@ -40,6 +44,8 @@ def create_full_body(
     spec: BodyModelSpec | None = None,
     *,
     skip_ground_joint: bool = False,
+    lumbar_chain: LumbarCouplingLaw | None = None,
+    constraintset: ET.Element | None = None,
 ) -> dict[str, ET.Element]:
     """Build the full-body model and append bodies/joints to the given sets.
 
@@ -49,11 +55,20 @@ def create_full_body(
         spec: Anthropometric specification (defaults to 50th-percentile male).
         skip_ground_joint: When True, the FreeJoint connecting pelvis to ground
             is omitted (use when another joint provides the pelvis parent).
+        lumbar_chain: Opt-in coupling law. When given, the single lumbar joint
+            is replaced by the five-level segmental chain (#464); ``None``
+            (default) leaves the model unchanged.
+        constraintset: ConstraintSet receiving the chain's coupler constraints;
+            required when ``lumbar_chain`` is given.
+
+    Raises ValueError when ``lumbar_chain`` is given without ``constraintset``.
 
     Returns dict of body name -> ET.Element for all created bodies.
     """
     if spec is None:
         spec = BodyModelSpec()
+    if lumbar_chain is not None and constraintset is None:
+        raise ValueError("lumbar_chain requires a constraintset")
 
     logger.info(
         "Building full-body model (mass=%.1f kg, height=%.2f m)",
@@ -67,7 +82,17 @@ def create_full_body(
     _, p_len, p_rad = add_axial_body(bodyset, spec, "pelvis", bodies)
     _, t_len, t_rad = add_axial_body(bodyset, spec, "torso", bodies)
     add_axial_body(bodyset, spec, "head", bodies)
-    add_axial_joints(jointset, spec, p_len, t_len, skip_ground_joint=skip_ground_joint)
+    if lumbar_chain is not None:
+        add_lumbar_chain_bodies(bodyset, bodies)
+    add_axial_joints(
+        jointset,
+        spec,
+        p_len,
+        t_len,
+        skip_ground_joint=skip_ground_joint,
+        lumbar_chain=lumbar_chain,
+        constraintset=constraintset,
+    )
 
     # --- Upper limbs ---
     add_upper_limbs(bodyset, jointset, spec, t_len, t_rad, bodies)

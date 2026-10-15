@@ -24,9 +24,11 @@ from opensim_models.shared.body import (
     create_full_body,
 )
 from opensim_models.shared.body.ground_placement import standing_pelvis_height
+from opensim_models.shared.body.lumbar_chain import LumbarCouplingLaw
 from opensim_models.shared.contracts.postconditions import (
     ensure_coordinates_within_bounds,
 )
+from opensim_models.shared.utils.constraint_helpers import get_constraint_set
 from opensim_models.shared.utils.contact_helpers import (
     add_contact_half_space,
     add_hunt_crossley_force,
@@ -49,6 +51,9 @@ class ExerciseConfig:
     # Shaft centre to palm centre (metres). None: the exercise's own grip; a
     # spec lift (``spec_start.py``) accepts only its standard grip width.
     grip_offset: float | None = None
+    # Opt-in segmental lumbar chain (#464). None keeps the single lumbar joint
+    # and a byte-identical model; a law replaces it by five coupled levels.
+    lumbar_chain: LumbarCouplingLaw | None = None
 
 
 class ExerciseModelBuilder(ABC):
@@ -180,12 +185,18 @@ class ExerciseModelBuilder(ABC):
         bodyset = ET.SubElement(model, "BodySet")
         jointset = ET.SubElement(model, "JointSet")
 
+        law = self.config.lumbar_chain
         body_bodies = create_full_body(
             bodyset,
             jointset,
             self.body_spec,
             skip_ground_joint=self._skip_ground_joint(),
+            lumbar_chain=law,
+            constraintset=None if law is None else get_constraint_set(model),
         )
+        if law is not None:
+            # Record the coupling law in force in the model metadata.
+            ET.SubElement(model, "publications").text = law.provenance
 
         barbell_bodies: dict[str, ET.Element] = {}
         if self.uses_barbell:

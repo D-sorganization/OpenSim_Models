@@ -38,10 +38,22 @@ def _fill_rotation_axes(driven: list[str]) -> list[str]:
     return axes
 
 
+def _linear_coefficients(scale: float) -> str:
+    """LinearFunction coefficients ``"scale 0"`` (the default scale 1 is ``"1 0"``)."""
+    return "1 0" if scale == 1.0 else f"{scale:.12g} 0"
+
+
 def _add_transform_axis(
-    spatial: ET.Element, name: str, axis: str, coord_name: str | None
+    spatial: ET.Element,
+    name: str,
+    axis: str,
+    coord_name: str | None,
+    scale: float = 1.0,
 ) -> None:
-    """Append one TransformAxis, driven linearly by *coord_name* (or constant 0)."""
+    """Append one TransformAxis, driven linearly by *coord_name* (or constant 0).
+
+    The joint angle is ``scale * coordinate`` (``scale`` defaults to 1).
+    """
     ta = ET.SubElement(spatial, "TransformAxis", name=name)
     if coord_name is not None:
         ET.SubElement(ta, "coordinates").text = coord_name
@@ -51,7 +63,7 @@ def _add_transform_axis(
         ET.SubElement(ET.SubElement(func, "Constant"), "value").text = "0"
     else:
         lin = ET.SubElement(func, "LinearFunction")
-        ET.SubElement(lin, "coefficients").text = "1 0"
+        ET.SubElement(lin, "coefficients").text = _linear_coefficients(scale)
 
 
 def _require_distinct_rotation_axes(driven: list[str]) -> None:
@@ -66,6 +78,11 @@ def _require_distinct_rotation_axes(driven: list[str]) -> None:
 def _coordinate_name(coords: list[dict[str, float | str]], i: int) -> str | None:
     """Name of the i-th coordinate, or None when that axis is undriven."""
     return str(coords[i]["name"]) if i < len(coords) else None
+
+
+def _scale(coords: list[dict[str, float | str]], i: int) -> float:
+    """Optional ``scale`` of the i-th coordinate (joint angle = scale * value)."""
+    return float(coords[i].get("scale", 1.0)) if i < len(coords) else 1.0
 
 
 def _translation_axis(coords: list[dict[str, float | str]], i: int) -> str:
@@ -97,7 +114,11 @@ def _add_spatial_transform(
     rot_axes = _fill_rotation_axes(driven)
     for i in range(3):
         _add_transform_axis(
-            spatial, f"rotation{i + 1}", rot_axes[i], _coordinate_name(rot, i)
+            spatial,
+            f"rotation{i + 1}",
+            rot_axes[i],
+            _coordinate_name(rot, i),
+            _scale(rot, i),
         )
     for i in range(3):
         _add_transform_axis(
