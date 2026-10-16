@@ -23,7 +23,7 @@
 | F13 | Biomechanical visualization utilities | shipped | 100% | 2026-04-27 |
 | F14 | Cross-exercise parity testing suite | shipped | 100% | 2026-04-04 |
 | F15 | C4 architecture map contract | shipped | 100% | 2026-09-10 |
-| F16 | Rust acceleration core | parked | 20% | 2026-05-19 |
+| F16 | Rust acceleration core (CI-gated; no Python consumer) | parked | 20% | 2026-10-16 |
 
 ## Blockers
 
@@ -31,7 +31,7 @@
 
 ## Risks
 
-- Rust acceleration core in `rust_core` is unbuilt in CI, risking unmonitored dependency and code drift.
+- `rust_core` has no Python consumer: no maturin build, no Python import and no parity test against the pure-Python `interpolate_phases`, so its kernels can drift from the Python behaviour without any test noticing (see the `rust_core` decision below).
 - Aggressive micro-optimizations in XML serialization and precondition helpers may inadvertently drift from OpenSim schema invariants if test coverage lacks full schema validation.
 
 ## Changed Since Last Run
@@ -40,5 +40,19 @@
 
 ## Decisions Needed
 
-- Decide whether to maintain and wire `rust_core` into the build and CI pipeline, or remove it entirely.
+- Owner decision still open: wire `rust_core` into Python (maturin build plus a parity test against the pure-Python kernels) once profiling shows a hotspot, or remove it if no consumer appears. Recommended: keep the CI gate as is and do not invest further until a profiled need exists (#473).
+
+## `rust_core` Decision (#473, 2026-10-16)
+
+- **Decision: keep it, built and tested in CI.** The `Rust Gate` job in
+  `.github/workflows/ci-standard.yml` runs `cargo build` and `cargo test`
+  on `rust_core/Cargo.toml` for every pull request, merge-group and `main`
+  run, and the `tests` job depends on it, so a broken crate blocks merge.
+  The earlier risk entry ("unbuilt in CI") was stale.
+- **Evidence:** the gate passed on `main` at `8aea447`. Locally (Rust 1.99,
+  pyo3 0.28, numpy 0.28, ndarray 0.17) the crate compiles cleanly and its
+  10 unit tests pass (`dynamics` 3, `kinematics` 3, `interpolation` 4).
+- **What is not covered:** the crate is a PyO3 `cdylib` with no maturin
+  build, no Python import and no parity test; the Python package never
+  calls it. Its progress stays at 20 % until it has a Python consumer.
 - Confirm if non-barbell movements (gait, sit-to-stand) should remain permanently supported alongside barbell exercises.
