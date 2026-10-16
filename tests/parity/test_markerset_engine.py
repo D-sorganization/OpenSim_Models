@@ -10,6 +10,8 @@ import pytest
 from opensim_models.exercises import EXERCISE_BUILDERS
 from opensim_models.model_pack import list_exercises
 
+pytestmark = pytest.mark.requires_opensim
+
 try:
     import opensim
 

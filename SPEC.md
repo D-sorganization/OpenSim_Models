@@ -163,6 +163,7 @@ Rows are keyed by pull request, not by a serial spec version: `| YYYY-MM-DD | #<
 
 | Date       | PR    | Changes                                                                                                                                                                                                                                                                                                                                                                 |
 | ---------- | ----- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| 2026-10-16 | #467 | Cited lumbar coupling law (Xu 2022, doi:10.3389/fsurg.2022.1002133), level limits proportional to cited per-level ROM, link mass carved from the torso, and DbC on the chain flag |
 | 2026-10-15 | #465 | Add opt-in segmental lumbar chain (L5/S1..L1/L2) with coupling-law constraints; default model unchanged |
 | 2026-10-14 | #462 | verify-bench-mass-cross-engine-parity |
 | 2026-10-14 | #460 | Drop Python 3.10 from CI matrix and pyproject.toml |

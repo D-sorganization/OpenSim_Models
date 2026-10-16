@@ -15,6 +15,8 @@ from opensim_models.model_pack import list_exercises, manifest
 from opensim_models.shared.parity._canonical import conformance
 from opensim_models.shared.parity.fingerprint import fingerprint
 
+pytestmark = pytest.mark.requires_opensim
+
 try:
     import opensim
 except ImportError:
