@@ -81,6 +81,10 @@ byte-identical (pinned SHA-256 per builder in
   doi:10.3389/fsurg.2022.1002133 (Table 1, young group, n = 14). Each level's
   share is its fraction of the summed range; that proportionality is a
   modelling assumption, not a published result.
+- **Single source:** the cited per-level tables live only in
+  `src/opensim_models/shared/body/lumbar_coupling_laws.json`;
+  `load_lumbar_coupling_laws()` validates the file and builds every law from
+  it, and a test fails if any Python module carries the numbers itself.
 - **Limits:** each level's range is its share of the driver range, so the
   level limits are the cited per-level ranges scaled by one factor per motion.
 - **Mass:** the four link bodies are carved from the torso (same mass centre,

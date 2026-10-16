@@ -27,6 +27,7 @@ from opensim_models.shared.body.lumbar_chain import (
 )
 from opensim_models.shared.body.lumbar_coupling_data import (
     XU2022_DOI,
+    load_lumbar_coupling_laws,
     xu2022_young_lumbar_law,
 )
 from opensim_models.shared.parity.standard import JOINT_LIMITS
@@ -256,12 +257,16 @@ class TestOpenSimEngine:
         path.write_text(DeadliftModelBuilder(config).build(), encoding="utf-8")
         return opensim.Model(str(path))
 
-    def test_engine_mass_and_composed_rotation(self, tmp_path):
+    # Every law in the single data file (#473) must assemble in OpenSim.
+    @pytest.mark.parametrize(
+        "law", list(load_lumbar_coupling_laws().values()), ids=lambda law: law.law_id
+    )
+    def test_engine_mass_and_composed_rotation(self, tmp_path, law):
         default = self._load(tmp_path, None)
         default_state = default.initSystem()
-        law = xu2022_young_lumbar_law()
         model = self._load(tmp_path, ExerciseConfig(lumbar_chain=law))
         state = model.initSystem()
+        assert law.doi in model.get_publications()
         assert model.getTotalMass(state) == pytest.approx(
             default.getTotalMass(default_state), abs=1e-5
         )

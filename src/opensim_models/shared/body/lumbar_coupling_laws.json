@@ -1,0 +1,24 @@
+{
+  "schema_version": 1,
+  "description": "Single source of the cited lumbar coupling data for the opt-in segmental lumbar chain (OpenSim_Models #464, #473). Per-level values are listed caudal first in the 'levels' order; Python loads them through lumbar_coupling_data.load_lumbar_coupling_laws. The section is shaped so it can move unchanged into the shared biomech parity standard if the Repository_Management board accepts proposal #2116.",
+  "levels": ["L5_S1", "L4_L5", "L3_L4", "L2_L3", "L1_L2"],
+  "motions": ["flex", "lateral", "rotate"],
+  "laws": [
+    {
+      "law_id": "xu2022_young_rom_share",
+      "version": "1",
+      "doi": "10.3389/fsurg.2022.1002133",
+      "citation": "Xu F, Zhou S, Li Z, Jiang S, Chen Z, Sun Z, Li W. The 6 degrees-of-freedom range of motion of the L1-S1 vertebrae in young and middle-aged asymptomatic people. Front Surg. 2022;9:1002133. Open access (CC BY 4.0); checked against the full text on Europe PMC (PMC9643460).",
+      "table": "Table 1, young group (n = 14, 20-30 years), mean in vivo dual-fluoroscopic intervertebral rotation range about each motion's primary axis: flex = flexion-extension about the mediolateral axis (45 deg trunk flexion to maximal extension, so not the maximal flexion range); lateral = left-right bend about the anteroposterior axis; rotate = left-right torsion about the craniocaudal axis.",
+      "unit": "deg",
+      "distribution": "proportional_to_level_rom",
+      "assumptions": "Repository assumptions, not published results: motion is shared across levels in proportion to each level's range (ratio = range_i / sum(range)); the young cohort's means are used and the large inter-subject SDs are not; level limits are the cited ranges scaled to the parity-standard total range of the driver coordinate, one factor per motion.",
+      "source": "Xu F, Zhou S, Li Z, Jiang S, Chen Z, Sun Z, Li W. Front Surg 9:1002133 (2022), Table 1, young group (n=14), per-level primary-axis rotation range; shares proportional to range (repository assumption)",
+      "level_rom_deg": {
+        "flex": [14.27, 10.08, 11.21, 7.92, 9.54],
+        "lateral": [8.55, 8.85, 8.79, 7.48, 11.34],
+        "rotate": [8.03, 15.98, 16.88, 15.55, 15.17]
+      }
+    }
+  ]
+}
