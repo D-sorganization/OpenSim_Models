@@ -27,6 +27,9 @@ from opensim_models.shared.utils.xml_helpers._joints import (
     set_coordinate_default,
     set_coordinate_defaults,
 )
+from opensim_models.shared.utils.xml_helpers._root_joint import (
+    replace_free_joints_with_custom_joints,
+)
 
 __all__ = [
     "ZERO_VEC3",
@@ -41,6 +44,7 @@ __all__ = [
     "float_str",
     "indent_xml",
     "orientation_str",
+    "replace_free_joints_with_custom_joints",
     "scale_body_inertial",
     "serialize_model",
     "set_coordinate_default",
