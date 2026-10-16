@@ -24,12 +24,12 @@ reachable from any live state and `abandoned` from `parked`.
 - **Owner:** unassigned
 - **Issue:** #464
 - **Branch:** feat/464-segmental-lumbar
-- **PR:** #465
+- **PR:** #465, #467
 - **Paths:** see #465
 - **Started:** 2026-10-15
-- **Last verified:** 2026-10-15 (`05f8ba03`; collated from changes/464-add-opt-in-segmental-lumbar-chain-l5-s1.md)
+- **Last verified:** 2026-10-16 (`4bbac49b`; collated from changes/464-cited-lumbar-coupling-law-xu-2022-doi-10.md)
 - **Summary:** Add opt-in segmental lumbar chain (L5/S1..L1/L2) with coupling-law constraints; default model unchanged
-- **Next step:** Merge the PR, then add cited coupling data from the shared package.
+- **Next step:** Move the cited per-level table to a shared spine package once one exists (cross-repo DRY with UpstreamDrift SPN-3)
 
 ### DL-#415 · Verify-Bench-Mass-Cross-Engine-Parity
 
