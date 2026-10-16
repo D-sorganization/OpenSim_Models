@@ -8,6 +8,7 @@ import pytest
 
 from opensim_models.shared.body import add_foot_contact_spheres
 from opensim_models.shared.body._segment_data import BodyModelSpec, _seg
+from opensim_models.shared.parity import FOOT_CONTACT_DIMS
 from opensim_models.shared.utils.constraint_helpers import add_weld_constraint
 from opensim_models.shared.utils.xml_helpers import (
     add_custom_joint,
@@ -144,4 +145,5 @@ def test_foot_contact_spheres_sit_at_sole_in_y_up() -> None:
     for sphere in model.findall("ContactGeometrySet/ContactSphere"):
         x, y, z = (float(v) for v in sphere.findtext("location", "").split())
         assert y == pytest.approx(-foot_len + 0.02)
-        assert abs(z) == pytest.approx(0.03)
+        # Corners of the standard foot box (#472): half its width either side.
+        assert abs(z) == pytest.approx(FOOT_CONTACT_DIMS["width"] / 2)
