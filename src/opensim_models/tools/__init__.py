@@ -19,6 +19,7 @@ from opensim_models.tools.inverse_kinematics import (
     run_inverse_kinematics,
     write_trc_file,
 )
+from opensim_models.tools.recording import RolloutRecording, record_rollout
 
 __all__ = [
     "FootReaction",
@@ -29,8 +30,10 @@ __all__ = [
     "InverseDynamicsTool",
     "InverseKinematicsResult",
     "InverseKinematicsTool",
+    "RolloutRecording",
     "add_coordinate_actuators",
     "ground_reaction_from_model",
+    "record_rollout",
     "run_forward_simulation",
     "run_inverse_dynamics",
     "run_inverse_kinematics",
