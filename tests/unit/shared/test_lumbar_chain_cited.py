@@ -276,7 +276,10 @@ class TestOpenSimEngine:
                 assert q == pytest.approx(expected, abs=1e-9)
         pelvis = model.getBodySet().get("pelvis")
         torso = model.getBodySet().get("torso")
-        rot = torso.findTransformBetween(state, pelvis).R()
+        # Keep the Transform alive: R() is a reference into it, and reading
+        # the matrix off a temporary is a dangling read (uninitialised memory).
+        transform = torso.findTransformBetween(state, pelvis)
+        rot = transform.R()
         got = np.array([[rot.get(r, c) for c in range(3)] for r in range(3)])
         assert np.allclose(got, _expected_rotation(law, drivers), atol=1e-9)
 
