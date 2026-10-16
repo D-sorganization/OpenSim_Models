@@ -18,6 +18,19 @@ reachable from any live state and `abandoned` from `parked`.
 
 ## Active
 
+### DL-#473 · Single-Source the Cited Lumbar Coupling Data in Lumbar_Coupling_Laws.Json With a Validating Loader and a No-Copy Guard; Every Law Assembles in OpenSim 4.6; Rust_Core Recorded as CI-Gated (Board Proposal RM#2116)
+
+- **State:** in_review
+- **Owner:** unassigned
+- **Issue:** #473
+- **Branch:** feat/473-lumbar-coupling
+- **PR:** #479
+- **Paths:** see #479
+- **Started:** 2026-10-16
+- **Last verified:** 2026-10-16 (`3c2efabb`; collated from changes/473-single-source-the-cited-lumbar-coupling.md)
+- **Summary:** Single-source the cited lumbar coupling data in lumbar_coupling_laws.json with a validating loader and a no-copy guard; every law assembles in OpenSim 4.6; rust_core recorded as CI-gated (Board proposal RM#2116)
+- **Next step:** Merge the PR; act on the Board decision for RM#2116.
+
 ### DL-#471 · Headless Rollout Recorder: .sto States via TimeSeriesTable/STOFileAdapter Plus a Matplotlib Agg Stick-Figure Animation (MP4 With Ffmpeg, GIF Otherwise), at API Parity With Pinocchio Record_Rollout
 
 - **State:** in_review
