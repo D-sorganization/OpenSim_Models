@@ -17,6 +17,8 @@ import pytest
 
 from opensim_models.shared.parity._canonical import assemble, conformance, ledger
 
+pytestmark = pytest.mark.requires_opensim
+
 STD = conformance.load_standard()
 SCHEMA = ledger.LEDGER_SCHEMA
 

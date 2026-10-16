@@ -21,6 +21,8 @@ import pytest
 from opensim_models.exercises import EXERCISE_BUILDERS
 from opensim_models.tools.ground_reaction import inside_polygon, support_polygon
 
+pytestmark = pytest.mark.requires_opensim
+
 try:
     import opensim
 except ImportError:

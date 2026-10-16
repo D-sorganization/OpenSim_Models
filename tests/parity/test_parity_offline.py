@@ -21,6 +21,8 @@ from opensim_models.shared.parity.fingerprint import (
     SEGMENT_ALIASES,
 )
 
+pytestmark = pytest.mark.requires_opensim
+
 STD = conformance.load_standard()
 LEDGER = Path(conformance.__file__).parents[1] / "parity_divergences.json"
 ROOT_COORDINATE_PREFIX = "pelvis_"

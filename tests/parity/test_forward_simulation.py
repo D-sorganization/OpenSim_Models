@@ -15,6 +15,8 @@ from opensim_models.tools.forward_simulation import (
     run_forward_simulation,
 )
 
+pytestmark = pytest.mark.requires_opensim
+
 try:
     import opensim
 except ImportError:

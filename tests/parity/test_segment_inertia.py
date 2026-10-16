@@ -20,6 +20,8 @@ from opensim_models.shared.utils.geometry import (
     rectangular_prism_inertia,
 )
 
+pytestmark = pytest.mark.requires_opensim
+
 try:
     import opensim
 except ImportError:

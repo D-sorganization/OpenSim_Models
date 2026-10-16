@@ -289,7 +289,7 @@ jobs:
             -n auto \
             --timeout=60 \
             --timeout-method=thread \
-            -m "not slow and not requires_opensim" \
+            -m "not slow" \
             --cov=src \
             --cov-report=term-missing \
             --cov-report=xml:coverage.xml \
@@ -304,6 +304,107 @@ jobs:
         with:
           name: coverage-${{ matrix.python }}
           path: coverage.xml
+
+  requires-opensim:
+    name: Real OpenSim 4.6 (requires_opensim)
+    needs:
+      - pick-runner
+    runs-on: ${{ github.event.pull_request && github.event.pull_request.head.repo.full_name != github.repository && 'ubuntu-latest' || needs.pick-runner.outputs.runner }}
+    timeout-minutes: 25
+    env:
+      QT_QPA_PLATFORM: offscreen
+      MPLBACKEND: Agg
+    steps:
+      - name: Checkout repository without external actions
+        shell: bash
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set -euo pipefail
+          auth_header="$(printf 'x-access-token:%s' "$GH_TOKEN" | base64 | tr -d '\n')"
+          git init "$GITHUB_WORKSPACE"
+          cd "$GITHUB_WORKSPACE"
+          git config --local --unset-all http.https://github.com/.extraheader || true
+          { git config --local --name-only --get-regexp '^includeIf\.gitdir:.*\.path$' 2>/dev/null || true; } \
+            | while IFS= read -r key; do git config --local --unset-all "$key" || true; done
+          if git remote get-url origin >/dev/null 2>&1; then
+            git remote set-url origin "https://github.com/${GITHUB_REPOSITORY}.git"
+          else
+            git remote add origin "https://github.com/${GITHUB_REPOSITORY}.git"
+          fi
+          git -c "http.https://github.com/.extraheader=AUTHORIZATION: basic ${auth_header}" fetch --depth=1 origin "$GITHUB_SHA"
+          git checkout --force FETCH_HEAD
+          git clean -ffdx
+      # Provision the exact matrix interpreter. The self-hosted runner fleet is
+      # heterogeneous -- some hosts have python3.10/3.12 but not python3.11 --
+      # so we cannot rely on the requested version already being on PATH. Before
+      # this step the venv setup hard-coded `python3.12` with a
+      # fallback to a bare `python`; on a runner missing both, that exited 127
+      # ("command not found") and produced no coverage.xml. setup-python fetches
+      # a prebuilt CPython for the requested version so the matrix is honoured.
+      - name: Set up Python 3.12
+        uses: actions/setup-python@v7
+        with:
+          python-version: "3.12"
+      - name: Set up Python venv
+        run: |
+          set -euo pipefail
+          WANT="3.12"
+          # Resolve an interpreter that actually matches the matrix version.
+          # setup-python (above) puts the requested version on PATH; we still
+          # probe candidates and verify the resolved version so we never
+          # silently test the wrong minor version and fail loudly otherwise.
+          PYTHON=""
+          for CAND in "python${WANT}" python3 python; do
+            command -v "$CAND" >/dev/null 2>&1 || continue
+            VER="$("$CAND" -c 'import sys; print(f"{sys.version_info.major}.{sys.version_info.minor}")')"
+            if [ "$VER" = "$WANT" ]; then
+              PYTHON="$CAND"
+              break
+            fi
+          done
+          if [ -z "$PYTHON" ]; then
+            echo "::error::Python ${WANT} is not available on this runner ($(hostname)) even after setup-python."
+            echo "Available interpreters:"
+            for CAND in python3.11 python3.12 python3 python; do
+              if command -v "$CAND" >/dev/null 2>&1; then
+                echo "  - $CAND -> $("$CAND" --version 2>&1)"
+              fi
+            done
+            exit 1
+          fi
+          echo "Using $PYTHON ($("$PYTHON" --version))"
+          "$PYTHON" -m venv "$RUNNER_TEMP/ci-venv"
+          "$RUNNER_TEMP/ci-venv/bin/pip" install --upgrade pip setuptools wheel --quiet
+          echo "$RUNNER_TEMP/ci-venv/bin" >> "$GITHUB_PATH"
+
+      # OSL-1 (#469): run the IK, ID, forward-simulation and ground-contact
+      # wrappers against the real OpenSim 4.6 bindings. The PyPI wheel is the
+      # 4.6 build (the only published version) and needs no external setup
+      # action. Pinned exactly, and the import is asserted below, so a missing
+      # or downgraded OpenSim fails the job instead of skipping via importorskip.
+      - name: Install Dependencies
+        run: pip install -e ".[dev]" "opensim==4.6"
+
+      - name: Verify OpenSim 4.6 is importable
+        run: |
+          python - <<'PY'
+          import opensim
+          version = opensim.GetVersionAndDate()
+          print(version)
+          assert "version 4.6" in version, f"expected OpenSim 4.6, got {version}"
+          PY
+
+      - name: Run requires_opensim tests
+        run: |
+          python -m pytest \
+            -n auto \
+            --timeout=300 \
+            --timeout-method=thread \
+            -m "requires_opensim and not slow and not heavy" \
+            -rs \
+            --tb=short \
+            -v
 
   model-pack-smoke:
     name: Model-Pack API Smoke (UpstreamDrift #5179)
@@ -420,7 +521,7 @@ jobs:
   # skipped it - and a skipped required check counts as passing.
   quality-gate-compat:
     name: quality-gate
-    needs: [pick-runner, quality-gate, rust-gate, tests]
+    needs: [pick-runner, quality-gate, rust-gate, tests, requires-opensim]
     if: always()
     runs-on: ${{ github.event.pull_request && github.event.pull_request.head.repo.full_name != github.repository && 'ubuntu-latest' || needs.pick-runner.outputs.runner }}
     timeout-minutes: 5
@@ -431,9 +532,10 @@ jobs:
           RESULT_QUALITY_GATE: ${{ needs.quality-gate.result }}
           RESULT_RUST_GATE: ${{ needs.rust-gate.result }}
           RESULT_TESTS: ${{ needs.tests.result }}
+          RESULT_REQUIRES_OPENSIM: ${{ needs.requires-opensim.result }}
         run: |
           failed=0
-          for pair in "quality-gate=$RESULT_QUALITY_GATE" "rust-gate=$RESULT_RUST_GATE" "tests=$RESULT_TESTS"; do
+          for pair in "quality-gate=$RESULT_QUALITY_GATE" "rust-gate=$RESULT_RUST_GATE" "tests=$RESULT_TESTS" "requires-opensim=$RESULT_REQUIRES_OPENSIM"; do
             job="${pair%%=*}"
             result="${pair#*=}"
             echo "$job: $result"

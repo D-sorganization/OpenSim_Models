@@ -14,6 +14,8 @@ from opensim_models.tools.inverse_kinematics import (
     run_inverse_kinematics,
 )
 
+pytestmark = pytest.mark.requires_opensim
+
 try:
     import opensim
 except ImportError:

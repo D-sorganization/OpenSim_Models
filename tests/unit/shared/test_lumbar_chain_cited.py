@@ -31,6 +31,8 @@ from opensim_models.shared.body.lumbar_coupling_data import (
 )
 from opensim_models.shared.parity.standard import JOINT_LIMITS
 
+pytestmark = pytest.mark.requires_opensim
+
 try:
     import opensim
 except ImportError:

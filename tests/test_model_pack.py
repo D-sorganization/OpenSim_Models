@@ -24,6 +24,8 @@ from opensim_models import model_pack
 from opensim_models.__main__ import main as cli_main
 from opensim_models.exercises import EXERCISE_BUILDERS
 
+pytestmark = pytest.mark.requires_opensim
+
 _EXPECTED_EXERCISES = (
     "squat",
     "deadlift",
