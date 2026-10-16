@@ -25,6 +25,7 @@ from opensim_models.shared.body.axial_skeleton import add_axial_body, add_axial_
 from opensim_models.shared.body.lumbar_chain import (
     LumbarCouplingLaw,
     add_lumbar_chain_bodies,
+    require_lumbar_law,
 )
 
 logger = logging.getLogger(__name__)
@@ -61,12 +62,14 @@ def create_full_body(
         constraintset: ConstraintSet receiving the chain's coupler constraints;
             required when ``lumbar_chain`` is given.
 
-    Raises ValueError when ``lumbar_chain`` is given without ``constraintset``.
+    Raises TypeError when ``lumbar_chain`` is not a ``LumbarCouplingLaw`` and
+    ValueError when it is given without ``constraintset``.
 
     Returns dict of body name -> ET.Element for all created bodies.
     """
     if spec is None:
         spec = BodyModelSpec()
+    require_lumbar_law(lumbar_chain)
     if lumbar_chain is not None and constraintset is None:
         raise ValueError("lumbar_chain requires a constraintset")
 

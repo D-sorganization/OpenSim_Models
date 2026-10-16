@@ -24,7 +24,10 @@ from opensim_models.shared.body import (
     create_full_body,
 )
 from opensim_models.shared.body.ground_placement import standing_pelvis_height
-from opensim_models.shared.body.lumbar_chain import LumbarCouplingLaw
+from opensim_models.shared.body.lumbar_chain import (
+    LumbarCouplingLaw,
+    require_lumbar_law,
+)
 from opensim_models.shared.contracts.postconditions import (
     ensure_coordinates_within_bounds,
 )
@@ -54,6 +57,9 @@ class ExerciseConfig:
     # Opt-in segmental lumbar chain (#464). None keeps the single lumbar joint
     # and a byte-identical model; a law replaces it by five coupled levels.
     lumbar_chain: LumbarCouplingLaw | None = None
+
+    def __post_init__(self) -> None:
+        require_lumbar_law(self.lumbar_chain)
 
 
 class ExerciseModelBuilder(ABC):

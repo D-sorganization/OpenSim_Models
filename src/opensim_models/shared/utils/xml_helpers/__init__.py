@@ -3,7 +3,11 @@
 Public API re-exported from sub-modules for backward compatibility.
 """
 
-from opensim_models.shared.utils.xml_helpers._bodies import add_body
+from opensim_models.shared.utils.xml_helpers._bodies import (
+    add_body,
+    body_inertial,
+    scale_body_inertial,
+)
 from opensim_models.shared.utils.xml_helpers._formatting import (
     ZERO_VEC3,
     Vec3,
@@ -33,9 +37,11 @@ __all__ = [
     "add_free_joint",
     "add_pin_joint",
     "add_weld_joint",
+    "body_inertial",
     "float_str",
     "indent_xml",
     "orientation_str",
+    "scale_body_inertial",
     "serialize_model",
     "set_coordinate_default",
     "set_coordinate_defaults",
