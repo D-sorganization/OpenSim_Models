@@ -29,6 +29,8 @@ class GaitModelBuilder(ExerciseModelBuilder):
     with slight hip and knee flexion on the stance leg.
     """
 
+    seat_feet_at_equilibrium = True  # #472, as MuJoCo_Models#447/#453
+
     @property
     def exercise_name(self) -> str:
         return "gait"

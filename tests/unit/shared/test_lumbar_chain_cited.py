@@ -49,16 +49,17 @@ XU_TABLE1_YOUNG = {
 }
 
 # SHA-256 of every builder's default output, captured on origin/main
-# (5e559d7) before the cited law and mass carving landed. Change only for an
+# (5e559d7) before the cited law and mass carving landed, re-pinned for the
+# contact policy footprint and foot seating (#472). Change only for an
 # intentional change to the default model.
 DEFAULT_BUILD_SHA256 = {
-    "bench_press": "2fe4140f89c87f6eaec3c7c96f2164e703e9f612859ebfeea74c39fc83038e35",
-    "clean_and_jerk": "9dd0a1c5027e59ed3dd0a1d58381a69f4503de25badeb8c160cfdf2a7b63370b",
-    "deadlift": "83251e6205b3efdaf1a29b4630afbc25e6788396447c3cc376c0caddc7449703",
-    "gait": "8389993a85377d47b054b5f74cc6fd94cf99cce25eef1c5054084f7037a58bba",
-    "sit_to_stand": "e9987e489c04af848ad78c76071afae046c5795e1211ec9b856333d54e734076",
-    "snatch": "78b86bfff5c24221534ff9d487e4650faea8e5503221aa22bf2d86a9f5af6bb4",
-    "squat": "df7fff3275d474b7cd33d7140adc0afcc3a66c5075014b6c542a4b9a3c70f2db",
+    "bench_press": "3a5c3978afcaf7fea850465d579930efbb2cff07754dd0c1baecc1afbf4c6aeb",
+    "clean_and_jerk": "b34c7005f3ac45458f7fcd84a82129c03dfa90b54a7c9d2fdade5575dce430e7",
+    "deadlift": "9eb03cb867b8e8d3a664b003639f280d18f7b80116d38c09fc21c096913ebf26",
+    "gait": "fcc1eb503c360d04529d2333e241cedc3043ea6d757f2c5b8df5dadd635e3494",
+    "sit_to_stand": "9827f28d5f7115d6e293b237d7d4e70ab47a8c59c944b36580b0c945d064f317",
+    "snatch": "33b0c1035537b6e69896b20875181a491dc93c059c1b5c0f8403c58e8560d66d",
+    "squat": "cc1b79e5eb6d92f86986774bf1a92141cb39699558e84913baa66a5c0ae72f71",
 }
 
 

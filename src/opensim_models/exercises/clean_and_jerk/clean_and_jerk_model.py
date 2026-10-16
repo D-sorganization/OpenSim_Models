@@ -42,6 +42,8 @@ class CleanAndJerkModelBuilder(SpecLiftModelBuilder):
     (floor to shoulders) and jerk (shoulders to overhead) phases.
     """
 
+    seat_feet_at_equilibrium = True  # #472, as MuJoCo_Models#447/#453
+
     @property
     def exercise_name(self) -> str:
         return "clean_and_jerk"

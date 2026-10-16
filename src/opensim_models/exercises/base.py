@@ -23,11 +23,16 @@ from opensim_models.shared.body import (
     add_standard_markers,
     create_full_body,
 )
+from opensim_models.shared.body.foot_seating import (
+    foot_seating_offset,
+    lower_foot_contact_spheres,
+)
 from opensim_models.shared.body.ground_placement import standing_pelvis_height
 from opensim_models.shared.body.lumbar_chain import (
     LumbarCouplingLaw,
     require_lumbar_law,
 )
+from opensim_models.shared.contact import foot_sphere_names
 from opensim_models.shared.contracts.postconditions import (
     ensure_coordinates_within_bounds,
 )
@@ -70,6 +75,10 @@ class ExerciseModelBuilder(ABC):
       - attach_barbell(): how the barbell connects to the body
       - set_initial_pose(): default coordinate values for the start position
     """
+
+    # Seat the foot spheres at the contact-law equilibrium depth (#472, as
+    # MuJoCo_Models#447/#453): the free-root standing models set it.
+    seat_feet_at_equilibrium: bool = False
 
     def __init__(self, config: ExerciseConfig | None = None) -> None:
         self.config = config or ExerciseConfig()
@@ -215,18 +224,18 @@ class ExerciseModelBuilder(ABC):
         add_contact_half_space(model, name="ground_contact", body="ground")
         add_foot_contact_spheres(model, self.body_spec)
 
-        foot_contact_names = [
-            f"foot_{side}_{point}"
-            for side in ("l", "r")
-            for point in ("heel_medial", "heel_lateral", "toe_medial", "toe_lateral")
-        ]
-        for sphere_name in foot_contact_names:
+        for sphere_name in foot_sphere_names():
             add_hunt_crossley_force(
                 model,
                 name=f"force_{sphere_name}",
                 contact_geometry_1=sphere_name,
                 contact_geometry_2="ground_contact",
             )
+
+    def _seat_feet(self, model: ET.Element) -> None:
+        """Lower the foot spheres to the equilibrium depth (opt-in, #472)."""
+        if self.seat_feet_at_equilibrium:
+            lower_foot_contact_spheres(model, foot_seating_offset(model))
 
     def build(self) -> str:
         """Build the complete OpenSim model XML and return as string.
@@ -254,6 +263,7 @@ class ExerciseModelBuilder(ABC):
         self._post_contact_hook(model)
         if not self._skip_ground_joint():
             set_coordinate_defaults(jointset, self._initial_root_coordinates(model))
+            self._seat_feet(model)
 
         # Standard MarkerSet (#387)
         add_standard_markers(model, self.body_spec, uses_barbell=self.uses_barbell)

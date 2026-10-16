@@ -3,11 +3,13 @@
 from __future__ import annotations
 
 import math
+import xml.etree.ElementTree as ET
 from pathlib import Path
 
 import pytest
 
-from opensim_models.exercises import EXERCISE_BUILDERS
+from opensim_models.exercises import EXERCISE_BUILDERS, SEATED_EXERCISES
+from opensim_models.shared.body.foot_seating import supported_weight
 
 try:
     import opensim
@@ -21,11 +23,11 @@ needs_opensim = pytest.mark.skipif(
 
 FREE_ROOT = [e for e in EXERCISE_BUILDERS if e != "bench_press"]
 TOL = 0.005  # 5 mm
-BODY_MASS = 80.0
-G = 9.80665
-# Static placement with no velocity: measured support forces are 0.1-0.2 body
-# weights (max 145 N for an 80 kg model), never a 1e5 N blow-up.
+# Static placement with no velocity: flush (unseated) feet carry 0.1-0.3 of
+# the supported weight, never a 1e5 N blow-up; seated feet (#472) carry the
+# supported weight (lifter plus bar) to the engine/XML round-off.
 MAX_GRF_BODY_WEIGHTS = 1.0
+SEATED_FORCE_RTOL = 1e-3
 
 
 def _load(tmp_path: Path, exercise: str):  # type: ignore[no-untyped-def]
@@ -78,7 +80,12 @@ def test_ground_force_is_finite_and_bounded(tmp_path: Path, exercise: str) -> No
         comps = [values.get(k) for k in range(values.size())]
         assert all(math.isfinite(c) for c in comps), force.getName()
         total_fy += comps[1]
-    weight = BODY_MASS * G
+    tree = ET.fromstring(EXERCISE_BUILDERS[exercise]()).find("Model")
+    assert tree is not None
+    weight = supported_weight(tree)
+    if exercise in SEATED_EXERCISES:
+        assert total_fy == pytest.approx(weight, rel=SEATED_FORCE_RTOL)
+        return
     assert -1e-6 <= total_fy <= MAX_GRF_BODY_WEIGHTS * weight, (
         f"{exercise}: vertical ground force {total_fy:.1f} N vs weight {weight:.1f} N"
     )

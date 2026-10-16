@@ -25,6 +25,11 @@ import pytest
 from opensim_models.exercises import EXERCISE_BUILDERS
 from opensim_models.exercises.base import ExerciseConfig
 from opensim_models.exercises.deadlift.deadlift_model import DeadliftModelBuilder
+from opensim_models.shared.body.foot_seating import (
+    contact_heights,
+    equilibrium_depth,
+    supported_weight,
+)
 from opensim_models.shared.parity._canonical import conformance, spec, topology
 from opensim_models.shared.parity.aliases import engine_name
 
@@ -240,7 +245,14 @@ def test_floor_pull_bar_height_above_lowest_sole(exercise: str) -> None:
 
     bar_height_above_sole = bar.get(1) - lowest_y
     plate_radius = spec.exercise_spec(STD, exercise)["load"]["plate_diameter_m"] / 2
-    assert bar_height_above_sole == pytest.approx(plate_radius, abs=POSITION_TOL_M)
+    # The soles are seated their contact-law equilibrium depth into the floor
+    # (#472), so the plates rest on the floor that much above the lowest sole.
+    tree = ET.fromstring(EXERCISE_BUILDERS[exercise]()).find("Model")
+    assert tree is not None
+    seated = equilibrium_depth(contact_heights(tree), supported_weight(tree))
+    assert bar_height_above_sole == pytest.approx(
+        plate_radius + seated, abs=POSITION_TOL_M
+    )
 
 
 @needs_opensim

@@ -36,6 +36,8 @@ logger = logging.getLogger(__name__)
 class SnatchModelBuilder(SpecLiftModelBuilder):
     """Builds a snatch OpenSim model with wide grip."""
 
+    seat_feet_at_equilibrium = True  # #472, as MuJoCo_Models#447/#453
+
     @property
     def exercise_name(self) -> str:
         return "snatch"
