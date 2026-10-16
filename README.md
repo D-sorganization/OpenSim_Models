@@ -4,13 +4,13 @@ OpenSim musculoskeletal models for classical barbell exercises.
 
 ## Exercises
 
-| Exercise       | Module                              | Description                                    |
-| -------------- | ----------------------------------- | ---------------------------------------------- |
-| Back Squat     | `exercises.squat`                   | High-bar back squat with barbell on trapezius   |
-| Bench Press    | `exercises.bench_press`             | Supine press with barbell gripped at chest      |
-| Deadlift       | `exercises.deadlift`                | Conventional deadlift from floor to lockout     |
-| Snatch         | `exercises.snatch`                  | Wide-grip floor-to-overhead in one motion       |
-| Clean and Jerk | `exercises.clean_and_jerk`          | Floor to shoulders (clean) + overhead (jerk)    |
+| Exercise       | Module                     | Description                                   |
+| -------------- | -------------------------- | --------------------------------------------- |
+| Back Squat     | `exercises.squat`          | High-bar back squat with barbell on trapezius |
+| Bench Press    | `exercises.bench_press`    | Supine press with barbell gripped at chest    |
+| Deadlift       | `exercises.deadlift`       | Conventional deadlift from floor to lockout   |
+| Snatch         | `exercises.snatch`         | Wide-grip floor-to-overhead in one motion     |
+| Clean and Jerk | `exercises.clean_and_jerk` | Floor to shoulders (clean) + overhead (jerk)  |
 
 ## Quick Start
 
@@ -39,23 +39,33 @@ By default the trunk has one 3-DOF `lumbar` joint. Passing a coupling law in
 ```python
 from opensim_models.exercises.base import ExerciseConfig
 from opensim_models.exercises.deadlift.deadlift_model import DeadliftModelBuilder
-from opensim_models.shared.body.lumbar_chain import LumbarCouplingLaw
+from opensim_models.shared.body.lumbar_coupling_data import xu2022_young_lumbar_law
 
-law = LumbarCouplingLaw(
-    law_id="my_law", version="1", source="<full citation of the data>",
-    ratios={"flex": (...), "lateral": (...), "rotate": (...)},  # 5 shares each
-)
-xml = DeadliftModelBuilder(ExerciseConfig(lumbar_chain=law)).build()
+xml = DeadliftModelBuilder(ExerciseConfig(lumbar_chain=xu2022_young_lumbar_law())).build()
 ```
 
 Each motion's five shares (caudal first) are positive and sum to 1, so
 `lumbar_flex`, `lumbar_lateral` and `lumbar_rotate` stay the total-motion
-drivers with their original ranges. The law's `law_id`, `version` and `source`
-are written to the model's `<publications>` property. The default model is
-byte-identical. No published ratios are bundled yet (they belong in a shared
-package, not copied between repositories); `uniform_lumbar_law()` is an equal
-split and is labelled as not published. Levels are co-located with no neutral
-lordosis and the link bodies carry negligible regularising mass.
+drivers with their original ranges. The law's id, version, source and DOI are
+written to the model's `<publications>` property. The default model is
+byte-identical (pinned SHA-256 per builder in
+`tests/unit/shared/test_lumbar_chain_cited.py`).
+
+- **Cited law:** `xu2022_young_lumbar_law()` uses the per-level in vivo
+  rotation ranges of Xu et al. 2022, _Front Surg_ 9:1002133,
+  doi:10.3389/fsurg.2022.1002133 (Table 1, young group, n = 14). Each level's
+  share is its fraction of the summed range; that proportionality is a
+  modelling assumption, not a published result.
+- **Limits:** each level's range is its share of the driver range, so the
+  level limits are the cited per-level ranges scaled by one factor per motion.
+- **Mass:** the four link bodies are carved from the torso (same mass centre,
+  mass-proportional inertia), so the torso plus links keep the lumped torso's
+  mass, mass centre and inertia in the neutral pose.
+- Custom laws: `LumbarCouplingLaw(...)` with explicit `ratios`, or
+  `LumbarCouplingLaw.from_level_rom(...)` from measured per-level ranges.
+  `uniform_lumbar_law()` is an equal split, labelled as not published.
+- Levels are co-located with no neutral lordosis, and there is no cross-axis
+  coupling.
 
 ## Architecture
 

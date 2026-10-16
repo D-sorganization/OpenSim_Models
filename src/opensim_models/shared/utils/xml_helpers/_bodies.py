@@ -58,3 +58,35 @@ def add_body(
         )
 
     return body
+
+
+def body_inertial(
+    body: ET.Element,
+) -> tuple[float, tuple[float, float, float], tuple[float, ...]]:
+    """Return ``(mass, mass_center, inertia)`` parsed from a <Body> element.
+
+    ``inertia`` is the six-component ``xx yy zz xy xz yz`` tuple about the
+    mass centre, as written by ``add_body``.
+    """
+    mass = float(body.findtext("mass") or "nan")
+    cx, cy, cz = (float(v) for v in (body.findtext("mass_center") or "").split())
+    inertia = tuple(float(v) for v in (body.findtext("inertia") or "").split())
+    if len(inertia) != 6:
+        raise ValueError(f"body {body.get('name')!r} needs six inertia components")
+    return mass, (cx, cy, cz), inertia
+
+
+def scale_body_inertial(body: ET.Element, factor: float) -> None:
+    """Scale a <Body>'s mass and central inertia by *factor* in place.
+
+    The mass centre is unchanged. Precondition: ``0 < factor`` and finite.
+    """
+    if not (factor > 0.0 and factor < float("inf")):
+        raise ValueError(f"factor must be positive and finite, got {factor}")
+    mass, _, inertia = body_inertial(body)
+    mass_el = body.find("mass")
+    inertia_el = body.find("inertia")
+    if mass_el is None or inertia_el is None:
+        raise ValueError(f"body {body.get('name')!r} has no mass or inertia")
+    mass_el.text = float_str(mass * factor)
+    inertia_el.text = " ".join("%.6f" % (factor * v) for v in inertia)  # noqa: UP031
