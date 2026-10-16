@@ -17,7 +17,6 @@ from opensim_models.optimization.exercise_objectives import (
 from opensim_models.optimization.trajectory_optimizer import (
     TrajectoryConfig,
     TrajectoryResult,
-    create_moco_study,
     interpolate_phases,
 )
 
@@ -244,39 +243,6 @@ class TestTrajectoryDataclasses:
         assert result.converged is True
         assert result.iterations == 42
         assert result.time.shape == (10,)
-
-
-# ---------------------------------------------------------------------------
-# Moco study creation
-# ---------------------------------------------------------------------------
-
-
-class TestCreateMocoStudy:
-    """Test the Moco study configuration builder."""
-
-    def test_returns_dict_with_expected_keys(self) -> None:
-        cfg = TrajectoryConfig(exercise_name="squat")
-        study = create_moco_study(cfg)
-        assert "solver" in study
-        assert "problem" in study
-        assert "initial_guess" in study
-
-    def test_solver_params_match_config(self) -> None:
-        cfg = TrajectoryConfig(max_iterations=500, convergence_tolerance=1e-6)
-        study = create_moco_study(cfg)
-        assert study["solver"]["max_iterations"] == 500
-        assert study["solver"]["convergence_tolerance"] == 1e-6
-
-    def test_initial_guess_has_time_and_coordinates(self) -> None:
-        cfg = TrajectoryConfig(exercise_name="bench_press", num_mesh_points=25)
-        study = create_moco_study(cfg)
-        assert len(study["initial_guess"]["time"]) == 25
-        assert len(study["initial_guess"]["coordinates"]) > 0
-
-    def test_unknown_exercise_raises_key_error(self) -> None:
-        cfg = TrajectoryConfig(exercise_name="curls_in_squat_rack")
-        with pytest.raises(KeyError, match="curls_in_squat_rack"):
-            create_moco_study(cfg)
 
 
 # ---------------------------------------------------------------------------

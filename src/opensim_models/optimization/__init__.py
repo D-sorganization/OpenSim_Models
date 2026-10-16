@@ -5,10 +5,14 @@ from opensim_models.optimization.exercise_objectives import (
     EXERCISE_OBJECTIVES,
     get_exercise_objective,
 )
+from opensim_models.optimization.moco_study import (
+    create_moco_study,
+    phase_keyframe_errors,
+    solve_trajectory,
+)
 from opensim_models.optimization.trajectory_optimizer import (
     TrajectoryConfig,
     TrajectoryResult,
-    create_moco_study,
     interpolate_phases,
 )
 from opensim_models.tools.forward_simulation import (
@@ -30,5 +34,7 @@ __all__ = [
     "create_moco_study",
     "get_exercise_objective",
     "interpolate_phases",
+    "phase_keyframe_errors",
     "run_forward_simulation",
+    "solve_trajectory",
 ]

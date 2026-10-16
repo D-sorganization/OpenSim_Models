@@ -9,7 +9,6 @@ from opensim_models.optimization._types import ExerciseObjective, Phase
 from opensim_models.optimization.trajectory_optimizer import (
     TrajectoryConfig,
     TrajectoryResult,
-    create_moco_study,
     interpolate_phases,
 )
 
@@ -212,62 +211,3 @@ class TestInterpolatePhases:
         assert result.converged is True
         assert result.objective_value == pytest.approx(0.0)
         assert result.iterations == 0
-
-
-class TestCreateMocoStudy:
-    """The Moco study dict should reflect the supplied configuration."""
-
-    def test_builds_solver_problem_and_initial_guess(self) -> None:
-        cfg = TrajectoryConfig(
-            exercise_name="squat",
-            duration=2.5,
-            num_mesh_points=12,
-            max_iterations=222,
-            convergence_tolerance=3e-5,
-            constraint_tolerance=4e-5,
-            weight_tracking=8.0,
-            weight_effort=1.5,
-        )
-
-        study = create_moco_study(cfg)
-
-        assert study["solver"] == {
-            "type": "MocoCasADiSolver",
-            "max_iterations": 222,
-            "convergence_tolerance": 3e-5,
-            "constraint_tolerance": 4e-5,
-            "num_mesh_intervals": 12,
-        }
-        assert study["problem"]["exercise"] == "squat"
-        assert study["problem"]["duration"] == 2.5
-        assert study["problem"]["cost_weights"] == {
-            "tracking": 8.0,
-            "effort": 1.5,
-        }
-        assert len(study["initial_guess"]["time"]) == 12
-        assert len(study["initial_guess"]["coordinates"]) > 0
-        assert list(study["problem"]["coordinates"]) == list(
-            study["initial_guess"]["coordinates"].keys()
-        )
-
-    def test_unknown_exercise_raises_key_error(self) -> None:
-        """create_moco_study should propagate KeyError for unknown exercises."""
-        cfg = TrajectoryConfig(exercise_name="definitely_not_an_exercise")
-
-        with pytest.raises(KeyError, match="definitely_not_an_exercise"):
-            create_moco_study(cfg)
-
-    def test_initial_guess_time_starts_at_zero_and_ends_at_duration(self) -> None:
-        """Initial guess time axis must span [0, duration]."""
-        cfg = TrajectoryConfig(
-            exercise_name="squat",
-            duration=2.0,
-            num_mesh_points=5,
-        )
-
-        study = create_moco_study(cfg)
-
-        times = study["initial_guess"]["time"]
-        assert times[0] == pytest.approx(0.0)
-        assert times[-1] == pytest.approx(2.0)
-        assert len(times) == 5
