@@ -18,6 +18,32 @@ reachable from any live state and `abandoned` from `parked`.
 
 ## Active
 
+### DL-#471 · Headless Rollout Recorder: .sto States via TimeSeriesTable/STOFileAdapter Plus a Matplotlib Agg Stick-Figure Animation (MP4 With Ffmpeg, GIF Otherwise), at API Parity With Pinocchio Record_Rollout
+
+- **State:** in_review
+- **Owner:** unassigned
+- **Issue:** #471
+- **Branch:** feat/471-rollout-recording
+- **PR:** #475
+- **Paths:** see #475
+- **Started:** 2026-10-16
+- **Last verified:** 2026-10-16 (`8aea447b`; collated from changes/471-headless-rollout-recording.md)
+- **Summary:** Headless rollout recorder: .sto states via TimeSeriesTable/STOFileAdapter plus a matplotlib Agg stick-figure animation (MP4 with ffmpeg, GIF otherwise), at API parity with Pinocchio record_rollout
+- **Next step:** Merge the PR.
+
+### DL-#469 · Run Requires_Opensim Tests in a Dedicated Real OpenSim 4.6 CI Job; Register and Apply the Marker
+
+- **State:** in_review
+- **Owner:** unassigned
+- **Issue:** #469
+- **Branch:** ci/469-requires-opensim-job
+- **PR:** #474
+- **Paths:** see #474
+- **Started:** 2026-10-16
+- **Last verified:** 2026-10-16 (`190bf495`; collated from changes/469-run-requires-opensim-tests-in-a-dedicate.md)
+- **Summary:** Run requires_opensim tests in a dedicated real OpenSim 4.6 CI job; register and apply the marker
+- **Next step:** Merge the PR; watch the first main run of the requires-opensim job.
+
 ### DL-#464 · Add Opt-In Segmental Lumbar Chain (L5/S1..L1/L2) With Coupling-Law Constraints; Default Model Unchanged
 
 - **State:** in_review
