@@ -59,6 +59,7 @@ KEYFRAME_TOL_RAD = math.radians(3.0)
 # ---------------------------------------------------------------------------
 
 
+@pytest.mark.unit
 def test_create_moco_study_raises_without_opensim(
     monkeypatch: pytest.MonkeyPatch,
 ) -> None:
@@ -68,12 +69,14 @@ def test_create_moco_study_raises_without_opensim(
         create_moco_study(TrajectoryConfig(exercise_name="squat"))
 
 
+@pytest.mark.unit
 def test_moco_ready_osim_has_no_free_joint() -> None:
     xml = moco_ready_osim("squat")
     assert "<FreeJoint" not in xml
     assert 'CustomJoint name="ground_pelvis"' in xml
 
 
+@pytest.mark.unit
 def test_moco_ready_osim_can_drop_ground_contact() -> None:
     assert "SmoothSphereHalfSpaceForce" in moco_ready_osim("squat")
     assert "SmoothSphereHalfSpaceForce" not in moco_ready_osim(
@@ -81,11 +84,13 @@ def test_moco_ready_osim_can_drop_ground_contact() -> None:
     )
 
 
+@pytest.mark.unit
 def test_moco_ready_osim_rejects_unknown_exercise() -> None:
     with pytest.raises(KeyError, match="curls_in_squat_rack"):
         moco_ready_osim("curls_in_squat_rack")
 
 
+@pytest.mark.unit
 def test_keyframe_errors_are_zero_on_the_keyframe_interpolation() -> None:
     objective = get_exercise_objective("squat")
     exact = interpolate_phases(objective, num_points=201, duration=3.0)
@@ -94,6 +99,7 @@ def test_keyframe_errors_are_zero_on_the_keyframe_interpolation() -> None:
     assert max(errors.values()) < 1e-12
 
 
+@pytest.mark.unit
 def test_keyframe_errors_measure_the_largest_offset() -> None:
     objective = get_exercise_objective("squat")
     shifted = interpolate_phases(objective, num_points=201, duration=3.0)
@@ -102,6 +108,7 @@ def test_keyframe_errors_measure_the_largest_offset() -> None:
     assert all(e == pytest.approx(0.1) for e in errors.values())
 
 
+@pytest.mark.unit
 def test_keyframe_errors_reject_results_missing_coordinates() -> None:
     objective = get_exercise_objective("squat")
     partial = interpolate_phases(objective, num_points=11, duration=3.0)
@@ -110,6 +117,7 @@ def test_keyframe_errors_reject_results_missing_coordinates() -> None:
         phase_keyframe_errors(partial, objective)
 
 
+@pytest.mark.unit
 def test_keyframe_errors_can_measure_a_subset() -> None:
     objective = get_exercise_objective("squat")
     partial = interpolate_phases(objective, num_points=201, duration=3.0)
@@ -118,6 +126,7 @@ def test_keyframe_errors_can_measure_a_subset() -> None:
     assert max(phase_keyframe_errors(partial, objective, kept).values()) < 1e-12
 
 
+@pytest.mark.unit
 def test_every_objective_has_a_model_builder() -> None:
     assert set(EXERCISE_OBJECTIVES) <= set(EXERCISE_BUILDERS)
 
@@ -205,6 +214,7 @@ def test_reduction_welds_still_joints(
     ("joint", "match"),
     [("knee_r", "cannot weld knee_r_flex"), ("no_such_joint", "unknown joint")],
 )
+@pytest.mark.unit
 def test_reduction_refuses_joints_the_keyframes_move(
     joint: str, match: str, tmp_path: Path, monkeypatch: pytest.MonkeyPatch
 ) -> None:

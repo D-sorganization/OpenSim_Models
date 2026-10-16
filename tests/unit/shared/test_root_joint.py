@@ -29,6 +29,7 @@ def _squat_root() -> ET.Element:
     return ET.fromstring(EXERCISE_BUILDERS["squat"]())
 
 
+@pytest.mark.unit
 def test_rewrites_pelvis_free_joint_keeping_names_and_defaults() -> None:
     root = _squat_root()
     before = root.find(".//FreeJoint[@name='ground_pelvis']")
@@ -53,6 +54,7 @@ def test_rewrites_pelvis_free_joint_keeping_names_and_defaults() -> None:
     assert [a.findtext("axis") for a in axes] == ["1 0 0", "0 1 0", "0 0 1"] * 2
 
 
+@pytest.mark.unit
 def test_model_without_free_joint_is_unchanged() -> None:
     root = ET.fromstring(EXERCISE_BUILDERS["bench_press"]())
     before = ET.tostring(root)
@@ -60,6 +62,7 @@ def test_model_without_free_joint_is_unchanged() -> None:
     assert ET.tostring(root) == before
 
 
+@pytest.mark.unit
 def test_rejects_free_joint_with_unexpected_coordinate_order() -> None:
     root = _squat_root()
     joint = root.find(".//FreeJoint")
