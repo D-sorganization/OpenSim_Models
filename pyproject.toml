@@ -114,6 +114,7 @@ markers = [
     "live_simulation: marks tests as requiring live simulation environment",
     "requires_network: needs real outbound network",
     "heavy: resource-intensive tests",
+    "requires_opensim: needs the real OpenSim 4.6 Python bindings (with Moco)",
 ]
 
 [tool.coverage.run]
