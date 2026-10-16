@@ -28,6 +28,8 @@ from opensim_models.exercises.deadlift.deadlift_model import DeadliftModelBuilde
 from opensim_models.shared.parity._canonical import conformance, spec, topology
 from opensim_models.shared.parity.aliases import engine_name
 
+pytestmark = pytest.mark.requires_opensim
+
 logger = logging.getLogger(__name__)
 
 try:
