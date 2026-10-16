@@ -29,6 +29,31 @@ with open("squat.osim", "w") as f:
     f.write(xml)
 ```
 
+### Headless rollout recording (#471)
+
+`opensim_models.tools.record_rollout` records a forward-simulation rollout
+without any GUI or Simbody visualizer. It writes the coordinate trajectory to
+an OpenSim `.sto` file (`TimeSeriesTable` + `STOFileAdapter`, radians and
+metres, loadable in the OpenSim GUI) and renders a matplotlib (Agg) sagittal
+stick-figure animation from body-frame origins evaluated at each state. The
+animation is MP4 when `ffmpeg` is available and GIF otherwise (an `.mp4`
+request falls back to `.gif`; see `RolloutRecording.format`). The API mirrors
+Pinocchio's `record_rollout`:
+
+```python
+from opensim_models.tools import record_rollout, run_forward_simulation
+
+rec = record_rollout(
+    "squat",
+    lambda m: run_forward_simulation(m, duration=0.5),
+    "squat.mp4",
+    fps=30,
+)
+print(rec.path, rec.states_path, rec.frame_count, rec.format)
+```
+
+The stick figure is a kinematic rendering; it does not qualify the dynamics.
+
 ### Optional segmental lumbar chain (#464)
 
 By default the trunk has one 3-DOF `lumbar` joint. Passing a coupling law in
