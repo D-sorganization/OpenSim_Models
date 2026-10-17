@@ -18,6 +18,19 @@ reachable from any live state and `abandoned` from `parked`.
 
 ## Active
 
+### DL-#472 · Contact Policy From the Parity Standard, Foot Seating at the Contact-Law Equilibrium, Builder Registry and Contact-Aware Gait Inverse Dynamics (OSL-10)
+
+- **State:** in_review
+- **Owner:** unassigned
+- **Issue:** #472
+- **Branch:** feat/472-contact-policy-foot-seating
+- **PR:** #476
+- **Paths:** see #476
+- **Started:** 2026-10-17
+- **Last verified:** 2026-10-17 (`38fcf113`; collated from changes/472-contact-policy-from-the-parity-standard.md)
+- **Summary:** Contact policy from the parity standard, foot seating at the contact-law equilibrium, builder registry and contact-aware gait inverse dynamics (OSL-10)
+- **Next step:** Merge the PR; seat sit_to_stand once a chair contact exists.
+
 ### DL-#473 · Single-Source the Cited Lumbar Coupling Data in Lumbar_Coupling_Laws.Json With a Validating Loader and a No-Copy Guard; Every Law Assembles in OpenSim 4.6; Rust_Core Recorded as CI-Gated (Board Proposal RM#2116)
 
 - **State:** in_review
