@@ -29,6 +29,31 @@ with open("squat.osim", "w") as f:
     f.write(xml)
 ```
 
+### Headless rollout recording (#471)
+
+`opensim_models.tools.record_rollout` records a forward-simulation rollout
+without any GUI or Simbody visualizer. It writes the coordinate trajectory to
+an OpenSim `.sto` file (`TimeSeriesTable` + `STOFileAdapter`, radians and
+metres, loadable in the OpenSim GUI) and renders a matplotlib (Agg) sagittal
+stick-figure animation from body-frame origins evaluated at each state. The
+animation is MP4 when `ffmpeg` is available and GIF otherwise (an `.mp4`
+request falls back to `.gif`; see `RolloutRecording.format`). The API mirrors
+Pinocchio's `record_rollout`:
+
+```python
+from opensim_models.tools import record_rollout, run_forward_simulation
+
+rec = record_rollout(
+    "squat",
+    lambda m: run_forward_simulation(m, duration=0.5),
+    "squat.mp4",
+    fps=30,
+)
+print(rec.path, rec.states_path, rec.frame_count, rec.format)
+```
+
+The stick figure is a kinematic rendering; it does not qualify the dynamics.
+
 ### Optional segmental lumbar chain (#464)
 
 By default the trunk has one 3-DOF `lumbar` joint. Passing a coupling law in
@@ -56,6 +81,10 @@ byte-identical (pinned SHA-256 per builder in
   doi:10.3389/fsurg.2022.1002133 (Table 1, young group, n = 14). Each level's
   share is its fraction of the summed range; that proportionality is a
   modelling assumption, not a published result.
+- **Single source:** the cited per-level tables live only in
+  `src/opensim_models/shared/body/lumbar_coupling_laws.json`;
+  `load_lumbar_coupling_laws()` validates the file and builds every law from
+  it, and a test fails if any Python module carries the numbers itself.
 - **Limits:** each level's range is its share of the driver range, so the
   level limits are the cited per-level ranges scaled by one factor per motion.
 - **Mass:** the four link bodies are carved from the torso (same mass centre,

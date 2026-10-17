@@ -27,6 +27,8 @@ import pytest
 
 from opensim_models.exercises import EXERCISE_BUILDERS
 
+pytestmark = pytest.mark.requires_opensim
+
 try:
     import opensim
 except ImportError:

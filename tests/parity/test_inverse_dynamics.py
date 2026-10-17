@@ -13,6 +13,8 @@ from opensim_models.tools.inverse_dynamics import (
     run_inverse_dynamics,
 )
 
+pytestmark = pytest.mark.requires_opensim
+
 try:
     import opensim
 except ImportError:

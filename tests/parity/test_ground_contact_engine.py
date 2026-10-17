@@ -11,6 +11,8 @@ import pytest
 from opensim_models.exercises import EXERCISE_BUILDERS, SEATED_EXERCISES
 from opensim_models.shared.body.foot_seating import supported_weight
 
+pytestmark = pytest.mark.requires_opensim
+
 try:
     import opensim
 except ImportError:

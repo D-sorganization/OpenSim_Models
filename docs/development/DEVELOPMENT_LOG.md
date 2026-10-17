@@ -18,18 +18,57 @@ reachable from any live state and `abandoned` from `parked`.
 
 ## Active
 
+### DL-#473 · Single-Source the Cited Lumbar Coupling Data in Lumbar_Coupling_Laws.Json With a Validating Loader and a No-Copy Guard; Every Law Assembles in OpenSim 4.6; Rust_Core Recorded as CI-Gated (Board Proposal RM#2116)
+
+- **State:** in_review
+- **Owner:** unassigned
+- **Issue:** #473
+- **Branch:** feat/473-lumbar-coupling
+- **PR:** #479
+- **Paths:** see #479
+- **Started:** 2026-10-16
+- **Last verified:** 2026-10-16 (`3c2efabb`; collated from changes/473-single-source-the-cited-lumbar-coupling.md)
+- **Summary:** Single-source the cited lumbar coupling data in lumbar_coupling_laws.json with a validating loader and a no-copy guard; every law assembles in OpenSim 4.6; rust_core recorded as CI-gated (Board proposal RM#2116)
+- **Next step:** Merge the PR; act on the Board decision for RM#2116.
+
+### DL-#471 · Headless Rollout Recorder: .sto States via TimeSeriesTable/STOFileAdapter Plus a Matplotlib Agg Stick-Figure Animation (MP4 With Ffmpeg, GIF Otherwise), at API Parity With Pinocchio Record_Rollout
+
+- **State:** in_review
+- **Owner:** unassigned
+- **Issue:** #471
+- **Branch:** feat/471-rollout-recording
+- **PR:** #475
+- **Paths:** see #475
+- **Started:** 2026-10-16
+- **Last verified:** 2026-10-16 (`8aea447b`; collated from changes/471-headless-rollout-recording.md)
+- **Summary:** Headless rollout recorder: .sto states via TimeSeriesTable/STOFileAdapter plus a matplotlib Agg stick-figure animation (MP4 with ffmpeg, GIF otherwise), at API parity with Pinocchio record_rollout
+- **Next step:** Merge the PR.
+
+### DL-#469 · Run Requires_Opensim Tests in a Dedicated Real OpenSim 4.6 CI Job; Register and Apply the Marker
+
+- **State:** in_review
+- **Owner:** unassigned
+- **Issue:** #469
+- **Branch:** ci/469-requires-opensim-job
+- **PR:** #474
+- **Paths:** see #474
+- **Started:** 2026-10-16
+- **Last verified:** 2026-10-16 (`190bf495`; collated from changes/469-run-requires-opensim-tests-in-a-dedicate.md)
+- **Summary:** Run requires_opensim tests in a dedicated real OpenSim 4.6 CI job; register and apply the marker
+- **Next step:** Merge the PR; watch the first main run of the requires-opensim job.
+
 ### DL-#464 · Add Opt-In Segmental Lumbar Chain (L5/S1..L1/L2) With Coupling-Law Constraints; Default Model Unchanged
 
 - **State:** in_review
 - **Owner:** unassigned
 - **Issue:** #464
 - **Branch:** feat/464-segmental-lumbar
-- **PR:** #465
+- **PR:** #465, #467
 - **Paths:** see #465
 - **Started:** 2026-10-15
-- **Last verified:** 2026-10-15 (`05f8ba03`; collated from changes/464-add-opt-in-segmental-lumbar-chain-l5-s1.md)
+- **Last verified:** 2026-10-16 (`4bbac49b`; collated from changes/464-cited-lumbar-coupling-law-xu-2022-doi-10.md)
 - **Summary:** Add opt-in segmental lumbar chain (L5/S1..L1/L2) with coupling-law constraints; default model unchanged
-- **Next step:** Merge the PR, then add cited coupling data from the shared package.
+- **Next step:** Move the cited per-level table to a shared spine package once one exists (cross-repo DRY with UpstreamDrift SPN-3)
 
 ### DL-#415 · Verify-Bench-Mass-Cross-Engine-Parity
 

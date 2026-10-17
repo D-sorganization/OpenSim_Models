@@ -163,6 +163,10 @@ Rows are keyed by pull request, not by a serial spec version: `| YYYY-MM-DD | #<
 
 | Date       | PR    | Changes                                                                                                                                                                                                                                                                                                                                                                 |
 | ---------- | ----- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| 2026-10-16 | #479 | Single-source the cited lumbar coupling data in lumbar_coupling_laws.json with a validating loader and a no-copy guard; every law assembles in OpenSim 4.6; rust_core recorded as CI-gated (Board proposal RM#2116) |
+| 2026-10-16 | #475 | Headless rollout recorder: .sto states via TimeSeriesTable/STOFileAdapter plus a matplotlib Agg stick-figure animation (MP4 with ffmpeg, GIF otherwise), at API parity with Pinocchio record_rollout |
+| 2026-10-16 | #474 | Run requires_opensim tests in a dedicated real OpenSim 4.6 CI job; register and apply the marker |
+| 2026-10-16 | #467 | Cited lumbar coupling law (Xu 2022, doi:10.3389/fsurg.2022.1002133), level limits proportional to cited per-level ROM, link mass carved from the torso, and DbC on the chain flag |
 | 2026-10-15 | #465 | Add opt-in segmental lumbar chain (L5/S1..L1/L2) with coupling-law constraints; default model unchanged |
 | 2026-10-14 | #462 | verify-bench-mass-cross-engine-parity |
 | 2026-10-14 | #460 | Drop Python 3.10 from CI matrix and pyproject.toml |
