@@ -1,5 +1,9 @@
 """OpenSim tools integration wrappers."""
 
+from opensim_models.tools.contact_inverse_dynamics import (
+    ContactInverseDynamics,
+    inverse_dynamics_with_contacts,
+)
 from opensim_models.tools.forward_simulation import (
     ForwardSimulationResult,
     ForwardSimulationTool,
@@ -22,6 +26,7 @@ from opensim_models.tools.inverse_kinematics import (
 from opensim_models.tools.recording import RolloutRecording, record_rollout
 
 __all__ = [
+    "ContactInverseDynamics",
     "FootReaction",
     "ForwardSimulationResult",
     "ForwardSimulationTool",
@@ -33,6 +38,7 @@ __all__ = [
     "RolloutRecording",
     "add_coordinate_actuators",
     "ground_reaction_from_model",
+    "inverse_dynamics_with_contacts",
     "record_rollout",
     "run_forward_simulation",
     "run_inverse_dynamics",

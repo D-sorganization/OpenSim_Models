@@ -9,6 +9,14 @@ from __future__ import annotations
 import logging
 import xml.etree.ElementTree as ET
 
+from opensim_models.shared.contact.policy import (
+    CONSTANT_CONTACT_FORCE,
+    CONTACT_DISSIPATION,
+    CONTACT_STIFFNESS,
+    GROUND_FRICTION,
+    HERTZ_SMOOTHING,
+    VISCOUS_FRICTION,
+)
 from opensim_models.shared.contracts.preconditions import require_positive
 from opensim_models.shared.utils.xml_helpers import float_str, vec3_str
 
@@ -91,11 +99,11 @@ def add_hunt_crossley_force(
     name: str,
     contact_geometry_1: str,
     contact_geometry_2: str,
-    stiffness: float = 1e7,
-    dissipation: float = 0.5,
-    static_friction: float = 0.8,
-    dynamic_friction: float = 0.6,
-    viscous_friction: float = 0.2,
+    stiffness: float = CONTACT_STIFFNESS,
+    dissipation: float = CONTACT_DISSIPATION,
+    static_friction: float = GROUND_FRICTION["static"],
+    dynamic_friction: float = GROUND_FRICTION["dynamic"],
+    viscous_friction: float = VISCOUS_FRICTION,
 ) -> ET.Element:
     """Add a Hunt-Crossley-type sphere / half-space contact force.
 
@@ -107,7 +115,9 @@ def add_hunt_crossley_force(
     ElementTree, so it cannot be used here.
 
     *contact_geometry_1* must name a ``ContactSphere`` and *contact_geometry_2*
-    a ``ContactHalfSpace`` in the model's ContactGeometrySet.
+    a ``ContactHalfSpace`` in the model's ContactGeometrySet. Defaults are the
+    contact policy's (``shared.contact.policy``); the Hertz smoothing is
+    written explicitly so the model and the policy's force law agree.
     """
     require_positive(stiffness, "stiffness")
     # ⚡ Bolt Optimization: Use .find() for fast C-level child lookups.
@@ -126,4 +136,6 @@ def add_hunt_crossley_force(
     ET.SubElement(force, "static_friction").text = float_str(static_friction)
     ET.SubElement(force, "dynamic_friction").text = float_str(dynamic_friction)
     ET.SubElement(force, "viscous_friction").text = float_str(viscous_friction)
+    ET.SubElement(force, "constant_contact_force").text = repr(CONSTANT_CONTACT_FORCE)
+    ET.SubElement(force, "hertz_smoothing").text = float_str(HERTZ_SMOOTHING)
     return force

@@ -28,6 +28,8 @@ class SquatModelBuilder(SpecLiftModelBuilder):
     carries the bar, so the bar has one parent.
     """
 
+    seat_feet_at_equilibrium = True  # #472, as MuJoCo_Models#447/#453
+
     @property
     def exercise_name(self) -> str:
         return "back_squat"
