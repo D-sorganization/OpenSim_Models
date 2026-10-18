@@ -1,11 +1,11 @@
 """Trajectory optimization utilities for exercise motion planning.
 
-Provides helpers to interpolate phase-based objectives into dense keyframe
-sequences and to configure OpenSim Moco trajectory optimization studies.
+Provides the trajectory configuration and result types and the helper that
+interpolates phase-based objectives into dense keyframe sequences.  The real
+OpenSim Moco study built from them lives in :mod:`moco_study` (#470).
 
 Design by Contract:
   - interpolate_phases requires num_points >= 2
-  - create_moco_study validates that config references a known exercise
 """
 
 from __future__ import annotations
@@ -17,7 +17,6 @@ import numpy as np
 
 from opensim_models.optimization.exercise_objectives import (
     ExerciseObjective,
-    get_exercise_objective,
 )
 from opensim_models.shared.contracts.preconditions import (
     require_non_negative,
@@ -147,70 +146,3 @@ def interpolate_phases(
         objective_value=0.0,
         iterations=0,
     )
-
-
-def _build_solver_dict(config: TrajectoryConfig) -> dict:
-    """Return the MocoCasADiSolver sub-dict for a Moco study."""
-    return {
-        "type": "MocoCasADiSolver",
-        "max_iterations": config.max_iterations,
-        "convergence_tolerance": config.convergence_tolerance,
-        "constraint_tolerance": config.constraint_tolerance,
-        "num_mesh_intervals": config.num_mesh_points,
-    }
-
-
-def _build_problem_dict(
-    config: TrajectoryConfig,
-    objective: ExerciseObjective,
-    guess: TrajectoryResult,
-) -> dict:
-    """Return the problem definition sub-dict for a Moco study."""
-    return {
-        "exercise": objective.name,
-        "duration": config.duration,
-        "coordinates": list(guess.coordinates.keys()),
-        "cost_weights": {
-            "tracking": config.weight_tracking,
-            "effort": config.weight_effort,
-        },
-    }
-
-
-def create_moco_study(config: TrajectoryConfig) -> dict:
-    """Build a dict describing a Moco trajectory optimization problem.
-
-    This does **not** require the OpenSim Python bindings; it returns a
-    plain configuration dict that can be serialised or passed to an actual
-    Moco solver when available.
-
-    Args:
-        config: Trajectory optimisation parameters.
-
-    Returns:
-        Dictionary with keys ``solver``, ``problem``, ``initial_guess``
-        describing the full Moco study specification.
-
-    Raises:
-        KeyError: If *config.exercise_name* is not a registered exercise.
-    """
-    objective = get_exercise_objective(config.exercise_name)
-    guess = interpolate_phases(
-        objective, num_points=config.num_mesh_points, duration=config.duration
-    )
-
-    logger.info(
-        "Created Moco study for '%s' (%d mesh points, %.1f s)",
-        config.exercise_name,
-        config.num_mesh_points,
-        config.duration,
-    )
-
-    return {
-        "solver": _build_solver_dict(config),
-        "problem": _build_problem_dict(config, objective, guess),
-        "initial_guess": {
-            "time": guess.time.tolist(),
-            "coordinates": {k: v.tolist() for k, v in guess.coordinates.items()},
-        },
-    }
