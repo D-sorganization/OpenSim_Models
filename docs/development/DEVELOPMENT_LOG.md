@@ -18,6 +18,19 @@ reachable from any live state and `abandoned` from `parked`.
 
 ## Active
 
+### DL-#470 · Create_Moco_Study Builds a Real Opensim.MocoStudy (Keyframe State Tracking + Effort, CasADi) for Every Exercise; FreeJoint Root Rewritten as an Equivalent CustomJoint; Reduced Fixed-Pelvis Squat Solves Headless in About 100 s
+
+- **State:** in_review
+- **Owner:** unassigned
+- **Issue:** #470
+- **Branch:** feat/470-real-moco-study
+- **PR:** #478
+- **Paths:** see #478
+- **Started:** 2026-10-18
+- **Last verified:** 2026-10-18 (`e823c6ba`; collated from changes/470-create-moco-study-builds-a-real-opensim.md)
+- **Summary:** create_moco_study builds a real opensim.MocoStudy (keyframe state tracking + effort, CasADi) for every exercise; FreeJoint root rewritten as an equivalent CustomJoint; reduced fixed-pelvis squat solves headless in about 100 s
+- **Next step:** Run the requires_opensim lane in CI (#469) and add a contact-driven free-pelvis squat solve once a faster derivative path is available
+
 ### DL-#472 · Contact Policy From the Parity Standard, Foot Seating at the Contact-Law Equilibrium, Builder Registry and Contact-Aware Gait Inverse Dynamics (OSL-10)
 
 - **State:** in_review
