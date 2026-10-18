@@ -100,7 +100,7 @@ def moco_ready_osim(exercise: str, *, ground_contact: bool = True) -> str:
     if exercise not in EXERCISE_BUILDERS:
         available = ", ".join(sorted(EXERCISE_BUILDERS))
         raise KeyError(f"Unknown exercise '{exercise}'. Available: {available}")
-    root = ET.fromstring(EXERCISE_BUILDERS[exercise]())
+    root = ET.fromstring(EXERCISE_BUILDERS[exercise]())  # nosec B314 — parsing self-generated XML
     replace_free_joints_with_custom_joints(root)
     if not ground_contact:
         for parent in list(root.iter()):
