@@ -40,9 +40,6 @@ assessments/2026-04-26-OpenSim_Models-assessment.json
 profile_stats
 profile_stats2
 
-# GAAI runtime state (local only)
-.gaai/project/contexts/backlog/.delivery-locks/
-.gaai/project/contexts/backlog/.delivery-logs/
 rust_core/target/
 # Per-workspace Rust toolchain homes (CI, RM#2021)
 .rustup-home/
