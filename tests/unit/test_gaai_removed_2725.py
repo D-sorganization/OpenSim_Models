@@ -18,9 +18,9 @@ pytestmark = pytest.mark.unit
 REPO_ROOT = Path(__file__).resolve().parents[2]
 
 LIVE_ENTRY_POINTS = (
-    'CLAUDE.md',
-    'AGENTS.md',
-    'README.md',
+    "CLAUDE.md",
+    "AGENTS.md",
+    "README.md",
 )
 
 _GAAI = re.compile(r"gaai", re.IGNORECASE)
@@ -53,11 +53,10 @@ def test_no_tracked_gaai_launcher_or_slash_command() -> None:
         for path in _tracked_files()
         if path != this_file
         and (
-            path.startswith(".gaai/")
+            path.startswith((".gaai/", "gaai-fleet/"))
             or path == ".gaai"
             or Path(path).name.startswith("gaai-")
             or Path(path).name.startswith("start-gaai")
-            or path.startswith("gaai-fleet/")
         )
     ]
     assert found == []
