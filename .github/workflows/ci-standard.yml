@@ -82,6 +82,12 @@ jobs:
             git status --short
             exit 1
           fi
+      # The dev extra installs opensim, which has no wheel for every CPython.
+      # Fix the interpreter instead of taking the runner image's default.
+      - name: Set up Python 3.12
+        uses: actions/setup-python@v7
+        with:
+          python-version: "3.12"
       - name: Set up Python venv
         run: |
           for PYTHON in python3.11 python3.12 python3.10 python; do
@@ -434,6 +440,12 @@ jobs:
           git -c "http.https://github.com/.extraheader=AUTHORIZATION: basic ${auth_header}" fetch --depth=1 origin "$GITHUB_SHA"
           git checkout --force FETCH_HEAD
           git clean -ffdx
+      # The dev extra installs opensim, which has no wheel for every CPython.
+      # Fix the interpreter instead of taking the runner image's default.
+      - name: Set up Python 3.12
+        uses: actions/setup-python@v7
+        with:
+          python-version: "3.12"
       - name: Set up Python venv
         run: |
           for PYTHON in python3.11 python3.12 python; do
