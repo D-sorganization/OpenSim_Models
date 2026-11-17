@@ -267,6 +267,19 @@ reachable from any live state and `abandoned` from `parked`.
 
 ## Shipped (Last 90 Days)
 
+### DL-#492 · CI: Quality Gate and Model-Pack Smoke Jobs Set up Python 3.12 Before Installing the Dev Extra
+
+- **State:** shipped
+- **Owner:** unassigned
+- **Issue:** #492
+- **Branch:** merged via #493
+- **PR:** #493
+- **Paths:** see #493
+- **Started:** 2026-11-17
+- **Last verified:** 2026-11-17 (`5757c340`; collated from changes/492-ci-quality-gate-and-model-pack-smoke-job.md)
+- **Summary:** CI: Quality Gate and Model-Pack smoke jobs set up Python 3.12 before installing the dev extra
+- **Next step:** Shipped in PR #493.
+
 ### DL-#390 · Integrate a Manager Forward Simulation With CoordinateActuators (#390)
 
 - **State:** shipped
